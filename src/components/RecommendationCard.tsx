@@ -147,7 +147,7 @@ export default function RecommendationCard({ lastUpdated, triggerRefresh }: Reco
         <div className="flex items-center space-x-2">
           <Sparkles className="h-4.5 w-4.5 text-emerald-500 animate-pulse" />
           <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase">
-            REKOMENDASI KEBIJAKAN STRATEGIS {source === "gemini" ? "(GEMINI AI)" : "(DINAMIS)"}
+            ANALISIS REKOMENDASI KEBIJAKAN STRATEGIS
           </h3>
         </div>
         <button
@@ -170,7 +170,7 @@ export default function RecommendationCard({ lastUpdated, triggerRefresh }: Reco
               <div className="absolute inset-0 rounded-lg border-4 border-emerald-500 border-t-transparent animate-spin"></div>
             </div>
             <p className="text-xs font-bold text-slate-500">Menganalisis indikator dan risiko spasial desa...</p>
-            <p className="text-[10px] text-slate-400 mt-1">Menggunakan model kecerdasan buatan untuk merumuskan kebijakan spesifik</p>
+            <p className="text-[10px] text-slate-400 mt-1">Mengintegrasikan data indikator untuk merumuskan kebijakan secara dinamis</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-10 text-center h-full">
@@ -193,7 +193,7 @@ export default function RecommendationCard({ lastUpdated, triggerRefresh }: Reco
       {/* Footer Controls */}
       <div className="border-t border-slate-100 px-5 py-3.5 bg-slate-50/50 flex items-center justify-between mt-auto">
         <div className="text-[10px] text-slate-400 font-mono">
-          Model: gemini-3.5-flash
+          Sistem Orbit Gizi Terintegrasi
         </div>
         <div className="flex space-x-2">
           <button

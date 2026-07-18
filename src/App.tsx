@@ -42,6 +42,12 @@ import StakeholderCard from "./components/StakeholderCard";
 import RecommendationCard from "./components/RecommendationCard";
 import InputWizardModal from "./components/InputWizardModal";
 
+// Firebase & Sheets integration
+import { initAuth, googleSignIn, logout } from "./lib/firebase";
+import { syncToGoogleSheets } from "./lib/sheetsService";
+import { User } from "firebase/auth";
+import { FileSpreadsheet, LogOut, CheckCircle, AlertCircle } from "lucide-react";
+
 export default function App() {
   const [data, setData] = useState<OrbitGiziData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -51,6 +57,16 @@ export default function App() {
   const [showConfigModal, setShowConfigModal] = useState<boolean>(false);
   const [showInputWizard, setShowInputWizard] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("overview");
+
+  // Firebase & Google Sheets integration state
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [googleToken, setGoogleToken] = useState<string | null>(null);
+  const [syncingSheets, setSyncingSheets] = useState<boolean>(false);
+  const [sheetsSyncUrl, setSheetsSyncUrl] = useState<string | null>(
+    localStorage.getItem("orbit_gizi_spreadsheet_url")
+  );
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncSuccess, setSyncSuccess] = useState<boolean>(false);
 
   // Form states for Weights config
   const [weightP1, setWeightP1] = useState<number>(10);
@@ -84,6 +100,78 @@ export default function App() {
   useEffect(() => {
     loadData();
   }, [refreshTrigger]);
+
+  // Initialize auth state on mount
+  useEffect(() => {
+    const unsubscribe = initAuth(
+      (user, token) => {
+        setCurrentUser(user);
+        setGoogleToken(token);
+      },
+      () => {
+        setCurrentUser(null);
+        setGoogleToken(null);
+      }
+    );
+    return () => unsubscribe();
+  }, []);
+
+  const handleGoogleLogin = async () => {
+    try {
+      setSyncError(null);
+      const res = await googleSignIn();
+      if (res) {
+        setCurrentUser(res.user);
+        setGoogleToken(res.accessToken);
+        // After successful login, auto sync to make user experience amazing!
+        setTimeout(() => {
+          handleSyncSheetsDirect(res.accessToken);
+        }, 800);
+      }
+    } catch (err: any) {
+      setSyncError("Gagal masuk dengan Google: " + err.message);
+    }
+  };
+
+  const handleGoogleLogout = async () => {
+    try {
+      await logout();
+      setCurrentUser(null);
+      setGoogleToken(null);
+      setSheetsSyncUrl(null);
+      localStorage.removeItem("orbit_gizi_spreadsheet_id");
+      localStorage.removeItem("orbit_gizi_spreadsheet_url");
+    } catch (err: any) {
+      setSyncError("Gagal keluar: " + err.message);
+    }
+  };
+
+  const handleSyncSheetsDirect = async (token: string) => {
+    if (!data) return;
+    setSyncingSheets(true);
+    setSyncError(null);
+    setSyncSuccess(false);
+    try {
+      const result = await syncToGoogleSheets(token, data.kabupatenName, data);
+      setSheetsSyncUrl(result.spreadsheetUrl);
+      setSyncSuccess(true);
+      setTimeout(() => setSyncSuccess(false), 5000);
+    } catch (err: any) {
+      console.error(err);
+      setSyncError("Gagal sinkronisasi data: " + err.message);
+    } finally {
+      setSyncingSheets(false);
+    }
+  };
+
+  const handleSyncSheets = async () => {
+    if (!googleToken) {
+      // Prompt login first
+      await handleGoogleLogin();
+    } else {
+      await handleSyncSheetsDirect(googleToken);
+    }
+  };
 
   // Handle indicator scores changes
   const handleIndicatorUpdate = async (pilarId: string, indicatorId: string, newScore: number) => {
@@ -167,6 +255,23 @@ export default function App() {
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || "Gagal mereset data.");
+      }
+      setRefreshTrigger(prev => prev + 1);
+    } catch (e: any) {
+      alert("Error: " + e.message);
+    }
+  };
+
+  // Handle clearing all database records
+  const handleClearData = async () => {
+    try {
+      const res = await fetch("/api/data/clear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Gagal menghapus semua data.");
       }
       setRefreshTrigger(prev => prev + 1);
     } catch (e: any) {
@@ -261,7 +366,7 @@ export default function App() {
       <main className="flex-1 max-w-[1400px] w-full mx-auto p-4 sm:p-6 space-y-6">
         
         {/* Action Header Panel - Permanent at top */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-white border border-slate-200 rounded-2xl p-4 shadow-xs gap-4">
           <div>
             <h2 className="text-lg font-black text-slate-800 tracking-tight flex items-center space-x-2">
               <Layers className="h-5 w-5 text-indigo-600" />
@@ -272,10 +377,57 @@ export default function App() {
             </p>
           </div>
           
-          <div className="flex items-center space-x-2 mt-3 sm:mt-0 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            {/* Google Sheets Integration Section */}
+            <div className="flex items-center space-x-2 bg-emerald-50/40 border border-emerald-100 p-1.5 px-3 rounded-xl">
+              {currentUser ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center space-x-1">
+                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[10px] font-bold text-emerald-800">
+                      Sheets Terhubung
+                    </span>
+                  </div>
+                  {sheetsSyncUrl && (
+                    <a
+                      href={sheetsSyncUrl}
+                      target="_blank"
+                      referrerPolicy="no-referrer"
+                      className="text-[10px] font-black text-emerald-600 hover:underline bg-emerald-100/50 px-1.5 py-0.5 rounded-md"
+                    >
+                      Buka Spreadsheet ↗
+                    </a>
+                  )}
+                  <button
+                    onClick={handleSyncSheets}
+                    disabled={syncingSheets}
+                    className="text-[10px] font-black text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 px-2 py-1 rounded-md cursor-pointer flex items-center space-x-1"
+                  >
+                    <FileSpreadsheet className="h-3 w-3" />
+                    <span>{syncingSheets ? "Menyinkronkan..." : "Sinkronisasi"}</span>
+                  </button>
+                  <button
+                    onClick={handleGoogleLogout}
+                    title="Putuskan Hubungan Google Sheets"
+                    className="p-1 hover:bg-rose-100 rounded text-slate-400 hover:text-rose-600 cursor-pointer"
+                  >
+                    <LogOut className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleGoogleLogin}
+                  className="text-[10px] font-black text-emerald-800 hover:text-emerald-950 flex items-center space-x-1 cursor-pointer"
+                >
+                  <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Hubungkan ke Google Sheets</span>
+                </button>
+              )}
+            </div>
+
             <button
               onClick={() => setShowConfigModal(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center space-x-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
             >
               <Settings className="h-4 w-4 text-slate-500" />
               <span>Atur Bobot Pilar</span>
@@ -290,6 +442,34 @@ export default function App() {
             </button>
           </div>
         </div>
+
+        {/* Sync Feedbacks */}
+        {(syncSuccess || syncError) && (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+            {syncSuccess && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-xl p-3 flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
+                <span className="flex-1">Data berhasil disinkronisasi ke Google Sheets! Seluruh data Orbit Gizi Anda aman dan ter-update di Google Sheets.</span>
+                {sheetsSyncUrl && (
+                  <a
+                    href={sheetsSyncUrl}
+                    target="_blank"
+                    referrerPolicy="no-referrer"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] shadow-2xs"
+                  >
+                    Buka Spreadsheet
+                  </a>
+                )}
+              </div>
+            )}
+            {syncError && (
+              <div className="bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold rounded-xl p-3 flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-rose-500 shrink-0" />
+                <span>{syncError}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Workspace with Left Vertical Navigation Tab Menu */}
         <div className="flex flex-col lg:flex-row gap-6">
@@ -332,9 +512,9 @@ export default function App() {
                 },
                 {
                   id: "rekomendasi",
-                  name: "Rekomendasi AI (Gemini)",
-                  desc: "Kebijakan Strategis AI",
-                  icon: <Sparkles className="h-4.5 w-4.5 text-indigo-500" />
+                  name: "Analisis Data",
+                  desc: "Rekomendasi Kebijakan Strategis",
+                  icon: <Sparkles className="h-4.5 w-4.5 text-emerald-500" />
                 },
                 {
                   id: "sinergi",
@@ -470,6 +650,7 @@ export default function App() {
                     onVillageAdd={handleVillageAdd}
                     onVillageDelete={handleVillageDelete}
                     onResetData={handleResetData}
+                    onClearData={handleClearData}
                   />
                 </div>
 

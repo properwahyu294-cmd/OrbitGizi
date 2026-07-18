@@ -28,6 +28,7 @@ interface PetaRisikoProps {
   onVillageAdd: (name: string) => Promise<void>;
   onVillageDelete: (id: string) => Promise<void>;
   onResetData: () => Promise<void>;
+  onClearData: () => Promise<void>;
 }
 
 export default function PetaRisiko({ 
@@ -35,7 +36,8 @@ export default function PetaRisiko({
   onVillageUpdate, 
   onVillageAdd, 
   onVillageDelete,
-  onResetData
+  onResetData,
+  onClearData
 }: PetaRisikoProps) {
   // Select first village initially, or keep the selected one if still exists
   const [selectedVillageId, setSelectedVillageId] = useState<string>("");
@@ -47,6 +49,11 @@ export default function PetaRisiko({
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [newVillageName, setNewVillageName] = useState<string>("");
   const [adding, setAdding] = useState<boolean>(false);
+
+  // Confirmation Modals State
+  const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
+  const [showResetConfirm, setShowResetConfirm] = useState<boolean>(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
   // Edit fields
   const [editName, setEditName] = useState<string>("");
@@ -312,15 +319,20 @@ export default function PetaRisiko({
     }
   };
 
-  const handleDeleteVillage = async () => {
+  const handleDeleteVillage = () => {
     if (!selectedVillage) return;
-    if (confirm(`Apakah Anda yakin ingin menghapus data Desa "${selectedVillage.name}" secara permanen?`)) {
-      try {
-        await onVillageDelete(selectedVillage.id);
-        setSelectedVillageId("");
-      } catch (e) {
-        console.error(e);
-      }
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteVillage = async () => {
+    if (!selectedVillage) return;
+    try {
+      await onVillageDelete(selectedVillage.id);
+      setSelectedVillageId("");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -419,18 +431,27 @@ export default function PetaRisiko({
           </button>
 
           <button
-            onClick={onResetData}
+            onClick={() => setShowResetConfirm(true)}
             title="Reset data ke kondisi semula"
-            className="inline-flex items-center space-x-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 px-3 py-2 rounded-xl shadow-2xs transition-all"
+            className="inline-flex items-center space-x-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 px-3 py-2 rounded-xl shadow-2xs transition-all cursor-pointer"
           >
             <RefreshCcw className="h-3.5 w-3.5" />
             <span>Reset Basis Data</span>
           </button>
 
+          <button
+            onClick={() => setShowClearConfirm(true)}
+            title="Hapus semua data desa secara permanen"
+            className="inline-flex items-center space-x-1.5 text-xs font-bold text-rose-600 bg-rose-50/50 hover:bg-rose-50 border border-rose-200 px-3 py-2 rounded-xl shadow-2xs transition-all cursor-pointer"
+          >
+            <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+            <span>Kosongkan Data</span>
+          </button>
+
           {selectedVillage && (
             <button
               onClick={handleDeleteVillage}
-              className="inline-flex items-center p-2 text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 rounded-xl transition-all"
+              className="inline-flex items-center p-2 text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 rounded-xl transition-all cursor-pointer"
               title="Hapus Desa Terpilih"
             >
               <Trash2 className="h-4 w-4" />
@@ -962,6 +983,105 @@ export default function PetaRisiko({
                 <button
                   onClick={() => setShowAddModal(false)}
                   className="px-4 py-2.5 text-center text-slate-500 hover:bg-slate-100 text-xs font-bold rounded-xl transition-colors border border-slate-200"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Village Confirmation Modal */}
+      {showDeleteConfirm && selectedVillage && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left">
+            <div className="p-6 text-center space-y-4">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 text-rose-600 mb-2">
+                <Trash2 className="h-6 w-6" />
+              </div>
+              <h3 className="text-base font-black text-slate-800">Hapus Desa Terpilih</h3>
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                Apakah Anda yakin ingin menghapus data Desa <strong className="text-slate-800 font-bold">"{selectedVillage.name}"</strong> secara permanen? Tindakan ini tidak dapat dibatalkan.
+              </p>
+              <div className="flex space-x-2 pt-2">
+                <button
+                  onClick={confirmDeleteVillage}
+                  className="flex-1 text-center bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2.5 rounded-xl transition-colors shadow-xs cursor-pointer"
+                >
+                  Ya, Hapus Desa
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2.5 text-center text-slate-500 hover:bg-slate-100 text-xs font-bold rounded-xl transition-colors border border-slate-200 cursor-pointer"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clear Data Confirmation Modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left">
+            <div className="p-6 text-center space-y-4">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-100 text-rose-600 mb-2">
+                <AlertCircle className="h-6 w-6" />
+              </div>
+              <h3 className="text-base font-black text-slate-800">Kosongkan Seluruh Data</h3>
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                Apakah Anda yakin ingin menghapus <strong className="text-slate-800 font-bold">seluruh data desa dan analisis</strong> dari sistem? Tindakan ini akan mengosongkan statistik keseluruhan.
+              </p>
+              <div className="flex space-x-2 pt-2">
+                <button
+                  onClick={async () => {
+                    await onClearData();
+                    setShowClearConfirm(false);
+                  }}
+                  className="flex-1 text-center bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2.5 rounded-xl transition-colors shadow-xs cursor-pointer"
+                >
+                  Ya, Kosongkan Semua
+                </button>
+                <button
+                  onClick={() => setShowClearConfirm(false)}
+                  className="px-4 py-2.5 text-center text-slate-500 hover:bg-slate-100 text-xs font-bold rounded-xl transition-colors border border-slate-200 cursor-pointer"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Data Confirmation Modal */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-left">
+            <div className="p-6 text-center space-y-4">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-slate-100 text-slate-600 mb-2">
+                <RefreshCcw className="h-6 w-6 animate-spin animate-duration-3000" />
+              </div>
+              <h3 className="text-base font-black text-slate-800">Reset Basis Data</h3>
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                Apakah Anda yakin ingin mengatur ulang data kembali ke <strong className="text-slate-800 font-bold">kondisi awal (sampel Nagekeo)</strong>? Perubahan mandiri Anda akan digantikan.
+              </p>
+              <div className="flex space-x-2 pt-2">
+                <button
+                  onClick={async () => {
+                    await onResetData();
+                    setShowResetConfirm(false);
+                  }}
+                  className="flex-1 text-center bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2.5 rounded-xl transition-colors shadow-xs cursor-pointer"
+                >
+                  Ya, Reset Data
+                </button>
+                <button
+                  onClick={() => setShowResetConfirm(false)}
+                  className="px-4 py-2.5 text-center text-slate-500 hover:bg-slate-100 text-xs font-bold rounded-xl transition-colors border border-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>
