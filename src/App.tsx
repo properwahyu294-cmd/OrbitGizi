@@ -330,7 +330,14 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
       {/* 1. Header & Brand Logo */}
-      <LogoOrbitGizi />
+      <LogoOrbitGizi 
+        currentUser={currentUser} 
+        onLogout={handleGoogleLogout} 
+        onLogin={handleGoogleLogin}
+        onSync={handleSyncSheets}
+        syncingSheets={syncingSheets}
+        sheetsSyncUrl={sheetsSyncUrl}
+      />
 
       <main className="flex-1 max-w-[1400px] w-full mx-auto p-4 sm:p-6 space-y-6">
         
@@ -360,53 +367,6 @@ export default function App() {
           </div>
           
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-            {/* Google Sheets Integration Section */}
-            <div className="flex items-center space-x-2 bg-emerald-50/40 border border-emerald-100 p-1.5 px-3 rounded-xl">
-              {currentUser ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center space-x-1">
-                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-bold text-emerald-800">
-                      Sheets Terhubung
-                    </span>
-                  </div>
-                  {sheetsSyncUrl && (
-                    <a
-                      href={sheetsSyncUrl}
-                      target="_blank"
-                      referrerPolicy="no-referrer"
-                      className="text-[10px] font-black text-emerald-600 hover:underline bg-emerald-100/50 px-1.5 py-0.5 rounded-md"
-                    >
-                      Buka Spreadsheet ↗
-                    </a>
-                  )}
-                  <button
-                    onClick={handleSyncSheets}
-                    disabled={syncingSheets}
-                    className="text-[10px] font-black text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 px-2 py-1 rounded-md cursor-pointer flex items-center space-x-1"
-                  >
-                    <FileSpreadsheet className="h-3 w-3" />
-                    <span>{syncingSheets ? "Menyinkronkan..." : "Sinkronisasi"}</span>
-                  </button>
-                  <button
-                    onClick={handleGoogleLogout}
-                    title="Putuskan Hubungan Google Sheets"
-                    className="p-1 hover:bg-rose-100 rounded text-slate-400 hover:text-rose-600 cursor-pointer"
-                  >
-                    <LogOut className="h-3 w-3" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleGoogleLogin}
-                  className="text-[10px] font-black text-emerald-800 hover:text-emerald-950 flex items-center space-x-1 cursor-pointer"
-                >
-                  <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Hubungkan ke Google Sheets</span>
-                </button>
-              )}
-            </div>
-
             <button
               onClick={() => setShowConfigModal(true)}
               className="flex items-center justify-center space-x-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"

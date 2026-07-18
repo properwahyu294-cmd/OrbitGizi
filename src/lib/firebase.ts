@@ -11,7 +11,7 @@ provider.addScope("https://www.googleapis.com/auth/spreadsheets");
 provider.addScope("https://www.googleapis.com/auth/drive.file");
 
 let isSigningIn = false;
-let cachedAccessToken: string | null = null;
+let cachedAccessToken: string | null = typeof window !== "undefined" ? localStorage.getItem("orbit_gizi_google_access_token") : null;
 
 // Initialize auth state listener.
 export const initAuth = (
@@ -20,8 +20,10 @@ export const initAuth = (
 ) => {
   return onAuthStateChanged(auth, async (user: User | null) => {
     if (user) {
-      if (cachedAccessToken) {
-        if (onAuthSuccess) onAuthSuccess(user, cachedAccessToken);
+      const savedToken = cachedAccessToken || localStorage.getItem("orbit_gizi_google_access_token");
+      if (savedToken) {
+        cachedAccessToken = savedToken;
+        if (onAuthSuccess) onAuthSuccess(user, savedToken);
       } else if (!isSigningIn) {
         // If we don't have token cached but user is logged in, we need to prompt them or re-auth to get token
         cachedAccessToken = null;
@@ -29,6 +31,7 @@ export const initAuth = (
       }
     } else {
       cachedAccessToken = null;
+      localStorage.removeItem("orbit_gizi_google_access_token");
       if (onAuthFailure) onAuthFailure();
     }
   });
@@ -45,6 +48,7 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     }
 
     cachedAccessToken = credential.accessToken;
+    localStorage.setItem("orbit_gizi_google_access_token", cachedAccessToken);
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
     console.error("Kesalahan Google Sign-In:", error);
@@ -55,10 +59,11 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
 };
 
 export const getAccessToken = async (): Promise<string | null> => {
-  return cachedAccessToken;
+  return cachedAccessToken || localStorage.getItem("orbit_gizi_google_access_token");
 };
 
 export const logout = async () => {
   await auth.signOut();
   cachedAccessToken = null;
+  localStorage.removeItem("orbit_gizi_google_access_token");
 };
