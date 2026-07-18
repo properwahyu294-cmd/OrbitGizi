@@ -50,12 +50,15 @@ async function createSpreadsheet(accessToken: string, kabupatenName: string): Pr
 async function clearSheets(accessToken: string, spreadsheetId: string): Promise<void> {
   const ranges = ["'Ringkasan Indeks'!A1:Z100", "'Data Desa'!A1:Z1000"];
   for (const range of ranges) {
-    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:clear`, {
+    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:clear`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     });
+    if (!response.ok) {
+      throw new Error(`Gagal menghapus data lama (kemungkinan spreadsheet telah dihapus di Drive): ${response.status}`);
+    }
   }
 }
 
@@ -75,27 +78,31 @@ export async function syncToGoogleSheets(
   let spreadsheetId = localStorage.getItem(idKey);
   let spreadsheetUrl = localStorage.getItem(urlKey);
 
-  // If we don't have a spreadsheet id or it was cleared, create a new one
-  if (!spreadsheetId) {
+  // Helper to create sheet and save to local storage
+  const initNewSpreadsheet = async () => {
     const newSheet = await createSpreadsheet(accessToken, kabupatenName);
     spreadsheetId = newSheet.spreadsheetId;
     spreadsheetUrl = newSheet.spreadsheetUrl;
     localStorage.setItem(idKey, spreadsheetId);
     localStorage.setItem(urlKey, spreadsheetUrl);
+  };
+
+  // If we don't have a spreadsheet id or it was cleared, create a new one
+  if (!spreadsheetId) {
+    await initNewSpreadsheet();
   }
 
   // Clear existing data first to avoid trailing mismatched rows
   try {
     await clearSheets(accessToken, spreadsheetId);
   } catch (err) {
-    console.warn("Mencoba membuat spreadsheet baru karena spreadsheet lama mungkin telah dihapus di Drive.");
-    // If clearing fails, the file might be deleted or permission changed. Let's create a new one
-    const newSheet = await createSpreadsheet(accessToken, kabupatenName);
-    spreadsheetId = newSheet.spreadsheetId;
-    spreadsheetUrl = newSheet.spreadsheetUrl;
-    localStorage.setItem(idKey, spreadsheetId);
-    localStorage.setItem(urlKey, spreadsheetUrl);
-    await clearSheets(accessToken, spreadsheetId);
+    console.warn("Mencoba membuat spreadsheet baru karena spreadsheet lama mungkin telah dihapus di Drive atau tidak dapat diakses.");
+    await initNewSpreadsheet();
+    try {
+      await clearSheets(accessToken, spreadsheetId);
+    } catch (innerErr) {
+      console.error("Gagal melakukan pembersihan kedua pada spreadsheet baru:", innerErr);
+    }
   }
 
   // Prepare Ringkasan Indeks data
