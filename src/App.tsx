@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { 
   ResponsiveContainer, 
   BarChart, 
@@ -26,11 +27,23 @@ import {
   LayoutDashboard,
   Map,
   Brain,
-  Handshake
+  Handshake,
+  Menu,
+  X
 } from "lucide-react";
 
 // Types
 import { OrbitGiziData, Village, Pillar, Indicator } from "./types";
+import {
+  getAppData,
+  updateWeightsApi,
+  addVillageApi,
+  deleteVillageApi,
+  updateVillageApi,
+  resetDataApi,
+  clearDataApi,
+  isUsingLocalFallback
+} from "./lib/dataService";
 
 // Components
 import LogoOrbitGizi from "./components/LogoOrbitGizi";
@@ -57,6 +70,7 @@ export default function App() {
   const [showConfigModal, setShowConfigModal] = useState<boolean>(false);
   const [showInputWizard, setShowInputWizard] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("overview");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
   // Firebase & Google Sheets integration state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -78,11 +92,7 @@ export default function App() {
 
   const loadData = async () => {
     try {
-      const response = await fetch("/api/data");
-      if (!response.ok) {
-        throw new Error("Gagal memuat data utama Orbit Gizi.");
-      }
-      const json = await response.json();
+      const json = await getAppData();
       setData(json);
       setWeightP1(json.weights.pilar1 * 100);
       setWeightP2(json.weights.pilar2 * 100);
@@ -175,34 +185,16 @@ export default function App() {
 
   // Handle indicator scores changes
   const handleIndicatorUpdate = async (pilarId: string, indicatorId: string, newScore: number) => {
-    try {
-      const res = await fetch("/api/indicators/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pilarId, indicatorId, newScore }),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Gagal memperbarui nilai indikator.");
-      }
-      setRefreshTrigger(prev => prev + 1);
-    } catch (e: any) {
-      alert("Error: " + e.message);
-    }
+    // Indicator score is recalculated automatically on the client side from the village data.
+    console.log("Indicator score update triggered locally:", pilarId, indicatorId, newScore);
   };
 
   // Handle village metrics changes
   const handleVillageUpdate = async (updatedMetrics: Partial<Village>) => {
     try {
-      const res = await fetch("/api/villages/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedMetrics),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Gagal memperbarui data desa.");
-      }
+      if (!updatedMetrics.id) return;
+      const json = await updateVillageApi(updatedMetrics as any);
+      setData(json);
       setRefreshTrigger(prev => prev + 1);
     } catch (e: any) {
       alert("Error: " + e.message);
@@ -212,15 +204,8 @@ export default function App() {
   // Handle adding a new village
   const handleVillageAdd = async (name: string) => {
     try {
-      const res = await fetch("/api/villages/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Gagal menambahkan desa baru.");
-      }
+      const json = await addVillageApi(name);
+      setData(json);
       setRefreshTrigger(prev => prev + 1);
     } catch (e: any) {
       alert("Error: " + e.message);
@@ -230,15 +215,8 @@ export default function App() {
   // Handle deleting a village
   const handleVillageDelete = async (id: string) => {
     try {
-      const res = await fetch("/api/villages/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Gagal menghapus desa.");
-      }
+      const json = await deleteVillageApi(id);
+      setData(json);
       setRefreshTrigger(prev => prev + 1);
     } catch (e: any) {
       alert("Error: " + e.message);
@@ -248,14 +226,8 @@ export default function App() {
   // Handle resetting database
   const handleResetData = async () => {
     try {
-      const res = await fetch("/api/data/reset", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Gagal mereset data.");
-      }
+      const json = await resetDataApi();
+      setData(json);
       setRefreshTrigger(prev => prev + 1);
     } catch (e: any) {
       alert("Error: " + e.message);
@@ -265,14 +237,8 @@ export default function App() {
   // Handle clearing all database records
   const handleClearData = async () => {
     try {
-      const res = await fetch("/api/data/clear", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Gagal menghapus semua data.");
-      }
+      const json = await clearDataApi();
+      setData(json);
       setRefreshTrigger(prev => prev + 1);
     } catch (e: any) {
       alert("Error: " + e.message);
@@ -289,23 +255,15 @@ export default function App() {
 
     setWeightError(null);
     try {
-      const res = await fetch("/api/weights/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pilar1: weightP1 / 100,
-          pilar2: weightP2 / 100,
-          pilar3: weightP3 / 100,
-          pilar4: weightP4 / 100,
-          pilar5: weightP5 / 100,
-        }),
+      const json = await updateWeightsApi({
+        pilar1: weightP1 / 100,
+        pilar2: weightP2 / 100,
+        pilar3: weightP3 / 100,
+        pilar4: weightP4 / 100,
+        pilar5: weightP5 / 100,
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Gagal memperbarui bobot.");
-      }
-
+      setData(json);
       setShowConfigModal(false);
       setRefreshTrigger(prev => prev + 1);
     } catch (e: any) {
@@ -372,9 +330,22 @@ export default function App() {
               <Layers className="h-5 w-5 text-indigo-600" />
               <span>Dashboard Transformasi Orbit Gizi</span>
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Kabupaten aktif: <strong className="text-slate-700 font-bold">{data.kabupatenName}</strong> • Real-time update terpadu
-            </p>
+            <div className="flex flex-wrap items-center gap-x-2 mt-1 gap-y-1 text-xs text-slate-500">
+              <span>
+                Kabupaten aktif: <strong className="text-slate-700 font-bold">{data.kabupatenName}</strong>
+              </span>
+              <span className="text-slate-300 hidden sm:inline">•</span>
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                isUsingLocalFallback() 
+                  ? "bg-amber-50 text-amber-700 border border-amber-200" 
+                  : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              }`}>
+                <span className={`h-1.5 w-1.5 rounded-full mr-1.5 ${
+                  isUsingLocalFallback() ? "bg-amber-500 animate-pulse" : "bg-emerald-500"
+                }`}></span>
+                {isUsingLocalFallback() ? "Mode Mandiri (Cloudflare / Offline)" : "Mode Sinkron Server"}
+              </span>
+            </div>
           </div>
           
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
@@ -476,10 +447,9 @@ export default function App() {
           
           {/* Sidebar Menu Panel */}
           <div className="lg:w-72 shrink-0 space-y-4">
-            
-            {/* Horizontal scroll track on small mobile screens, vertical menu list on large desktop screens */}
-            <div className="flex lg:flex-col overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 gap-2 scrollbar-none bg-slate-100/50 p-2 rounded-2xl lg:bg-transparent lg:p-0">
-              {[
+                     {/* Responsive menu container */}
+            {(() => {
+              const tabsList = [
                 {
                   id: "overview",
                   name: "Ringkasan Indeks",
@@ -522,29 +492,113 @@ export default function App() {
                   desc: "Kolaborasi OPD Kabupaten",
                   icon: <Handshake className="h-4.5 w-4.5" />
                 }
-              ].map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-3 text-left p-3 rounded-xl transition-all w-52 sm:w-56 lg:w-full shrink-0 border cursor-pointer ${
-                      isActive
-                        ? "bg-white border-indigo-200 text-indigo-700 shadow-xs lg:border-l-[4px] lg:border-l-indigo-600 lg:rounded-l-none"
-                        : "bg-transparent border-transparent text-slate-500 hover:bg-white/70 hover:text-slate-800"
-                    }`}
-                  >
-                    <div className={`p-1.5 rounded-lg shrink-0 ${isActive ? "bg-indigo-50 text-indigo-600" : "bg-slate-100 text-slate-500"}`}>
-                      {tab.icon}
-                    </div>
-                    <div className="truncate">
-                      <span className="text-xs font-black block leading-tight">{tab.name}</span>
-                      <span className="text-[10px] text-slate-400 font-medium truncate block mt-0.5 leading-none">{tab.desc}</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+              ];
+              const activeTabObj = tabsList.find(t => t.id === activeTab) || tabsList[0];
+
+              return (
+                <>
+                  {/* MOBILE & TABLET ONLY MENU (Garis Tiga / Hamburger Button Dropdown) */}
+                  <div className="lg:hidden relative z-40">
+                    <button
+                      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                      className="w-full flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-xl shadow-xs hover:bg-slate-50 transition-colors focus:outline-hidden cursor-pointer"
+                    >
+                      <div className="flex items-center space-x-3 text-left">
+                        <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 shrink-0">
+                          {activeTabObj.icon}
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 font-bold tracking-wider uppercase leading-none block">MENU AKTIF</span>
+                          <span className="text-xs font-black text-slate-800 leading-tight block mt-0.5">{activeTabObj.name}</span>
+                        </div>
+                      </div>
+                      <div className="p-2 bg-slate-50 rounded-lg text-slate-600 border border-slate-200 flex items-center justify-center">
+                        {isMobileMenuOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
+                      </div>
+                    </button>
+
+                    <AnimatePresence>
+                      {isMobileMenuOpen && (
+                        <>
+                          {/* Close overlay */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 0.1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="fixed inset-0 bg-slate-900 z-40"
+                          />
+
+                          {/* Options container */}
+                          <motion.div
+                            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 4, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                            transition={{ duration: 0.15, ease: "easeOut" }}
+                            className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-2 space-y-1"
+                          >
+                            {tabsList.map((tab, idx) => {
+                              const isActive = activeTab === tab.id;
+                              return (
+                                <motion.button
+                                  key={tab.id}
+                                  initial={{ opacity: 0, x: -5 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: idx * 0.02 }}
+                                  onClick={() => {
+                                    setActiveTab(tab.id);
+                                    setIsMobileMenuOpen(false);
+                                  }}
+                                  className={`w-full flex items-center space-x-3 text-left p-3 rounded-xl transition-all cursor-pointer ${
+                                    isActive
+                                      ? "bg-indigo-50/70 text-indigo-700 font-bold border border-indigo-100"
+                                      : "bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent"
+                                  }`}
+                                >
+                                  <div className={`p-1.5 rounded-lg shrink-0 ${isActive ? "bg-indigo-100 text-indigo-600" : "bg-slate-100 text-slate-500"}`}>
+                                    {tab.icon}
+                                  </div>
+                                  <div className="truncate">
+                                    <span className="text-xs font-black block leading-tight">{tab.name}</span>
+                                    <span className="text-[10px] text-slate-400 font-medium block leading-none mt-0.5">{tab.desc}</span>
+                                  </div>
+                                </motion.button>
+                              );
+                            })}
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* DESKTOP ONLY VERTICAL NAVIGATION SIDEBAR PANEL */}
+                  <div className="hidden lg:flex lg:flex-col gap-2">
+                    {tabsList.map((tab) => {
+                      const isActive = activeTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`flex items-center space-x-3 text-left p-3 rounded-xl transition-all w-full border cursor-pointer ${
+                            isActive
+                              ? "bg-white border-indigo-200 text-indigo-700 shadow-xs lg:border-l-[4px] lg:border-l-indigo-600 lg:rounded-l-none"
+                              : "bg-transparent border-transparent text-slate-500 hover:bg-white/70 hover:text-slate-800"
+                          }`}
+                        >
+                          <div className={`p-1.5 rounded-lg shrink-0 ${isActive ? "bg-indigo-50 text-indigo-600" : "bg-slate-100 text-slate-500"}`}>
+                            {tab.icon}
+                          </div>
+                          <div className="truncate">
+                            <span className="text-xs font-black block leading-tight">{tab.name}</span>
+                            <span className="text-[10px] text-slate-400 font-medium truncate block mt-0.5 leading-none">{tab.desc}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
 
             {/* Kabupaten Profile Info widget in Sidebar (Desktop only) */}
             <div className="hidden lg:block bg-slate-900 text-slate-300 rounded-2xl p-4.5 border border-slate-800 shadow-xs space-y-3.5">

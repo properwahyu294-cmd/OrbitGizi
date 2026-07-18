@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Sparkles, RefreshCw, AlertCircle, FileText, Send, Download } from "lucide-react";
+import { getRecommendationsApi } from "../lib/dataService";
 
 interface RecommendationCardProps {
   lastUpdated: string;
@@ -16,14 +17,7 @@ export default function RecommendationCard({ lastUpdated, triggerRefresh }: Reco
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/recommendations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-      });
-      if (!response.ok) {
-        throw new Error("Gagal mengambil rekomendasi");
-      }
-      const data = await response.json();
+      const data = await getRecommendationsApi();
       setRecommendation(data.text);
       setSource(data.source);
     } catch (e: any) {
