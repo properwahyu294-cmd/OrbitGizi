@@ -76,9 +76,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [syncingSheets, setSyncingSheets] = useState<boolean>(false);
-  const [sheetsSyncUrl, setSheetsSyncUrl] = useState<string | null>(
-    localStorage.getItem("orbit_gizi_spreadsheet_url")
-  );
+  const [sheetsSyncUrl, setSheetsSyncUrl] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [syncSuccess, setSyncSuccess] = useState<boolean>(false);
 
@@ -126,6 +124,18 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Synchronize sheetsSyncUrl state when currentUser changes or logs in/out
+  useEffect(() => {
+    if (currentUser?.email) {
+      const emailSuffix = `_${currentUser.email.toLowerCase().trim()}`;
+      const urlKey = `orbit_gizi_spreadsheet_url${emailSuffix}`;
+      const savedUrl = localStorage.getItem(urlKey);
+      setSheetsSyncUrl(savedUrl || localStorage.getItem("orbit_gizi_spreadsheet_url"));
+    } else {
+      setSheetsSyncUrl(null);
+    }
+  }, [currentUser]);
+
   const handleGoogleLogin = async () => {
     try {
       setSyncError(null);
@@ -135,7 +145,7 @@ export default function App() {
         setGoogleToken(res.accessToken);
         // After successful login, auto sync to make user experience amazing!
         setTimeout(() => {
-          handleSyncSheetsDirect(res.accessToken);
+          handleSyncSheetsDirect(res.accessToken, res.user);
         }, 800);
       }
     } catch (err: any) {
@@ -156,13 +166,14 @@ export default function App() {
     }
   };
 
-  const handleSyncSheetsDirect = async (token: string) => {
+  const handleSyncSheetsDirect = async (token: string, userObj?: User | null) => {
     if (!data) return;
     setSyncingSheets(true);
     setSyncError(null);
     setSyncSuccess(false);
     try {
-      const result = await syncToGoogleSheets(token, data.kabupatenName, data);
+      const activeUser = userObj !== undefined ? userObj : currentUser;
+      const result = await syncToGoogleSheets(token, data.kabupatenName, data, activeUser?.email || undefined);
       setSheetsSyncUrl(result.spreadsheetUrl);
       setSyncSuccess(true);
       setTimeout(() => setSyncSuccess(false), 5000);

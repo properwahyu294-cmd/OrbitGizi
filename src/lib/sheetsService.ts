@@ -65,18 +65,23 @@ async function clearSheets(accessToken: string, spreadsheetId: string): Promise<
 export async function syncToGoogleSheets(
   accessToken: string,
   kabupatenName: string,
-  data: any
+  data: any,
+  userEmail?: string
 ): Promise<SheetsSyncResult> {
-  let spreadsheetId = localStorage.getItem("orbit_gizi_spreadsheet_id");
-  let spreadsheetUrl = localStorage.getItem("orbit_gizi_spreadsheet_url");
+  const emailSuffix = userEmail ? `_${userEmail.toLowerCase().trim()}` : "";
+  const idKey = `orbit_gizi_spreadsheet_id${emailSuffix}`;
+  const urlKey = `orbit_gizi_spreadsheet_url${emailSuffix}`;
+
+  let spreadsheetId = localStorage.getItem(idKey);
+  let spreadsheetUrl = localStorage.getItem(urlKey);
 
   // If we don't have a spreadsheet id or it was cleared, create a new one
   if (!spreadsheetId) {
     const newSheet = await createSpreadsheet(accessToken, kabupatenName);
     spreadsheetId = newSheet.spreadsheetId;
     spreadsheetUrl = newSheet.spreadsheetUrl;
-    localStorage.setItem("orbit_gizi_spreadsheet_id", spreadsheetId);
-    localStorage.setItem("orbit_gizi_spreadsheet_url", spreadsheetUrl);
+    localStorage.setItem(idKey, spreadsheetId);
+    localStorage.setItem(urlKey, spreadsheetUrl);
   }
 
   // Clear existing data first to avoid trailing mismatched rows
@@ -88,8 +93,8 @@ export async function syncToGoogleSheets(
     const newSheet = await createSpreadsheet(accessToken, kabupatenName);
     spreadsheetId = newSheet.spreadsheetId;
     spreadsheetUrl = newSheet.spreadsheetUrl;
-    localStorage.setItem("orbit_gizi_spreadsheet_id", spreadsheetId);
-    localStorage.setItem("orbit_gizi_spreadsheet_url", spreadsheetUrl);
+    localStorage.setItem(idKey, spreadsheetId);
+    localStorage.setItem(urlKey, spreadsheetUrl);
     await clearSheets(accessToken, spreadsheetId);
   }
 
