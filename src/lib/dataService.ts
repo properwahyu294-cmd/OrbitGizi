@@ -4,6 +4,14 @@ export interface Village {
   riskLevel: "Hijau" | "Kuning" | "Merah";
   score: number;
   coordinates: { x: number; y: number };
+  locationHierarchy?: {
+    propinsi?: string;
+    kabupaten?: string;
+    puskesmas?: string;
+    kelurahan?: string;
+    dusun?: string;
+    posyandu?: string;
+  };
   pilar1_mbg_sync: number;
   pilar1_mbg_total: number;
   pilar1_pmt_sync: number;
@@ -198,13 +206,140 @@ function calculateVillageScore(v: Village, weights: typeof DEFAULT_WEIGHTS): num
 
 // Builds final OrbitGiziData object purely on client
 function buildLocalAppData(): OrbitGiziData {
-  // 1. Recalculate each village
+  // Read local beneficiaries if available to adjust calculations based on newly inputted data
+  let localBeneficiaries: any[] = [];
+  try {
+    const benStored = localStorage.getItem("orbit_gizi_local_beneficiaries");
+    if (benStored) {
+      localBeneficiaries = JSON.parse(benStored);
+    }
+  } catch (e) {
+    console.error("Error reading local beneficiaries", e);
+  }
+
+  // 1. Automatically ensure villages from newly added beneficiaries exist in localVillages
+  localBeneficiaries.forEach(ben => {
+    const villageName = ben.location?.kelurahan?.trim();
+    if (villageName) {
+      const exists = localVillages.some(v => v.name.toLowerCase().trim() === villageName.toLowerCase());
+      if (!exists) {
+        const newV: Village = {
+          id: "v_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+          name: villageName,
+          riskLevel: "Kuning",
+          score: 65,
+          coordinates: {
+            x: parseFloat((121.15 + Math.random() * 0.20).toFixed(4)),
+            y: parseFloat((-8.85 + Math.random() * 0.30).toFixed(4))
+          },
+          locationHierarchy: {
+            propinsi: ben.location.propinsi || "Nusa Tenggara Timur",
+            kabupaten: ben.location.kabupaten || "Kabupaten Nagekeo",
+            puskesmas: ben.location.puskesmas || "Puskesmas Boawae",
+            kelurahan: villageName,
+            dusun: ben.location.dusun || "Dusun 1",
+            posyandu: ben.location.posyandu || "Posyandu Mekar"
+          },
+          pilar1_mbg_sync: 0,
+          pilar1_mbg_total: 10,
+          pilar1_pmt_sync: 0,
+          pilar1_pmt_total: 5,
+          pilar1_posyandu_sync: 1,
+          pilar1_posyandu_total: 1,
+          pilar1_eppgbm_sync: 0,
+          pilar1_eppgbm_total: 10,
+          pilar2_dinkes_aktif: true,
+          pilar2_bgn_aktif: true,
+          pilar2_pkk_aktif: true,
+          pilar2_pemdes_aktif: true,
+          pilar2_puskesmas_aktif: true,
+          pilar3_dashboard_online: true,
+          pilar3_validasi_data: true,
+          pilar3_real_time_update: true,
+          pilar4_mbg_realized: 0,
+          pilar4_mbg_target: 10,
+          pilar4_pmt_realized: 0,
+          pilar4_pmt_target: 5,
+          pilar4_home_visit: 5,
+          pilar4_home_visit_target: 5,
+          pilar4_posyandu_aktif: 1,
+          pilar4_posyandu_total: 1,
+          pilar5_stunting_prev: 2,
+          pilar5_stunting_curr: 1,
+          pilar5_wasting_prev: 1,
+          pilar5_wasting_curr: 0,
+          pilar5_target_accuracy: 90
+        };
+        localVillages.push(newV);
+      }
+    }
+  });
+
+  // 2. Synchronize metrics for each village based on registered beneficiaries and new measurement data
   localVillages.forEach(v => {
+    const vBens = localBeneficiaries.filter(b => 
+      b.location?.kelurahan && b.location.kelurahan.toLowerCase().trim() === v.name.toLowerCase().trim()
+    );
+
+    if (vBens.length > 0) {
+      const mbgReceivedCount = vBens.filter(b => b.isReceivedMBG).length;
+      const pmtTargetBens = vBens.filter(b => b.category === "Ibu Hamil" || b.category === "Balita");
+      const pmtReceivedCount = pmtTargetBens.length;
+      const measuredCount = vBens.filter(b => b.weightRecords && b.weightRecords.length > 0).length;
+
+      let stuntingCount = 0;
+      let wastingCount = 0;
+      let normalCount = 0;
+
+      vBens.forEach(b => {
+        if (b.weightRecords && b.weightRecords.length > 0) {
+          const latest = b.weightRecords[b.weightRecords.length - 1];
+          if (latest.statusGizi === "Stunting" || latest.statusGizi === "Risiko Stunting") {
+            stuntingCount++;
+          } else if (latest.statusGizi === "Gizi Kurang") {
+            wastingCount++;
+          } else {
+            normalCount++;
+          }
+        }
+      });
+
+      // Update village pillar counts based on real input data
+      v.pilar1_mbg_sync = Math.max(v.pilar1_mbg_sync, mbgReceivedCount);
+      v.pilar1_mbg_total = Math.max(v.pilar1_mbg_total, vBens.length);
+      v.pilar1_pmt_sync = Math.max(v.pilar1_pmt_sync, pmtReceivedCount);
+      v.pilar1_pmt_total = Math.max(v.pilar1_pmt_total, Math.max(pmtReceivedCount, 1));
+      v.pilar1_eppgbm_sync = Math.max(v.pilar1_eppgbm_sync, measuredCount);
+      v.pilar1_eppgbm_total = Math.max(v.pilar1_eppgbm_total, vBens.length);
+
+      v.pilar4_mbg_realized = Math.max(v.pilar4_mbg_realized, mbgReceivedCount);
+      v.pilar4_mbg_target = Math.max(v.pilar4_mbg_target, vBens.length);
+      v.pilar4_pmt_realized = Math.max(v.pilar4_pmt_realized, pmtReceivedCount);
+      v.pilar4_pmt_target = Math.max(v.pilar4_pmt_target, Math.max(pmtReceivedCount, 1));
+
+      v.pilar5_stunting_curr = stuntingCount;
+      if (v.pilar5_stunting_prev < stuntingCount) v.pilar5_stunting_prev = stuntingCount + 1;
+
+      v.pilar5_wasting_curr = wastingCount;
+      if (v.pilar5_wasting_prev < wastingCount) v.pilar5_wasting_prev = wastingCount + 1;
+
+      const accScore = Math.round(((mbgReceivedCount + normalCount) / Math.max(vBens.length, 1)) * 100);
+      v.pilar5_target_accuracy = Math.min(100, Math.max(50, accScore));
+    }
+
+    // Recalculate score & risk level for each village
     v.score = calculateVillageScore(v, localWeights);
     if (v.score < 50) v.riskLevel = "Merah";
     else if (v.score <= 75) v.riskLevel = "Kuning";
     else v.riskLevel = "Hijau";
   });
+
+  // Save updated localVillages to localStorage
+  try {
+    localStorage.setItem("orbit_gizi_local_villages", JSON.stringify(localVillages));
+  } catch (e) {
+    console.error("Error saving localVillages", e);
+  }
 
   const totalVillages = localVillages.length || 1;
 

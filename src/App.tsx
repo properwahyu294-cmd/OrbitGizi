@@ -117,6 +117,7 @@ export default function App() {
       localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
       return updated;
     });
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const handleDeleteBeneficiary = (id: string) => {
@@ -125,6 +126,7 @@ export default function App() {
       localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
       return updated;
     });
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const handleAddWeightRecord = (beneficiaryId: string, record: WeightRecord) => {
@@ -142,6 +144,7 @@ export default function App() {
       localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
       return updated;
     });
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const loadData = async () => {
@@ -605,26 +608,42 @@ export default function App() {
                   </div>
 
                   {/* DESKTOP ONLY VERTICAL NAVIGATION SIDEBAR PANEL */}
-                  <div className="hidden lg:flex lg:flex-col gap-2">
+                  <div className="hidden lg:flex lg:flex-col bg-white border border-slate-200/90 rounded-2xl p-2.5 shadow-xs space-y-1">
+                    <div className="px-3 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1 flex items-center justify-between">
+                      <span>MENU DASHBOARD</span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    </div>
+
                     {tabsList.map((tab) => {
                       const isActive = activeTab === tab.id;
                       return (
                         <button
                           key={tab.id}
                           onClick={() => setActiveTab(tab.id)}
-                          className={`flex items-center space-x-3 text-left p-3 rounded-xl transition-all w-full border cursor-pointer ${
+                          className={`flex items-center space-x-3 text-left p-3 rounded-xl transition-all w-full cursor-pointer group ${
                             isActive
-                              ? "bg-white border-indigo-200 text-indigo-700 shadow-xs lg:border-l-[4px] lg:border-l-indigo-600 lg:rounded-l-none"
-                              : "bg-transparent border-transparent text-slate-500 hover:bg-white/70 hover:text-slate-800"
+                              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 font-bold"
+                              : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
                           }`}
                         >
-                          <div className={`p-1.5 rounded-lg shrink-0 ${isActive ? "bg-indigo-50 text-indigo-600" : "bg-slate-100 text-slate-500"}`}>
+                          <div className={`p-2 rounded-lg shrink-0 transition-colors ${
+                            isActive 
+                              ? "bg-white/20 text-white" 
+                              : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700"
+                          }`}>
                             {tab.icon}
                           </div>
-                          <div className="truncate">
+                          <div className="truncate flex-1">
                             <span className="text-xs font-black block leading-tight">{tab.name}</span>
-                            <span className="text-[10px] text-slate-400 font-medium truncate block mt-0.5 leading-none">{tab.desc}</span>
+                            <span className={`text-[10px] truncate block mt-0.5 leading-none ${
+                              isActive ? "text-indigo-100 font-medium" : "text-slate-400 font-normal"
+                            }`}>
+                              {tab.desc}
+                            </span>
                           </div>
+                          {isActive && (
+                            <div className="w-1.5 h-4 bg-white/80 rounded-full shrink-0 animate-in fade-in duration-200"></div>
+                          )}
                         </button>
                       );
                     })}

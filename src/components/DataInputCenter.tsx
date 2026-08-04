@@ -315,94 +315,103 @@ export default function DataInputCenter({
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-slate-800 relative overflow-hidden">
         <div className="absolute right-0 top-0 translate-x-12 -translate-y-6 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         
-        <div className="relative z-10 space-y-4">
-          <div className="flex items-center space-x-2 text-indigo-400">
-            <Building2 className="h-5 w-5" />
-            <span className="text-[11px] font-black tracking-widest uppercase">PUSAT INPUT & PENGUKURAN DATA GIZI BERINGKAT</span>
-          </div>
-          
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
+        <div className="relative z-10 space-y-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+            <div className="space-y-1.5">
+              <div className="flex items-center space-x-2 text-indigo-400">
+                <Building2 className="h-5 w-5" />
+                <span className="text-[11px] font-black tracking-widest uppercase">PUSAT ENTRI & HIERARKI WILAYAH</span>
+              </div>
               <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
                 Sistem Entri Data Berjenjang & MBG
               </h2>
-              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mt-1 leading-relaxed">
-                Kelola data lokasi berjenjang (Propinsi s.d. Posyandu), nama-nama penerima MBG (Makan Bergizi Gratis), serta histori pengukuran berat badan berkala tiap bulan dan periode tertentu.
+              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+                Kelola data lokasi berjenjang (Propinsi s.d. Posyandu), nama-nama penerima MBG (Makan Bergizi Gratis), serta histori pengukuran berat badan berkala.
               </p>
             </div>
 
             <button
               onClick={() => setShowAddBenModal(true)}
-              className="inline-flex items-center justify-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-white font-black px-5 py-3 rounded-2xl shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer text-xs shrink-0"
+              className="inline-flex items-center justify-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-white font-black px-5 py-3.5 rounded-2xl shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer text-xs sm:text-sm shrink-0"
             >
               <Plus className="h-4 w-4" />
-              <span>Tambah Penerima MBG Baru</span>
+              <span>+ Tambah Penerima MBG Baru</span>
             </button>
           </div>
 
-          {/* Location Hierarchy Quick Select Bar */}
-          <div className="pt-4 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-            
-            {/* Propinsi */}
-            <LocationSelectorField
-              label="PROPINSI"
-              value={selectedPropinsi}
-              onChange={setSelectedPropinsi}
-              options={propinsiOptions}
-              placeholder="Contoh: NTT"
-              isDark={true}
-            />
+          {/* Location Hierarchy Quick Select Grid - Spacious & Clean */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black tracking-wider uppercase text-indigo-300 flex items-center space-x-1.5">
+                <span>📍</span>
+                <span>Pilih / Ketik Hierarki Lokasi Aktif</span>
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">
+                Data yang dipilih langsung tersinkron ke formulir di bawah
+              </span>
+            </div>
 
-            {/* Kabupaten */}
-            <LocationSelectorField
-              label="KABUPATEN"
-              value={selectedKabupaten}
-              onChange={setSelectedKabupaten}
-              options={kabupatenOptions}
-              placeholder="Kab. Nagekeo"
-              isDark={true}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {/* Propinsi */}
+              <LocationSelectorField
+                label="1. PROPINSI"
+                value={selectedPropinsi}
+                onChange={setSelectedPropinsi}
+                options={propinsiOptions}
+                placeholder="Contoh: NTT"
+                isDark={true}
+              />
 
-            {/* Puskesmas */}
-            <LocationSelectorField
-              label="PUSKESMAS"
-              value={selectedPuskesmas}
-              onChange={setSelectedPuskesmas}
-              options={puskesmasOptions}
-              placeholder="Puskesmas..."
-              isDark={true}
-            />
+              {/* Kabupaten */}
+              <LocationSelectorField
+                label="2. KABUPATEN"
+                value={selectedKabupaten}
+                onChange={setSelectedKabupaten}
+                options={kabupatenOptions}
+                placeholder="Kab. Nagekeo"
+                isDark={true}
+              />
 
-            {/* Kelurahan / Desa */}
-            <LocationSelectorField
-              label="KELURAHAN / DESA"
-              value={selectedKelurahan}
-              onChange={setSelectedKelurahan}
-              options={villageOptions}
-              placeholder="Ketik Desa Baru..."
-              isDark={true}
-            />
+              {/* Puskesmas */}
+              <LocationSelectorField
+                label="3. PUSKESMAS"
+                value={selectedPuskesmas}
+                onChange={setSelectedPuskesmas}
+                options={puskesmasOptions}
+                placeholder="Puskesmas..."
+                isDark={true}
+              />
 
-            {/* Dusun */}
-            <LocationSelectorField
-              label="DUSUN"
-              value={selectedDusun}
-              onChange={setSelectedDusun}
-              options={dusunOptions}
-              placeholder="Dusun..."
-              isDark={true}
-            />
+              {/* Kelurahan / Desa */}
+              <LocationSelectorField
+                label="4. KELURAHAN / DESA"
+                value={selectedKelurahan}
+                onChange={setSelectedKelurahan}
+                options={villageOptions}
+                placeholder="Ketik Desa Baru..."
+                isDark={true}
+              />
 
-            {/* Posyandu */}
-            <LocationSelectorField
-              label="POSYANDU"
-              value={selectedPosyandu}
-              onChange={setSelectedPosyandu}
-              options={posyanduOptions}
-              placeholder="Posyandu..."
-              isDark={true}
-            />
+              {/* Dusun */}
+              <LocationSelectorField
+                label="5. DUSUN"
+                value={selectedDusun}
+                onChange={setSelectedDusun}
+                options={dusunOptions}
+                placeholder="Dusun..."
+                isDark={true}
+              />
 
+              {/* Posyandu */}
+              <LocationSelectorField
+                label="6. POSYANDU"
+                value={selectedPosyandu}
+                onChange={setSelectedPosyandu}
+                options={posyanduOptions}
+                placeholder="Posyandu..."
+                isDark={true}
+              />
+            </div>
           </div>
         </div>
       </div>
