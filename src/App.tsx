@@ -567,6 +567,24 @@ export default function App() {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const handleDeleteWeightRecord = (beneficiaryId: string, period: string) => {
+    setBeneficiaries(prev => {
+      const updated = prev.map(b => {
+        if (b.id === beneficiaryId) {
+          const filtered = b.weightRecords.filter(r => r.period !== period);
+          return {
+            ...b,
+            weightRecords: filtered
+          };
+        }
+        return b;
+      });
+      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+      return updated;
+    });
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   const loadData = async () => {
     try {
       const json = await getAppData();
@@ -1193,6 +1211,7 @@ export default function App() {
                   onSaveBeneficiary={handleSaveBeneficiary}
                   onDeleteBeneficiary={handleDeleteBeneficiary}
                   onAddWeightRecord={handleAddWeightRecord}
+                  onDeleteWeightRecord={handleDeleteWeightRecord}
                   onUpdateVillageMetrics={handleVillageUpdate}
                 />
               </div>

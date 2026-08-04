@@ -28,6 +28,7 @@ interface DataInputCenterProps {
   onSaveBeneficiary: (beneficiary: MBGBeneficiary) => void;
   onDeleteBeneficiary: (id: string) => void;
   onAddWeightRecord: (beneficiaryId: string, record: WeightRecord) => void;
+  onDeleteWeightRecord: (beneficiaryId: string, period: string) => void;
   onUpdateVillageMetrics: (updatedVillage: Partial<Village>) => Promise<void>;
 }
 
@@ -54,6 +55,7 @@ export default function DataInputCenter({
   onSaveBeneficiary,
   onDeleteBeneficiary,
   onAddWeightRecord,
+  onDeleteWeightRecord,
   onUpdateVillageMetrics
 }: DataInputCenterProps) {
   // Navigation sub-tabs within Pusat Input Data
@@ -200,6 +202,22 @@ export default function DataInputCenter({
   const [measWeight, setMeasWeight] = useState<string>("");
   const [measHeight, setMeasHeight] = useState<string>("");
   const [measSuccess, setMeasSuccess] = useState<boolean>(false);
+
+  const handleEditWeightRecord = (ben: MBGBeneficiary, record: WeightRecord) => {
+    setSelectedBenId(ben.id);
+    if (PERIOD_OPTIONS.includes(record.period)) {
+      setMeasPeriod(record.period);
+      setIsManualMeasPeriod(false);
+    } else {
+      setIsManualMeasPeriod(true);
+      setCustomMeasPeriod(record.period);
+    }
+    setMeasWeight(record.weightKg.toString());
+    setMeasHeight(record.heightCm ? record.heightCm.toString() : "");
+    
+    // Smooth scroll to form
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Village metrics editor state (for location_sync sub-tab)
   const currentVillage = useMemo(() => {
@@ -988,6 +1006,7 @@ export default function DataInputCenter({
                     <th className="p-4">Berat (kg)</th>
                     <th className="p-4">Tinggi (cm)</th>
                     <th className="p-4">Status Gizi</th>
+                    <th className="p-4 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
@@ -1013,6 +1032,28 @@ export default function DataInputCenter({
                           }`}>
                             {rec.statusGizi || "Normal"}
                           </span>
+                        </td>
+                        <td className="p-4 text-center">
+                          <div className="flex items-center justify-center space-x-1">
+                            <button
+                              onClick={() => handleEditWeightRecord(ben, rec)}
+                              className="p-1.5 hover:bg-indigo-50 text-indigo-600 hover:text-indigo-800 rounded-lg transition-colors cursor-pointer"
+                              title="Edit Data Timbang"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Apakah Anda yakin ingin menghapus data timbang ${ben.name} untuk periode ${rec.period}?`)) {
+                                  onDeleteWeightRecord(ben.id, rec.period);
+                                }
+                              }}
+                              className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
+                              title="Hapus Data Timbang"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
