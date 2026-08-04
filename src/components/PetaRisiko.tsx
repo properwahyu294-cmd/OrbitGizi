@@ -554,7 +554,6 @@ export default function PetaRisiko({
                       >
                         <option value="Desa">🏞️ Desa</option>
                         <option value="Kelurahan">🏙️ Kelurahan</option>
-                        <option value="Sekolah">🏫 Sekolah</option>
                         <option value="Posyandu">🏥 Posyandu</option>
                         <option value="Puskesmas">🏥 Puskesmas</option>
                         <option value="Kabupaten">🏛️ Kabupaten</option>
@@ -981,7 +980,7 @@ export default function PetaRisiko({
             
             <div className="p-6 space-y-4">
               <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                Sistem dapat mencatat data berbagai entitas administrasi dan operasional: Desa, Kelurahan, Sekolah, Posyandu, Puskesmas, Kabupaten, atau Propinsi.
+                Sistem dapat mencatat data berbagai entitas administrasi dan operasional: Desa, Kelurahan, Posyandu, Puskesmas, Kabupaten, atau Propinsi.
               </p>
 
               <div>
@@ -993,7 +992,6 @@ export default function PetaRisiko({
                 >
                   <option value="Desa">🏞️ Desa</option>
                   <option value="Kelurahan">🏙️ Kelurahan</option>
-                  <option value="Sekolah">🏫 Sekolah / Satuan Pendidikan (PAUD/SD/SMP/SMA)</option>
                   <option value="Posyandu">🏥 Posyandu</option>
                   <option value="Puskesmas">🏥 Puskesmas / Kecamatan</option>
                   <option value="Kabupaten">🏛️ Kabupaten / Kota</option>

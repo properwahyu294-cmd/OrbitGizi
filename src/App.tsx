@@ -1143,7 +1143,7 @@ export default function App() {
                     <div className="flex items-center space-x-2">
                       <span className="text-xs font-black text-slate-700 uppercase tracking-wider">Cakupan Wilayah & Unit Data:</span>
                       <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">
-                        Multi-Level (Desa, Kelurahan, Sekolah, Posyandu, Puskesmas, Kabupaten)
+                        Multi-Level (Desa, Kelurahan, Posyandu, Puskesmas, Kabupaten)
                       </span>
                     </div>
                   </div>
@@ -1190,7 +1190,7 @@ export default function App() {
                 <div className="bg-slate-100/60 rounded-2xl p-4 border border-slate-200/60 flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="space-y-1">
                     <h4 className="text-xs font-black text-slate-800 uppercase">Input Berkala Data Gizi Riil Unit & Wilayah</h4>
-                    <p className="text-[11px] text-slate-500">Integrasikan data bulanan MBG, PMT, Posyandu, & e-PPGBM untuk Desa, Kelurahan, Sekolah, Posyandu, Puskesmas, atau Kabupaten.</p>
+                    <p className="text-[11px] text-slate-500">Integrasikan data bulanan MBG, PMT, Posyandu, & e-PPGBM untuk Desa, Kelurahan, Posyandu, Puskesmas, atau Kabupaten.</p>
                   </div>
                   <button
                     onClick={() => setShowInputWizard(true)}
@@ -1267,7 +1267,7 @@ export default function App() {
                     <div className="relative mb-3.5">
                       <input
                         type="text"
-                        placeholder="Cari desa, kelurahan, sekolah, posyandu..."
+                        placeholder="Cari desa, kelurahan, posyandu..."
                         value={villageSearch}
                         onChange={(e) => setVillageSearch(e.target.value)}
                         className="w-full text-xs font-semibold pl-8 pr-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 bg-slate-50/50"

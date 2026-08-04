@@ -131,10 +131,10 @@ export default function DataInputCenter({
   const [benGender, setBenGender] = useState<"Laki-laki" | "Perempuan">("Laki-laki");
   const [benAge, setBenAge] = useState<string>("7 Tahun");
   const [benBirthDate, setBenBirthDate] = useState<string>("");
-  const [benCategory, setBenCategory] = useState<"Siswa SD" | "Siswa SMP" | "Siswa SMA" | "PAUD" | "Balita" | "Ibu Hamil">("Siswa SD");
+  const [benCategory, setBenCategory] = useState<"Balita" | "Ibu Hamil" | "Ibu Menyusui">("Balita");
   const [benReceivedMBG, setBenReceivedMBG] = useState<boolean>(true);
-  const [benInitialWeight, setBenInitialWeight] = useState<string>("18.5");
-  const [benInitialHeight, setBenInitialHeight] = useState<string>("110");
+  const [benInitialWeight, setBenInitialWeight] = useState<string>("15");
+  const [benInitialHeight, setBenInitialHeight] = useState<string>("100");
   const [benNotes, setBenNotes] = useState<string>("");
   
   // Beneficiary Specific Location State (Defaults to header selections)
@@ -149,12 +149,12 @@ export default function DataInputCenter({
     setBenParentName("");
     setBenNik("");
     setBenGender("Laki-laki");
-    setBenAge("7 Tahun");
+    setBenAge("3 Tahun");
     setBenBirthDate("");
-    setBenCategory("Siswa SD");
+    setBenCategory("Balita");
     setBenReceivedMBG(true);
-    setBenInitialWeight("18.5");
-    setBenInitialHeight("110");
+    setBenInitialWeight("15");
+    setBenInitialHeight("100");
     setBenNotes("");
     setBenKelurahan(selectedKelurahan);
     setBenDusun(selectedDusun);
@@ -727,12 +727,9 @@ export default function DataInputCenter({
                 className="border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold bg-white text-slate-700 focus:outline-none cursor-pointer"
               >
                 <option value="ALL">Semua Kategori</option>
-                <option value="Siswa SD">Siswa SD</option>
-                <option value="Siswa SMP">Siswa SMP</option>
-                <option value="Siswa SMA">Siswa SMA</option>
-                <option value="PAUD">PAUD</option>
                 <option value="Balita">Balita</option>
                 <option value="Ibu Hamil">Ibu Hamil</option>
+                <option value="Ibu Menyusui">Ibu Menyusui</option>
               </select>
 
               <button
@@ -1210,12 +1207,9 @@ export default function DataInputCenter({
                     onChange={(e) => setBenCategory(e.target.value as any)}
                     className="w-full border border-slate-200 rounded-xl p-2.5 font-bold bg-white focus:outline-none cursor-pointer"
                   >
-                    <option value="Siswa SD">Siswa SD</option>
-                    <option value="Siswa SMP">Siswa SMP</option>
-                    <option value="Siswa SMA">Siswa SMA</option>
-                    <option value="PAUD">PAUD</option>
                     <option value="Balita">Balita</option>
                     <option value="Ibu Hamil">Ibu Hamil</option>
+                    <option value="Ibu Menyusui">Ibu Menyusui</option>
                   </select>
                 </div>
 
@@ -1257,10 +1251,10 @@ export default function DataInputCenter({
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">CATATAN KHUSUS / SEKOLAH</label>
+                <label className="font-bold text-slate-700 block mb-1">CATATAN KHUSUS</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Siswa SD Katolik Boawae"
+                  placeholder="Contoh: Balita gizi kurang"
                   value={benNotes}
                   onChange={(e) => setBenNotes(e.target.value)}
                   className="w-full border border-slate-200 rounded-xl p-2.5 font-medium focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"

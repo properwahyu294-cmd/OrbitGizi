@@ -150,12 +150,9 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
         <div className="flex flex-wrap items-center gap-1.5">
           {[
             { id: "ALL", label: "Semua Kategori" },
-            { id: "Siswa SD", label: "Siswa SD" },
-            { id: "Siswa SMP", label: "Siswa SMP" },
-            { id: "Siswa SMA", label: "Siswa SMA" },
-            { id: "PAUD", label: "PAUD" },
             { id: "Balita", label: "Balita" },
             { id: "Ibu Hamil", label: "Ibu Hamil" },
+            { id: "Ibu Menyusui", label: "Ibu Menyusui" },
           ].map((cat) => {
             const isActive = selectedCategory === cat.id;
             return (
@@ -507,7 +504,7 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
               <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase">
                 REALISASI MBG (MAKAN BERGIZI GRATIS)
               </h3>
-              <p className="text-xs font-bold text-slate-800 mt-0.5">Distribui Pangan Sehat Sekolah</p>
+              <p className="text-xs font-bold text-slate-800 mt-0.5">Distribusi Pangan Sehat MBG</p>
             </div>
             <Activity className="h-5 w-5 text-emerald-500" />
           </div>

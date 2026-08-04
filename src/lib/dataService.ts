@@ -601,7 +601,7 @@ function buildLocalAppData(): OrbitGiziData {
       name: "Pilar 4. Pelayanan Gizi",
       weight: Math.round(localWeights.pilar4 * 100),
       indicators: [
-        { id: "mbg_coverage", name: "Cakupan Layanan MBG", score: mbg_coverage_score, description: `Realisasi distribusi MBG sekolah mencapai ${mbg_realized_sum} dari ${mbg_target_sum} anak` },
+        { id: "mbg_coverage", name: "Cakupan Layanan MBG", score: mbg_coverage_score, description: `Realisasi distribusi MBG posyandu mencapai ${mbg_realized_sum} dari ${mbg_target_sum} sasaran` },
         { id: "pmt_coverage", name: "Cakupan Layanan PMT", score: pmt_coverage_score, description: `Realisasi PMT ibu hamil & balita mencapai ${pmt_realized_sum} dari ${pmt_target_sum} sasaran` },
         { id: "home_visit", name: "Rasio Home Visit", score: home_visit_score, description: `Kunjungan rumah oleh kader mencapai ${home_visit_sum} dari ${home_visit_target_sum} sasaran prioritas` },
         { id: "posyandu_active", name: "Tingkat Keaktifan Posyandu", score: posyandu_active_score, description: `Kondisi posyandu aktif operasional mencapai ${pos_aktif_sum} dari ${pos_total_sum_p4} posyandu` },

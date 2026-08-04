@@ -23,7 +23,7 @@ export interface MBGBeneficiary {
   gender?: "Laki-laki" | "Perempuan";
   age?: string; // e.g. "3 Tahun", "7 Tahun", "14 Tahun", "28 Tahun"
   birthDate?: string; // e.g. "2021-05-14" (optional)
-  category: "Siswa SD" | "Siswa SMP" | "Siswa SMA" | "PAUD" | "Balita" | "Ibu Hamil" | "Ibu Menyusui";
+  category: "Balita" | "Ibu Hamil" | "Ibu Menyusui";
   location: LocationHierarchy;
   isReceivedMBG: boolean;
   weightRecords: WeightRecord[];
@@ -74,7 +74,7 @@ export interface Pillar {
   indicators: Indicator[];
 }
 
-export type UnitType = "Desa" | "Kelurahan" | "Sekolah" | "Posyandu" | "Puskesmas" | "Kabupaten" | "Propinsi";
+export type UnitType = "Desa" | "Kelurahan" | "Posyandu" | "Puskesmas" | "Kabupaten" | "Propinsi";
 
 export interface Village {
   id: string;

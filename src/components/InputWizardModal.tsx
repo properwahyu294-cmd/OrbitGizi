@@ -219,7 +219,7 @@ export default function InputWizardModal({
             </div>
             <div>
               <h2 className="text-base font-black tracking-tight">Formulir Input Data & Indeks Entitas Wilayah</h2>
-              <p className="text-xs text-slate-400">Pembaruan indikator untuk Desa, Kelurahan, Sekolah, Posyandu, Puskesmas, atau Kabupaten</p>
+              <p className="text-xs text-slate-400">Pembaruan indikator untuk Desa, Kelurahan, Posyandu, Puskesmas, atau Kabupaten</p>
             </div>
           </div>
 
