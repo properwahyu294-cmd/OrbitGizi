@@ -43,6 +43,11 @@ async function createSpreadsheet(accessToken: string, kabupatenName: string): Pr
             title: "Ibu Menyusui",
           },
         },
+        {
+          properties: {
+            title: "Catatan Timbang",
+          },
+        },
       ],
     }),
   });
@@ -63,7 +68,7 @@ async function createSpreadsheet(accessToken: string, kabupatenName: string): Pr
  * Clears old data in sheets to prepare for fresh write
  */
 async function clearSheets(accessToken: string, spreadsheetId: string): Promise<void> {
-  const ranges = ["'Ringkasan Indeks'!A1:Z100", "'Data Desa'!A1:Z1000", "'Penerima MBG'!A1:Z5000", "'Ibu Hamil'!A1:Z5000", "'Ibu Menyusui'!A1:Z5000"];
+  const ranges = ["'Ringkasan Indeks'!A1:Z100", "'Data Desa'!A1:Z1000", "'Penerima MBG'!A1:Z5000", "'Ibu Hamil'!A1:Z5000", "'Ibu Menyusui'!A1:Z5000", "'Catatan Timbang'!A1:Z10000"];
   for (const range of ranges) {
     const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:clear`, {
       method: "POST",
@@ -310,6 +315,43 @@ export async function syncToGoogleSheets(
     console.error(e);
   }
 
+  // Prepare Catatan Timbang values
+  const catatanTimbangValues = [
+    ["ID Penerima", "Nama", "Kategori", "Periode", "Berat (kg)", "Tinggi (cm)", "Status Gizi", "Waktu Pengukuran"]
+  ];
+  
+  try {
+    const processRecords = (data: any[], categoryStr: string | null = null) => {
+      data.forEach(b => {
+        if (b.weightRecords && b.weightRecords.length > 0) {
+          b.weightRecords.forEach((record: any) => {
+            catatanTimbangValues.push([
+              b.id,
+              b.name || b.namaIbu,
+              categoryStr || b.category,
+              record.period,
+              record.weightKg,
+              record.heightCm || "-",
+              record.statusGizi || "-",
+              record.measuredAt || "-"
+            ]);
+          });
+        }
+      });
+    };
+
+    const mbgData = JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
+    processRecords(mbgData);
+
+    const ibuHamilData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
+    processRecords(ibuHamilData, "Ibu Hamil");
+
+    const ibuMenyusuiData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
+    processRecords(ibuMenyusuiData, "Ibu Menyusui");
+  } catch (e) {
+    console.error(e);
+  }
+
   // Batch update spreadsheet values
   const writeResponse = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchUpdate`, {
     method: "POST",
@@ -339,6 +381,10 @@ export async function syncToGoogleSheets(
         {
           range: "'Ibu Menyusui'!A1",
           values: ibuMenyusuiValues,
+        },
+        {
+          range: "'Catatan Timbang'!A1",
+          values: catatanTimbangValues,
         },
       ],
     }),

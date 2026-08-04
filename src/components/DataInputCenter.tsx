@@ -977,47 +977,48 @@ export default function DataInputCenter({
               <span>Histori Pengukuran Berat Badan Berdasarkan Penerima</span>
             </h3>
 
-            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
-              {beneficiaries.map(ben => (
-                <div key={ben.id} className="border border-slate-200 rounded-2xl p-4 space-y-3 bg-slate-50/50">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-black text-slate-900 text-sm">{ben.name}</h4>
-                      <p className="text-[10px] font-medium text-slate-500">
-                        {ben.location.kelurahan} ({ben.location.posyandu}) — Kategori: {ben.category}
-                      </p>
-                    </div>
-
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold border ${
-                      ben.isReceivedMBG ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-slate-200 text-slate-700 border-slate-300"
-                    }`}>
-                      {ben.isReceivedMBG ? "Penerima MBG" : "Non-MBG"}
-                    </span>
-                  </div>
-
-                  {/* Weight Log Records Badges */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-                    {ben.weightRecords.map((rec, idx) => (
-                      <div key={idx} className="bg-white border border-slate-200 p-2.5 rounded-xl shadow-2xs space-y-1">
-                        <span className="text-[9px] font-bold text-slate-400 block">{rec.period}</span>
-                        <p className="text-sm font-black text-slate-900">{rec.weightKg} kg</p>
-                        {rec.heightCm && (
-                          <span className="text-[10px] text-slate-500 font-semibold block">{rec.heightCm} cm</span>
-                        )}
-                        <span className={`text-[9px] font-bold block ${
-                          rec.statusGizi === "Normal" 
-                            ? "text-emerald-600" 
-                            : rec.statusGizi === "Stunting" 
-                              ? "text-rose-600" 
-                              : "text-amber-600"
-                        }`}>
-                          {rec.statusGizi || "Normal"}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto max-h-[500px] border border-slate-200 rounded-2xl relative">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 z-10 shadow-xs">
+                  <tr className="text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+                    <th className="p-4">Penerima</th>
+                    <th className="p-4">Posyandu</th>
+                    <th className="p-4">Kategori</th>
+                    <th className="p-4">Periode</th>
+                    <th className="p-4">Berat (kg)</th>
+                    <th className="p-4">Tinggi (cm)</th>
+                    <th className="p-4">Status Gizi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {beneficiaries.flatMap(ben => 
+                    ben.weightRecords.map((rec, idx) => (
+                      <tr key={`${ben.id}-${idx}`} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="p-4">
+                          <span className="font-bold text-slate-800 block">{ben.name}</span>
+                          {ben.isReceivedMBG && <span className="text-[9px] font-extrabold text-emerald-600 tracking-wider">PENERIMA MBG</span>}
+                        </td>
+                        <td className="p-4 text-slate-600 text-xs font-medium">{ben.location.posyandu}</td>
+                        <td className="p-4 text-slate-600 text-xs font-medium">{ben.category}</td>
+                        <td className="p-4 font-semibold text-slate-700 text-xs">{rec.period}</td>
+                        <td className="p-4 font-black text-slate-900">{rec.weightKg}</td>
+                        <td className="p-4 text-slate-600 font-medium">{rec.heightCm || '-'}</td>
+                        <td className="p-4">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                            rec.statusGizi === "Normal" 
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                              : rec.statusGizi === "Stunting" 
+                                ? "bg-rose-50 text-rose-700 border-rose-200" 
+                                : "bg-amber-50 text-amber-700 border-amber-200"
+                          }`}>
+                            {rec.statusGizi || "Normal"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
 
