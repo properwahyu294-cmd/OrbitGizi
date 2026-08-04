@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Heart, LogOut, User as UserIcon, FileSpreadsheet, RefreshCw, Building, Upload, RotateCcw, Info, Camera } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
+import logoPemdaFile from "../assets/images/LOGOPEMDA (1).png";
 import { PemdaNagekeoLogo } from "./PemdaNagekeoLogo";
 
 interface LogoOrbitGiziProps {
@@ -66,33 +67,24 @@ export default function LogoOrbitGizi({
         {/* Logo Container with Upload / Hover Overlay */}
         <div className="flex items-center space-x-3 shrink-0 mb-3 sm:mb-0 group relative">
           <div className="relative group/logo cursor-pointer" title="Klik untuk mengganti logo Pemda">
-            {customLogo ? (
-              <div className="bg-white p-1 rounded-2xl shadow-md border border-slate-200 flex items-center justify-center h-20 w-20 relative overflow-hidden">
-                <img 
-                  src={customLogo} 
-                  alt="Logo Pemda Kustom" 
-                  className="h-full w-full object-contain"
-                />
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute inset-0 bg-slate-900/70 text-white flex flex-col items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-opacity p-1 text-center"
-                >
-                  <Camera className="h-4 w-4 mb-0.5 text-emerald-400" />
-                  <span className="text-[9px] font-bold">Ganti Logo</span>
-                </div>
+            <div 
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-white p-1 rounded-2xl shadow-md border border-slate-200 flex items-center justify-center h-20 w-20 relative overflow-hidden group-hover/logo:border-indigo-400 transition-colors"
+            >
+              <img 
+                src={customLogo || logoPemdaFile} 
+                alt="Logo Pemda Nagekeo" 
+                className="h-full w-full object-contain"
+                onError={(e) => {
+                  // Fallback if image fails
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <div className="absolute inset-0 bg-slate-900/70 text-white flex flex-col items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-opacity p-1 text-center">
+                <Camera className="h-4 w-4 mb-0.5 text-emerald-400" />
+                <span className="text-[9px] font-bold">{customLogo ? "Ganti Logo" : "Upload Logo"}</span>
               </div>
-            ) : (
-              <div 
-                onClick={() => fileInputRef.current?.click()}
-                className="relative"
-              >
-                <PemdaNagekeoLogo size={72} />
-                <div className="absolute inset-0 bg-slate-900/60 text-white rounded-2xl flex flex-col items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-opacity cursor-pointer">
-                  <Upload className="h-4 w-4 mb-0.5 text-emerald-400" />
-                  <span className="text-[9px] font-bold">Upload Logo</span>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
           <div className="flex flex-col space-y-1">
