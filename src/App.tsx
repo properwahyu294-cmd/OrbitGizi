@@ -56,8 +56,162 @@ import StakeholderCard from "./components/StakeholderCard";
 import RecommendationCard from "./components/RecommendationCard";
 import InputWizardModal from "./components/InputWizardModal";
 import DataInputCenter from "./components/DataInputCenter";
+import { AnalitikGiziView } from "./components/AnalitikGiziView";
 
-const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [];
+const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
+  {
+    id: "ben_1",
+    name: "Maria Clarita",
+    nik: "5316010101210001",
+    gender: "Perempuan",
+    age: "2 Tahun",
+    birthDate: "2024-01-15",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Boawae",
+      dusun: "Dusun 1",
+      posyandu: "Posyandu Mekar"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 10.2, heightCm: 78, statusGizi: "Risiko Stunting", measuredAt: "2026-01-10" },
+      { period: "Februari 2026", weightKg: 10.7, heightCm: 79.5, statusGizi: "Normal", measuredAt: "2026-02-12" },
+      { period: "Maret 2026", weightKg: 11.2, heightCm: 81, statusGizi: "Normal", measuredAt: "2026-03-11" },
+      { period: "April 2026", weightKg: 11.8, heightCm: 82.5, statusGizi: "Normal", measuredAt: "2026-04-09" },
+      { period: "Mei 2026", weightKg: 12.3, heightCm: 84, statusGizi: "Normal", measuredAt: "2026-05-14" }
+    ],
+    notes: "Rutin menerima porsi MBG balita & PMT biskuit"
+  },
+  {
+    id: "ben_2",
+    name: "Yohanes Dapa",
+    nik: "5316011205160002",
+    gender: "Laki-laki",
+    age: "8 Tahun",
+    birthDate: "2018-05-12",
+    category: "Siswa SD",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Boawae",
+      dusun: "Dusun 2",
+      posyandu: "Posyandu Mawar"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 21.5, heightCm: 118, statusGizi: "Normal", measuredAt: "2026-01-15" },
+      { period: "Februari 2026", weightKg: 22.0, heightCm: 119, statusGizi: "Normal", measuredAt: "2026-02-16" },
+      { period: "Maret 2026", weightKg: 22.7, heightCm: 120, statusGizi: "Normal", measuredAt: "2026-03-14" },
+      { period: "April 2026", weightKg: 23.4, heightCm: 121, statusGizi: "Normal", measuredAt: "2026-04-18" },
+      { period: "Mei 2026", weightKg: 24.1, heightCm: 122, statusGizi: "Normal", measuredAt: "2026-05-20" }
+    ],
+    notes: "Menerima MBG sekolah harian"
+  },
+  {
+    id: "ben_3",
+    name: "Emanuel Ruba",
+    nik: "5316012010120003",
+    gender: "Laki-laki",
+    age: "13 Tahun",
+    birthDate: "2013-10-20",
+    category: "Siswa SMP",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Riti",
+      dusun: "Dusun Riti Tengah",
+      posyandu: "Posyandu Melati"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 38.0, heightCm: 148, statusGizi: "Normal", measuredAt: "2026-01-12" },
+      { period: "Februari 2026", weightKg: 38.8, heightCm: 149, statusGizi: "Normal", measuredAt: "2026-02-14" },
+      { period: "Maret 2026", weightKg: 39.5, heightCm: 150, statusGizi: "Normal", measuredAt: "2026-03-15" },
+      { period: "April 2026", weightKg: 40.3, heightCm: 151, statusGizi: "Normal", measuredAt: "2026-04-10" }
+    ],
+    notes: "Siswa SMPN 1 Boawae"
+  },
+  {
+    id: "ben_4",
+    name: "Siti Nurhaliza",
+    nik: "5316011508090004",
+    gender: "Perempuan",
+    age: "16 Tahun",
+    birthDate: "2010-08-15",
+    category: "Siswa SMA",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Riti",
+      dusun: "Dusun Riti Timur",
+      posyandu: "Posyandu Melati"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 47.0, heightCm: 158, statusGizi: "Normal", measuredAt: "2026-01-18" },
+      { period: "Februari 2026", weightKg: 47.6, heightCm: 158.5, statusGizi: "Normal", measuredAt: "2026-02-19" },
+      { period: "Maret 2026", weightKg: 48.3, heightCm: 159, statusGizi: "Normal", measuredAt: "2026-03-20" },
+      { period: "April 2026", weightKg: 49.1, heightCm: 159.5, statusGizi: "Normal", measuredAt: "2026-04-22" }
+    ],
+    notes: "Siswi SMAN 1 Boawae - penerima Tablet Tambah Darah (TTD)"
+  },
+  {
+    id: "ben_5",
+    name: "Aurel Batan",
+    nik: "5316020504220005",
+    gender: "Perempuan",
+    age: "4 Tahun",
+    birthDate: "2022-04-05",
+    category: "PAUD",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Nangaroro",
+      kelurahan: "Desa Mulakoli",
+      dusun: "Dusun Mulakoli 2",
+      posyandu: "Posyandu Kenanga"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 13.2, heightCm: 92, statusGizi: "Gizi Kurang", measuredAt: "2026-01-10" },
+      { period: "Februari 2026", weightKg: 13.6, heightCm: 93, statusGizi: "Normal", measuredAt: "2026-02-11" },
+      { period: "Maret 2026", weightKg: 14.1, heightCm: 94, statusGizi: "Normal", measuredAt: "2026-03-12" },
+      { period: "April 2026", weightKg: 14.7, heightCm: 95, statusGizi: "Normal", measuredAt: "2026-04-14" }
+    ],
+    notes: "Pendampingan intensif gizi desa"
+  },
+  {
+    id: "ben_6",
+    name: "Ibu Fransiska Boli",
+    nik: "5316014402950006",
+    gender: "Perempuan",
+    age: "29 Tahun",
+    birthDate: "1997-02-14",
+    category: "Ibu Hamil",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Boawae",
+      dusun: "Dusun 1",
+      posyandu: "Posyandu Mekar"
+    },
+    isReceivedMBG: false,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 52.0, heightCm: 156, statusGizi: "Risiko Stunting", measuredAt: "2026-01-08" },
+      { period: "Februari 2026", weightKg: 53.5, heightCm: 156, statusGizi: "Normal", measuredAt: "2026-02-10" },
+      { period: "Maret 2026", weightKg: 55.0, heightCm: 156, statusGizi: "Normal", measuredAt: "2026-03-09" },
+      { period: "April 2026", weightKg: 56.8, heightCm: 156, statusGizi: "Normal", measuredAt: "2026-04-12" }
+    ],
+    notes: "Program PMT Ibu Hamil KEK Trimester 2"
+  }
+];
 
 // Firebase & Sheets integration
 import { initAuth, googleSignIn, logout } from "./lib/firebase";
@@ -845,138 +999,15 @@ export default function App() {
             )}
 
             {activeTab === "analitik" && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                  
-                  {/* Left Column for Charts */}
-                  <div className="xl:col-span-8 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      
-                      {/* Grafik MBG */}
-                      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs" id="grafik-mbg">
-                        <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase">
-                              GRAFIK REALISASI MBG (MAKAN BERGIZI GRATIS)
-                            </h3>
-                            <p className="text-[11px] text-slate-500 mt-0.5">Tren target bulanan vs realisasi distribusi pangan sehat sekolah</p>
-                          </div>
-                          <Activity className="h-4 w-4 text-emerald-500" />
-                        </div>
-
-                        <div className="h-56">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={data.mbgMonthlyTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                              <XAxis dataKey="month" tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                              <YAxis tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                              <Tooltip 
-                                contentStyle={{ fontSize: 11, fontWeight: 600, borderRadius: 8, border: '1px solid #e2e8f0', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }} 
-                                labelStyle={{ fontWeight: 800, color: '#334155' }}
-                              />
-                              <Legend verticalAlign="top" height={36} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, fontWeight: 700 }} />
-                              <Bar name="Target Sasaran (Anak)" dataKey="target" fill="#93c5fd" radius={[4, 4, 0, 0]} barSize={16} />
-                              <Bar name="Realisasi Terlayani" dataKey="realized" fill="#10b981" radius={[4, 4, 0, 0]} barSize={16} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-
-                      {/* Grafik PMT */}
-                      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs" id="grafik-pmt">
-                        <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase">
-                              GRAFIK INTERVENSI PMT (MAKANAN TAMBAHAN)
-                            </h3>
-                            <p className="text-[11px] text-slate-500 mt-0.5">Cakupan PMT balita wasting & ibu hamil KEK tingkat kabupaten</p>
-                          </div>
-                          <Activity className="h-4 w-4 text-indigo-500" />
-                        </div>
-
-                        <div className="h-56">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={data.pmtMonthlyTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                              <defs>
-                                <linearGradient id="colorPmt" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
-                                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                                </linearGradient>
-                              </defs>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                              <XAxis dataKey="month" tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                              <YAxis tick={{ fontSize: 10, fontWeight: 600, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                              <Tooltip 
-                                contentStyle={{ fontSize: 11, fontWeight: 600, borderRadius: 8, border: '1px solid #e2e8f0', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }} 
-                                labelStyle={{ fontWeight: 800, color: '#334155' }}
-                              />
-                              <Legend verticalAlign="top" height={36} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, fontWeight: 700 }} />
-                              <Area name="Kebutuhan PMT" dataKey="target" stroke="#a5b4fc" fill="none" strokeWidth={2} dot={{ r: 3 }} />
-                              <Area name="Realisasi Distribusi" dataKey="realized" stroke="#6366f1" fillOpacity={1} fill="url(#colorPmt)" strokeWidth={2.5} dot={{ r: 4 }} />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* Right Column for Integrasi Data (Pilar 1) */}
-                  <div className="xl:col-span-4">
-                    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs" id="data-integrasi">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-2">
-                          <Database className="h-4.5 w-4.5 text-slate-500" />
-                          <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase">
-                            7. DATA INTEGRASI MULTI-SISTEM
-                          </h3>
-                        </div>
-                        <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full font-bold text-slate-600">
-                          Pilar 1
-                        </span>
-                      </div>
-
-                      <div className="space-y-3">
-                        {pillar1.indicators.map((ind) => {
-                          let badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-100";
-                          let statusText = "Tersinkronisasi";
-                          if (ind.score < 60) {
-                            badgeStyle = "bg-rose-50 text-rose-700 border-rose-100";
-                            statusText = "Keterlambatan";
-                          } else if (ind.score < 80) {
-                            badgeStyle = "bg-amber-50 text-amber-700 border-amber-100";
-                            statusText = "Validasi Berjalan";
-                          }
-
-                          return (
-                            <div 
-                              key={ind.id} 
-                              className="border border-slate-100 rounded-xl p-3 bg-slate-50/50 flex items-center justify-between"
-                            >
-                              <div>
-                                <span className="text-xs font-bold text-slate-800 block">{ind.name}</span>
-                                <div className="flex items-center space-x-1.5 mt-1">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                                  <span className="text-[10px] text-slate-400 font-mono">Kevalidan: {ind.score}%</span>
-                                </div>
-                              </div>
-                              
-                              <div className="text-right">
-                                <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[9px] font-bold border ${badgeStyle}`}>
-                                  {statusText}
-                                </span>
-                                <span className="block text-[8px] text-slate-400 mt-1 font-mono">Latency ~0.8s</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
+              <div className="animate-in fade-in duration-200">
+                <AnalitikGiziView
+                  beneficiaries={beneficiaries}
+                  villages={data.villages}
+                  pillars={data.pillars}
+                  mbgMonthlyTrend={data.mbgMonthlyTrend}
+                  pmtMonthlyTrend={data.pmtMonthlyTrend}
+                  onAddWeightRecord={handleAddWeightRecord}
+                />
               </div>
             )}
 

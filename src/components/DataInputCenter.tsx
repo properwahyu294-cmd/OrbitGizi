@@ -120,7 +120,10 @@ export default function DataInputCenter({
   const [showAddBenModal, setShowAddBenModal] = useState<boolean>(false);
   const [benName, setBenName] = useState<string>("");
   const [benNik, setBenNik] = useState<string>("");
-  const [benCategory, setBenCategory] = useState<"Siswa SD" | "PAUD" | "Balita" | "Ibu Hamil">("Siswa SD");
+  const [benGender, setBenGender] = useState<"Laki-laki" | "Perempuan">("Laki-laki");
+  const [benAge, setBenAge] = useState<string>("7 Tahun");
+  const [benBirthDate, setBenBirthDate] = useState<string>("");
+  const [benCategory, setBenCategory] = useState<"Siswa SD" | "Siswa SMP" | "Siswa SMA" | "PAUD" | "Balita" | "Ibu Hamil">("Siswa SD");
   const [benReceivedMBG, setBenReceivedMBG] = useState<boolean>(true);
   const [benInitialWeight, setBenInitialWeight] = useState<string>("18.5");
   const [benInitialHeight, setBenInitialHeight] = useState<string>("110");
@@ -230,6 +233,9 @@ export default function DataInputCenter({
       id: "ben_" + Date.now(),
       name: benName.trim(),
       nik: benNik.trim() || `5316${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+      gender: benGender,
+      age: benAge.trim() || undefined,
+      birthDate: benBirthDate.trim() || undefined,
       category: benCategory,
       location: {
         propinsi: selectedPropinsi,
@@ -255,6 +261,9 @@ export default function DataInputCenter({
     onSaveBeneficiary(newBen);
     setBenName("");
     setBenNik("");
+    setBenGender("Laki-laki");
+    setBenAge("7 Tahun");
+    setBenBirthDate("");
     setBenNotes("");
     setShowAddBenModal(false);
   };
@@ -627,6 +636,8 @@ export default function DataInputCenter({
               >
                 <option value="ALL">Semua Kategori</option>
                 <option value="Siswa SD">Siswa SD</option>
+                <option value="Siswa SMP">Siswa SMP</option>
+                <option value="Siswa SMA">Siswa SMA</option>
                 <option value="PAUD">PAUD</option>
                 <option value="Balita">Balita</option>
                 <option value="Ibu Hamil">Ibu Hamil</option>
@@ -668,8 +679,21 @@ export default function DataInputCenter({
                     return (
                       <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="p-3.5">
-                          <p className="font-black text-slate-900">{b.name}</p>
-                          <p className="text-[10px] font-mono text-slate-400">NIK: {b.nik || "-"}</p>
+                          <div className="flex items-center space-x-2">
+                            <p className="font-black text-slate-900">{b.name}</p>
+                            {b.gender && (
+                              <span className={`px-1.5 py-0.5 text-[9px] font-black rounded-md ${
+                                b.gender === "Laki-laki" ? "bg-blue-50 text-blue-700 border border-blue-200" : "bg-pink-50 text-pink-700 border border-pink-200"
+                              }`}>
+                                {b.gender === "Laki-laki" ? "👦 L" : "👧 P"}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 mt-0.5">
+                            <span className="font-mono">NIK: {b.nik || "-"}</span>
+                            {b.age && <span className="text-slate-700 font-bold">• {b.age}</span>}
+                            {b.birthDate && <span className="text-slate-400 font-mono">• Lahir: {b.birthDate}</span>}
+                          </div>
                         </td>
                         <td className="p-3.5">
                           <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-indigo-50 text-indigo-700 border border-indigo-100">
@@ -760,7 +784,7 @@ export default function DataInputCenter({
                   <option value="">-- Pilih Penerima MBG --</option>
                   {beneficiaries.map(b => (
                     <option key={b.id} value={b.id}>
-                      {b.name} ({b.category} - {b.location.kelurahan})
+                      {b.name} {b.gender ? `(${b.gender === "Laki-laki" ? "L" : "P"})` : ""} {b.age ? `- ${b.age}` : ""} ({b.category} - {b.location.kelurahan})
                     </option>
                   ))}
                 </select>
@@ -903,27 +927,66 @@ export default function DataInputCenter({
             </div>
 
             <form onSubmit={handleCreateBeneficiary} className="space-y-4 text-xs">
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">NAMA LENGKAP PENERIMA *</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: Maria Goreti Beda"
-                  value={benName}
-                  onChange={(e) => setBenName(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-                  required
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">NAMA LENGKAP PENERIMA *</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Maria Goreti Beda"
+                    value={benName}
+                    onChange={(e) => setBenName(e.target.value)}
+                    className="w-full border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">NIK / NISN (OPSIONAL)</label>
+                  <input
+                    type="text"
+                    placeholder="5316..."
+                    value={benNik}
+                    onChange={(e) => setBenNik(e.target.value)}
+                    className="w-full border border-slate-200 rounded-xl p-2.5 font-medium focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">NIK / NISN (OPSIONAL)</label>
-                <input
-                  type="text"
-                  placeholder="5316..."
-                  value={benNik}
-                  onChange={(e) => setBenNik(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 font-medium focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-                />
+              {/* JENIS KELAMIN, UMUR, TANGGAL LAHIR */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-indigo-50/40 p-3 rounded-2xl border border-indigo-100/80">
+                <div>
+                  <label className="font-bold text-indigo-900 block mb-1">JENIS KELAMIN *</label>
+                  <select
+                    value={benGender}
+                    onChange={(e) => setBenGender(e.target.value as "Laki-laki" | "Perempuan")}
+                    className="w-full border border-indigo-200 rounded-xl p-2 font-bold bg-white focus:outline-none cursor-pointer"
+                  >
+                    <option value="Laki-laki">👦 Laki-laki</option>
+                    <option value="Perempuan">👧 Perempuan</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-indigo-900 block mb-1">UMUR *</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: 7 Tahun / 18 Bulan"
+                    value={benAge}
+                    onChange={(e) => setBenAge(e.target.value)}
+                    className="w-full border border-indigo-200 rounded-xl p-2 font-bold bg-white focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-indigo-900 block mb-1">TGL LAHIR (OPSIONAL)</label>
+                  <input
+                    type="date"
+                    value={benBirthDate}
+                    onChange={(e) => setBenBirthDate(e.target.value)}
+                    className="w-full border border-indigo-200 rounded-xl p-2 font-medium bg-white focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                  />
+                </div>
               </div>
 
               {/* Location Selection with Dropdown & Custom Input */}
@@ -978,6 +1041,8 @@ export default function DataInputCenter({
                     className="w-full border border-slate-200 rounded-xl p-2.5 font-bold bg-white focus:outline-none cursor-pointer"
                   >
                     <option value="Siswa SD">Siswa SD</option>
+                    <option value="Siswa SMP">Siswa SMP</option>
+                    <option value="Siswa SMA">Siswa SMA</option>
                     <option value="PAUD">PAUD</option>
                     <option value="Balita">Balita</option>
                     <option value="Ibu Hamil">Ibu Hamil</option>

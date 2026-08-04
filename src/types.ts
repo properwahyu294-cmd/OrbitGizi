@@ -19,7 +19,10 @@ export interface MBGBeneficiary {
   id: string;
   name: string;
   nik?: string;
-  category: "Siswa SD" | "PAUD" | "Balita" | "Ibu Hamil";
+  gender?: "Laki-laki" | "Perempuan";
+  age?: string; // e.g. "3 Tahun", "7 Tahun", "14 Tahun", "28 Tahun"
+  birthDate?: string; // e.g. "2021-05-14" (optional)
+  category: "Siswa SD" | "Siswa SMP" | "Siswa SMA" | "PAUD" | "Balita" | "Ibu Hamil";
   location: LocationHierarchy;
   isReceivedMBG: boolean;
   weightRecords: WeightRecord[];
