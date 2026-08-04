@@ -28,6 +28,21 @@ async function createSpreadsheet(accessToken: string, kabupatenName: string): Pr
             title: "Data Desa",
           },
         },
+        {
+          properties: {
+            title: "Penerima MBG",
+          },
+        },
+        {
+          properties: {
+            title: "Ibu Hamil",
+          },
+        },
+        {
+          properties: {
+            title: "Ibu Menyusui",
+          },
+        },
       ],
     }),
   });
@@ -48,7 +63,7 @@ async function createSpreadsheet(accessToken: string, kabupatenName: string): Pr
  * Clears old data in sheets to prepare for fresh write
  */
 async function clearSheets(accessToken: string, spreadsheetId: string): Promise<void> {
-  const ranges = ["'Ringkasan Indeks'!A1:Z100", "'Data Desa'!A1:Z1000"];
+  const ranges = ["'Ringkasan Indeks'!A1:Z100", "'Data Desa'!A1:Z1000", "'Penerima MBG'!A1:Z5000", "'Ibu Hamil'!A1:Z5000", "'Ibu Menyusui'!A1:Z5000"];
   for (const range of ranges) {
     const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:clear`, {
       method: "POST",
@@ -216,6 +231,85 @@ export async function syncToGoogleSheets(
     ]);
   });
 
+  // Prepare Penerima MBG values
+  const mbgValues = [
+    ["ID", "Nama Beneficiary", "Nama Orang Tua/Wali", "NIK", "Gender", "Usia", "Kategori", "Propinsi", "Kabupaten", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Menerima MBG", "Catatan"]
+  ];
+  try {
+    const mbgData = JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
+    mbgData.forEach((b: any) => {
+      mbgValues.push([
+        b.id,
+        b.name,
+        b.parentName || "-",
+        b.nik || "-",
+        b.gender || "-",
+        b.age || "-",
+        b.category,
+        b.location?.propinsi || "-",
+        b.location?.kabupaten || "-",
+        b.location?.puskesmas || "-",
+        b.location?.kelurahan || "-",
+        b.location?.dusun || "-",
+        b.location?.posyandu || "-",
+        b.isReceivedMBG ? "YA" : "TIDAK",
+        b.notes || "-"
+      ]);
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
+  // Prepare Ibu Hamil values
+  const ibuHamilValues = [
+    ["ID", "Nama Ibu", "Umur", "NIK", "Alamat", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Usia Kehamilan", "Catatan"]
+  ];
+  try {
+    const ibuHamilData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
+    ibuHamilData.forEach((b: any) => {
+      ibuHamilValues.push([
+        b.id,
+        b.namaIbu,
+        b.umur,
+        b.nik,
+        b.alamat,
+        b.puskesmas || "-",
+        b.kelurahan || "-",
+        b.dusun || "-",
+        b.posyandu || "-",
+        b.usiaKehamilan || "-",
+        b.catatan || "-"
+      ]);
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
+  // Prepare Ibu Menyusui values
+  const ibuMenyusuiValues = [
+    ["ID", "Nama Ibu", "Umur", "NIK", "Alamat", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Nama Bayi", "Catatan"]
+  ];
+  try {
+    const ibuMenyusuiData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
+    ibuMenyusuiData.forEach((b: any) => {
+      ibuMenyusuiValues.push([
+        b.id,
+        b.namaIbu,
+        b.umur,
+        b.nik,
+        b.alamat,
+        b.puskesmas || "-",
+        b.kelurahan || "-",
+        b.dusun || "-",
+        b.posyandu || "-",
+        b.bayiNama || "-",
+        b.catatan || "-"
+      ]);
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
   // Batch update spreadsheet values
   const writeResponse = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchUpdate`, {
     method: "POST",
@@ -233,6 +327,18 @@ export async function syncToGoogleSheets(
         {
           range: "'Data Desa'!A1",
           values: villageValues,
+        },
+        {
+          range: "'Penerima MBG'!A1",
+          values: mbgValues,
+        },
+        {
+          range: "'Ibu Hamil'!A1",
+          values: ibuHamilValues,
+        },
+        {
+          range: "'Ibu Menyusui'!A1",
+          values: ibuMenyusuiValues,
         },
       ],
     }),
