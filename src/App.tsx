@@ -30,7 +30,8 @@ import {
   Handshake,
   Menu,
   X,
-  Building2
+  Building2,
+  Heart
 } from "lucide-react";
 
 // Types
@@ -57,6 +58,9 @@ import RecommendationCard from "./components/RecommendationCard";
 import InputWizardModal from "./components/InputWizardModal";
 import DataInputCenter from "./components/DataInputCenter";
 import { AnalitikGiziView } from "./components/AnalitikGiziView";
+import IbuMenyusuiView from "./components/IbuMenyusuiView";
+import IbuHamilView from "./components/IbuHamilView";
+import BannerCarousel from "./components/BannerCarousel";
 
 const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
   {
@@ -909,6 +913,18 @@ export default function App() {
                   icon: <Building2 className="h-4.5 w-4.5 text-indigo-600" />
                 },
                 {
+                  id: "ibu_hamil",
+                  name: "Ibu Hamil",
+                  desc: "Nama Ibu, Umur, NIK, Alamat",
+                  icon: <Heart className="h-4.5 w-4.5 text-pink-600" />
+                },
+                {
+                  id: "ibu_menyusui",
+                  name: "Ibu Menyusui & Nifas",
+                  desc: "Nama Ibu, Umur, NIK, Alamat",
+                  icon: <Heart className="h-4.5 w-4.5 text-rose-600" />
+                },
+                {
                   id: "fondasi",
                   name: "Fondasi Program (ToC)",
                   desc: "Alur Transformasi Gizi",
@@ -1092,6 +1108,9 @@ export default function App() {
             {activeTab === "overview" && (
               <div className="space-y-6 animate-in fade-in duration-200">
                 
+                {/* Dynamic Promotional & National Holiday Banners Carousel */}
+                <BannerCarousel />
+
                 {/* Score Gauge Widget */}
                 <IndexGauge 
                   score={data.indexScore} 
@@ -1176,6 +1195,18 @@ export default function App() {
                   onAddWeightRecord={handleAddWeightRecord}
                   onUpdateVillageMetrics={handleVillageUpdate}
                 />
+              </div>
+            )}
+
+            {activeTab === "ibu_hamil" && (
+              <div className="animate-in fade-in duration-200">
+                <IbuHamilView />
+              </div>
+            )}
+
+            {activeTab === "ibu_menyusui" && (
+              <div className="animate-in fade-in duration-200">
+                <IbuMenyusuiView />
               </div>
             )}
 

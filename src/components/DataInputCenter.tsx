@@ -38,6 +38,10 @@ const PERIOD_OPTIONS = [
   "Juni 2026",
   "Juli 2026",
   "Agustus 2026",
+  "September 2026",
+  "Oktober 2026",
+  "November 2026",
+  "Desember 2026",
   "Periode TW1 2026",
   "Periode TW2 2026",
   "Periode TW3 2026",
@@ -190,7 +194,9 @@ export default function DataInputCenter({
 
   // Weight Measurement Form State
   const [selectedBenId, setSelectedBenId] = useState<string>("");
-  const [measPeriod, setMeasPeriod] = useState<string>("Januari 2026");
+  const [measPeriod, setMeasPeriod] = useState<string>("Maret 2026");
+  const [customMeasPeriod, setCustomMeasPeriod] = useState<string>("");
+  const [isManualMeasPeriod, setIsManualMeasPeriod] = useState<boolean>(false);
   const [measWeight, setMeasWeight] = useState<string>("");
   const [measHeight, setMeasHeight] = useState<string>("");
   const [measSuccess, setMeasSuccess] = useState<boolean>(false);
@@ -344,8 +350,10 @@ export default function DataInputCenter({
 
     if (isNaN(weightVal)) return;
 
+    const finalPeriod = isManualMeasPeriod && customMeasPeriod.trim() ? customMeasPeriod.trim() : measPeriod;
+
     const newRecord: WeightRecord = {
-      period: measPeriod,
+      period: finalPeriod,
       weightKg: weightVal,
       heightCm: heightVal,
       statusGizi: calculateStatusGizi(weightVal, heightVal),
@@ -875,15 +883,42 @@ export default function DataInputCenter({
                 <label className="text-[10px] font-black text-slate-500 uppercase block mb-1">
                   PERIODE PENGUKURAN
                 </label>
-                <select
-                  value={measPeriod}
-                  onChange={(e) => setMeasPeriod(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none cursor-pointer"
-                >
-                  {PERIOD_OPTIONS.map(p => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
+                {isManualMeasPeriod ? (
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      placeholder="Ketik Periode Manual (Cth: Periode Khusus 2026)"
+                      value={customMeasPeriod}
+                      onChange={(e) => setCustomMeasPeriod(e.target.value)}
+                      className="w-full border border-indigo-300 rounded-xl px-3.5 py-2.5 text-xs font-bold bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setIsManualMeasPeriod(false)}
+                      className="text-[10px] font-bold text-indigo-600 underline whitespace-nowrap cursor-pointer px-1"
+                    >
+                      Pilih List
+                    </button>
+                  </div>
+                ) : (
+                  <select
+                    value={measPeriod}
+                    onChange={(e) => {
+                      if (e.target.value === "MANUAL_INPUT") {
+                        setIsManualMeasPeriod(true);
+                      } else {
+                        setMeasPeriod(e.target.value);
+                      }
+                    }}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none cursor-pointer"
+                  >
+                    {PERIOD_OPTIONS.map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                    <option value="MANUAL_INPUT" className="font-bold text-indigo-600">+ Tambah Periode Manual...</option>
+                  </select>
+                )}
               </div>
 
               {/* Weight Kg */}

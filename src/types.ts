@@ -23,11 +23,41 @@ export interface MBGBeneficiary {
   gender?: "Laki-laki" | "Perempuan";
   age?: string; // e.g. "3 Tahun", "7 Tahun", "14 Tahun", "28 Tahun"
   birthDate?: string; // e.g. "2021-05-14" (optional)
-  category: "Siswa SD" | "Siswa SMP" | "Siswa SMA" | "PAUD" | "Balita" | "Ibu Hamil";
+  category: "Siswa SD" | "Siswa SMP" | "Siswa SMA" | "PAUD" | "Balita" | "Ibu Hamil" | "Ibu Menyusui";
   location: LocationHierarchy;
   isReceivedMBG: boolean;
   weightRecords: WeightRecord[];
   notes?: string;
+}
+
+export interface IbuMenyusuiBeneficiary {
+  id: string;
+  namaIbu: string;
+  umur: string;
+  nik: string;
+  alamat: string;
+  puskesmas?: string;
+  kelurahan?: string;
+  dusun?: string;
+  posyandu?: string;
+  bayiNama?: string;
+  catatan?: string;
+  weightRecords?: WeightRecord[];
+}
+
+export interface IbuHamilBeneficiary {
+  id: string;
+  namaIbu: string;
+  umur: string;
+  nik: string;
+  alamat: string;
+  puskesmas?: string;
+  kelurahan?: string;
+  dusun?: string;
+  posyandu?: string;
+  usiaKehamilan?: string;
+  catatan?: string;
+  weightRecords?: WeightRecord[];
 }
 
 export interface Indicator {
