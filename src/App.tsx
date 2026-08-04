@@ -60,158 +60,418 @@ import { AnalitikGiziView } from "./components/AnalitikGiziView";
 
 const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
   {
-    id: "ben_1",
-    name: "Maria Clarita",
-    parentName: "Petrus Lada & Katarina",
-    nik: "5316010101210001",
-    gender: "Perempuan",
-    age: "2 Tahun",
-    birthDate: "2024-01-15",
+    id: "ben_ngt_1",
+    name: "ADRIAN SA",
+    parentName: "MERSIANA ERE",
+    nik: "5316013011220001",
+    gender: "Laki-laki",
+    age: "3 Tahun 2 Bulan",
+    birthDate: "2022-11-30",
     category: "Balita",
     location: {
       propinsi: "Nusa Tenggara Timur",
       kabupaten: "Kabupaten Nagekeo",
       puskesmas: "Puskesmas Boawae",
-      kelurahan: "Desa Boawae",
-      dusun: "Dusun 1",
-      posyandu: "Posyandu Mekar"
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
     weightRecords: [
-      { period: "Januari 2026", weightKg: 10.2, heightCm: 78, statusGizi: "Risiko Stunting", measuredAt: "2026-01-10" },
-      { period: "Februari 2026", weightKg: 10.7, heightCm: 79.5, statusGizi: "Normal", measuredAt: "2026-02-12" },
-      { period: "Maret 2026", weightKg: 11.2, heightCm: 81, statusGizi: "Normal", measuredAt: "2026-03-11" },
-      { period: "April 2026", weightKg: 11.8, heightCm: 82.5, statusGizi: "Normal", measuredAt: "2026-04-09" },
-      { period: "Mei 2026", weightKg: 12.3, heightCm: 84, statusGizi: "Normal", measuredAt: "2026-05-14" }
+      { period: "Januari 2026", weightKg: 13.5, heightCm: 92, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
-    notes: "Rutin menerima porsi MBG balita & PMT biskuit"
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
   },
   {
-    id: "ben_2",
-    name: "Yohanes Dapa",
-    parentName: "Stefanus Dapa",
-    nik: "5316011205160002",
-    gender: "Laki-laki",
-    age: "8 Tahun",
-    birthDate: "2018-05-12",
-    category: "Siswa SD",
-    location: {
-      propinsi: "Nusa Tenggara Timur",
-      kabupaten: "Kabupaten Nagekeo",
-      puskesmas: "Puskesmas Boawae",
-      kelurahan: "Desa Boawae",
-      dusun: "Dusun 2",
-      posyandu: "Posyandu Mawar"
-    },
-    isReceivedMBG: true,
-    weightRecords: [
-      { period: "Januari 2026", weightKg: 21.5, heightCm: 118, statusGizi: "Normal", measuredAt: "2026-01-15" },
-      { period: "Februari 2026", weightKg: 22.0, heightCm: 119, statusGizi: "Normal", measuredAt: "2026-02-16" },
-      { period: "Maret 2026", weightKg: 22.7, heightCm: 120, statusGizi: "Normal", measuredAt: "2026-03-14" },
-      { period: "April 2026", weightKg: 23.4, heightCm: 121, statusGizi: "Normal", measuredAt: "2026-04-18" },
-      { period: "Mei 2026", weightKg: 24.1, heightCm: 122, statusGizi: "Normal", measuredAt: "2026-05-20" }
-    ],
-    notes: "Menerima MBG sekolah harian"
-  },
-  {
-    id: "ben_3",
-    name: "Emanuel Ruba",
-    nik: "5316012010120003",
-    gender: "Laki-laki",
-    age: "13 Tahun",
-    birthDate: "2013-10-20",
-    category: "Siswa SMP",
-    location: {
-      propinsi: "Nusa Tenggara Timur",
-      kabupaten: "Kabupaten Nagekeo",
-      puskesmas: "Puskesmas Boawae",
-      kelurahan: "Desa Riti",
-      dusun: "Dusun Riti Tengah",
-      posyandu: "Posyandu Melati"
-    },
-    isReceivedMBG: true,
-    weightRecords: [
-      { period: "Januari 2026", weightKg: 38.0, heightCm: 148, statusGizi: "Normal", measuredAt: "2026-01-12" },
-      { period: "Februari 2026", weightKg: 38.8, heightCm: 149, statusGizi: "Normal", measuredAt: "2026-02-14" },
-      { period: "Maret 2026", weightKg: 39.5, heightCm: 150, statusGizi: "Normal", measuredAt: "2026-03-15" },
-      { period: "April 2026", weightKg: 40.3, heightCm: 151, statusGizi: "Normal", measuredAt: "2026-04-10" }
-    ],
-    notes: "Siswa SMPN 1 Boawae"
-  },
-  {
-    id: "ben_4",
-    name: "Siti Nurhaliza",
-    nik: "5316011508090004",
-    gender: "Perempuan",
-    age: "16 Tahun",
-    birthDate: "2010-08-15",
-    category: "Siswa SMA",
-    location: {
-      propinsi: "Nusa Tenggara Timur",
-      kabupaten: "Kabupaten Nagekeo",
-      puskesmas: "Puskesmas Boawae",
-      kelurahan: "Desa Riti",
-      dusun: "Dusun Riti Timur",
-      posyandu: "Posyandu Melati"
-    },
-    isReceivedMBG: true,
-    weightRecords: [
-      { period: "Januari 2026", weightKg: 47.0, heightCm: 158, statusGizi: "Normal", measuredAt: "2026-01-18" },
-      { period: "Februari 2026", weightKg: 47.6, heightCm: 158.5, statusGizi: "Normal", measuredAt: "2026-02-19" },
-      { period: "Maret 2026", weightKg: 48.3, heightCm: 159, statusGizi: "Normal", measuredAt: "2026-03-20" },
-      { period: "April 2026", weightKg: 49.1, heightCm: 159.5, statusGizi: "Normal", measuredAt: "2026-04-22" }
-    ],
-    notes: "Siswi SMAN 1 Boawae - penerima Tablet Tambah Darah (TTD)"
-  },
-  {
-    id: "ben_5",
-    name: "Aurel Batan",
-    nik: "5316020504220005",
+    id: "ben_ngt_2",
+    name: "FEBRIANI OTI",
+    parentName: "EMIRENSIANA",
+    nik: "5316014102220002",
     gender: "Perempuan",
     age: "4 Tahun",
-    birthDate: "2022-04-05",
-    category: "PAUD",
-    location: {
-      propinsi: "Nusa Tenggara Timur",
-      kabupaten: "Kabupaten Nagekeo",
-      puskesmas: "Puskesmas Nangaroro",
-      kelurahan: "Desa Mulakoli",
-      dusun: "Dusun Mulakoli 2",
-      posyandu: "Posyandu Kenanga"
-    },
-    isReceivedMBG: true,
-    weightRecords: [
-      { period: "Januari 2026", weightKg: 13.2, heightCm: 92, statusGizi: "Gizi Kurang", measuredAt: "2026-01-10" },
-      { period: "Februari 2026", weightKg: 13.6, heightCm: 93, statusGizi: "Normal", measuredAt: "2026-02-11" },
-      { period: "Maret 2026", weightKg: 14.1, heightCm: 94, statusGizi: "Normal", measuredAt: "2026-03-12" },
-      { period: "April 2026", weightKg: 14.7, heightCm: 95, statusGizi: "Normal", measuredAt: "2026-04-14" }
-    ],
-    notes: "Pendampingan intensif gizi desa"
-  },
-  {
-    id: "ben_6",
-    name: "Ibu Fransiska Boli",
-    nik: "5316014402950006",
-    gender: "Perempuan",
-    age: "29 Tahun",
-    birthDate: "1997-02-14",
-    category: "Ibu Hamil",
+    birthDate: "2022-02-01",
+    category: "Balita",
     location: {
       propinsi: "Nusa Tenggara Timur",
       kabupaten: "Kabupaten Nagekeo",
       puskesmas: "Puskesmas Boawae",
-      kelurahan: "Desa Boawae",
-      dusun: "Dusun 1",
-      posyandu: "Posyandu Mekar"
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
     },
-    isReceivedMBG: false,
+    isReceivedMBG: true,
     weightRecords: [
-      { period: "Januari 2026", weightKg: 52.0, heightCm: 156, statusGizi: "Risiko Stunting", measuredAt: "2026-01-08" },
-      { period: "Februari 2026", weightKg: 53.5, heightCm: 156, statusGizi: "Normal", measuredAt: "2026-02-10" },
-      { period: "Maret 2026", weightKg: 55.0, heightCm: 156, statusGizi: "Normal", measuredAt: "2026-03-09" },
-      { period: "April 2026", weightKg: 56.8, heightCm: 156, statusGizi: "Normal", measuredAt: "2026-04-12" }
+      { period: "Januari 2026", weightKg: 14.2, heightCm: 96, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
-    notes: "Program PMT Ibu Hamil KEK Trimester 2"
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_3",
+    name: "GUBERTA SURIATI",
+    parentName: "YOHANES MBOY",
+    nik: "5316015207220002",
+    gender: "Perempuan",
+    age: "3 Tahun 6 Bulan",
+    birthDate: "2022-07-15",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 13.8, heightCm: 94, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_4",
+    name: "HENDRIKUS P. KAKO",
+    parentName: "ARKUSLAUS LENA",
+    nik: "5316011005190003",
+    gender: "Laki-laki",
+    age: "5 Tahun",
+    birthDate: "2019-05-10",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 16.5, heightCm: 105, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_5",
+    name: "JEFANYA R. R. KATNESI",
+    parentName: "HEFER KATNESI",
+    nik: "3173053001220003",
+    gender: "Perempuan",
+    age: "1 Tahun 2 Bulan",
+    birthDate: "2024-11-29",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 9.8, heightCm: 76, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_6",
+    name: "JONATHAN E. N. HERE",
+    parentName: "DANIEL N. HERE",
+    nik: "5316011312230002",
+    gender: "Laki-laki",
+    age: "2 Tahun 1 Bulan",
+    birthDate: "2023-12-13",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 11.5, heightCm: 85, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_7",
+    name: "JUNIOR B. NARO",
+    parentName: "DARIUS MAHUR",
+    nik: "5316010506200001",
+    gender: "Laki-laki",
+    age: "5 Tahun",
+    birthDate: "2020-06-05",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 17.0, heightCm: 106, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_8",
+    name: "MARIA A. SERA",
+    parentName: "RIDWAN KADHA",
+    nik: "5316014112240001",
+    gender: "Perempuan",
+    age: "1 Tahun 2 Bulan",
+    birthDate: "2024-12-01",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 9.5, heightCm: 75, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_9",
+    name: "MARSELA W. NENU",
+    parentName: "WOLWARDUS DHESA",
+    nik: "5316014203250001",
+    gender: "Perempuan",
+    age: "1 Tahun 2 Bulan",
+    birthDate: "2025-03-01",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 9.2, heightCm: 74, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_10",
+    name: "MATIUS R. TULLE",
+    parentName: "FRANSISKUS TULLE",
+    nik: "5316012805220002",
+    gender: "Laki-laki",
+    age: "3 Tahun 8 Bulan",
+    birthDate: "2022-05-28",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 14.0, heightCm: 95, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_11",
+    name: "MONT MORENCHY MBETE",
+    parentName: "MARTINUS MBETE",
+    nik: "5316015207220002",
+    gender: "Perempuan",
+    age: "3 Tahun 8 Bulan",
+    birthDate: "2022-05-06",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 13.9, heightCm: 94.5, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_12",
+    name: "NURIN KAMILAN",
+    parentName: "SUDARLIN",
+    nik: "5316015802230002",
+    gender: "Perempuan",
+    age: "2 Tahun 11 Bulan",
+    birthDate: "2023-02-18",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 12.4, heightCm: 88, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke (Kembar)"
+  },
+  {
+    id: "ben_ngt_13",
+    name: "NURUN AFIKA",
+    parentName: "SUDARLIN",
+    nik: "5316015802230003",
+    gender: "Perempuan",
+    age: "2 Tahun 11 Bulan",
+    birthDate: "2023-02-18",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 12.2, heightCm: 87.5, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke (Kembar)"
+  },
+  {
+    id: "ben_ngt_14",
+    name: "OLIVIA AGUSTA FALLO",
+    parentName: "YOCEN FALLO",
+    nik: "5316015208240002",
+    gender: "Perempuan",
+    age: "1 Tahun 6 Bulan",
+    birthDate: "2024-08-15",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 10.4, heightCm: 80, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_15",
+    name: "PAULA KRISTIANI NGOLE",
+    parentName: "LIBERIUS DOKO",
+    nik: "5316016601240001",
+    gender: "Perempuan",
+    age: "2 Tahun",
+    birthDate: "2024-01-26",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 11.2, heightCm: 84, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_16",
+    name: "SANTUS R. KOTA",
+    parentName: "BONEFANSIUS NUSA",
+    nik: "5316012003220001",
+    gender: "Laki-laki",
+    age: "3 Tahun 10 Bulan",
+    birthDate: "2022-03-20",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 14.5, heightCm: 97, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_17",
+    name: "VERONIKA PESIVA SUGO",
+    parentName: "ABRAHAM LOBI",
+    nik: "5307064612210001",
+    gender: "Perempuan",
+    age: "4 Tahun 1 Bulan",
+    birthDate: "2021-12-06",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 15.0, heightCm: 100, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+  },
+  {
+    id: "ben_ngt_18",
+    name: "YOHANES P. KESO",
+    parentName: "FIRMILIUS T. PASY",
+    nik: "5316011207230001",
+    gender: "Laki-laki",
+    age: "2 Tahun 7 Bulan",
+    birthDate: "2023-07-12",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Nangateke",
+      dusun: "Dusun Nangateke",
+      posyandu: "Posyandu Nangateke"
+    },
+    isReceivedMBG: true,
+    weightRecords: [
+      { period: "Januari 2026", weightKg: 12.8, heightCm: 89, statusGizi: "Normal", measuredAt: "2026-01-15" }
+    ],
+    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
   }
 ];
 
