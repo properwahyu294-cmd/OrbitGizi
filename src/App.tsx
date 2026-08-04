@@ -29,11 +29,12 @@ import {
   Brain,
   Handshake,
   Menu,
-  X
+  X,
+  Building2
 } from "lucide-react";
 
 // Types
-import { OrbitGiziData, Village, Pillar, Indicator } from "./types";
+import { OrbitGiziData, Village, Pillar, Indicator, MBGBeneficiary, WeightRecord } from "./types";
 import {
   getAppData,
   updateWeightsApi,
@@ -54,6 +55,9 @@ import PilarCard from "./components/PilarCard";
 import StakeholderCard from "./components/StakeholderCard";
 import RecommendationCard from "./components/RecommendationCard";
 import InputWizardModal from "./components/InputWizardModal";
+import DataInputCenter from "./components/DataInputCenter";
+
+const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [];
 
 // Firebase & Sheets integration
 import { initAuth, googleSignIn, logout } from "./lib/firebase";
@@ -87,6 +91,58 @@ export default function App() {
   const [weightP4, setWeightP4] = useState<number>(25);
   const [weightP5, setWeightP5] = useState<number>(25);
   const [weightError, setWeightError] = useState<string | null>(null);
+
+  // Beneficiary Management State
+  const [beneficiaries, setBeneficiaries] = useState<MBGBeneficiary[]>(() => {
+    const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return DEFAULT_BENEFICIARIES;
+      }
+    }
+    return DEFAULT_BENEFICIARIES;
+  });
+
+  const handleSaveBeneficiary = (ben: MBGBeneficiary) => {
+    setBeneficiaries(prev => {
+      const exists = prev.some(b => b.id === ben.id);
+      let updated: MBGBeneficiary[];
+      if (exists) {
+        updated = prev.map(b => (b.id === ben.id ? ben : b));
+      } else {
+        updated = [ben, ...prev];
+      }
+      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleDeleteBeneficiary = (id: string) => {
+    setBeneficiaries(prev => {
+      const updated = prev.filter(b => b.id !== id);
+      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleAddWeightRecord = (beneficiaryId: string, record: WeightRecord) => {
+    setBeneficiaries(prev => {
+      const updated = prev.map(b => {
+        if (b.id === beneficiaryId) {
+          const filtered = b.weightRecords.filter(r => r.period !== record.period);
+          return {
+            ...b,
+            weightRecords: [...filtered, record]
+          };
+        }
+        return b;
+      });
+      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   const loadData = async () => {
     try {
@@ -428,6 +484,12 @@ export default function App() {
                   icon: <LayoutDashboard className="h-4.5 w-4.5" />
                 },
                 {
+                  id: "input_center",
+                  name: "Pusat Input Data",
+                  desc: "Propinsi s.d. Posyandu & MBG",
+                  icon: <Building2 className="h-4.5 w-4.5 text-indigo-600" />
+                },
+                {
                   id: "fondasi",
                   name: "Fondasi Program (ToC)",
                   desc: "Alur Transformasi Gizi",
@@ -655,6 +717,19 @@ export default function App() {
                   </button>
                 </div>
 
+              </div>
+            )}
+
+            {activeTab === "input_center" && (
+              <div className="animate-in fade-in duration-200">
+                <DataInputCenter
+                  villages={data.villages}
+                  beneficiaries={beneficiaries}
+                  onSaveBeneficiary={handleSaveBeneficiary}
+                  onDeleteBeneficiary={handleDeleteBeneficiary}
+                  onAddWeightRecord={handleAddWeightRecord}
+                  onUpdateVillageMetrics={handleVillageUpdate}
+                />
               </div>
             )}
 

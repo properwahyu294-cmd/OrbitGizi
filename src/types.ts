@@ -1,3 +1,31 @@
+export interface LocationHierarchy {
+  propinsi: string;
+  kabupaten: string;
+  puskesmas: string;
+  kelurahan: string;
+  dusun: string;
+  posyandu: string;
+}
+
+export interface WeightRecord {
+  period: string; // e.g. "Januari 2026", "Februari 2026", "TW1 2026", "TW2 2026"
+  weightKg: number;
+  heightCm?: number;
+  statusGizi?: "Normal" | "Gizi Kurang" | "Stunting" | "Risiko Stunting";
+  measuredAt?: string;
+}
+
+export interface MBGBeneficiary {
+  id: string;
+  name: string;
+  nik?: string;
+  category: "Siswa SD" | "PAUD" | "Balita" | "Ibu Hamil";
+  location: LocationHierarchy;
+  isReceivedMBG: boolean;
+  weightRecords: WeightRecord[];
+  notes?: string;
+}
+
 export interface Indicator {
   id: string;
   name: string;
@@ -21,6 +49,7 @@ export interface Village {
     x: number;
     y: number;
   };
+  locationHierarchy?: LocationHierarchy;
 
   // Pilar 1: Integrasi Data (raw counts)
   pilar1_mbg_sync: number;
@@ -92,4 +121,6 @@ export interface OrbitGiziData {
   pmtMonthlyTrend: MonthlyTrend[];
   indexScore: number;
   category: Category;
+  beneficiaries?: MBGBeneficiary[];
 }
+
