@@ -1,4 +1,5 @@
-import { Heart, LogOut, User as UserIcon, FileSpreadsheet, RefreshCw, Building } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Heart, LogOut, User as UserIcon, FileSpreadsheet, RefreshCw, Building, Upload, RotateCcw, Info, Camera } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import { PemdaNagekeoLogo } from "./PemdaNagekeoLogo";
 
@@ -19,13 +20,110 @@ export default function LogoOrbitGizi({
   syncingSheets,
   sheetsSyncUrl
 }: LogoOrbitGiziProps) {
+  const [customLogo, setCustomLogo] = useState<string | null>(() => {
+    return localStorage.getItem("orbit_gizi_custom_logo") || null;
+  });
+  const [showGuideModal, setShowGuideModal] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Ukuran file logo terlalu besar. Maksimal 5MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          setCustomLogo(result);
+          localStorage.setItem("orbit_gizi_custom_logo", result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleResetLogo = () => {
+    setCustomLogo(null);
+    localStorage.removeItem("orbit_gizi_custom_logo");
+  };
+
   return (
     <header className="flex flex-col lg:flex-row items-center justify-between border-b border-slate-200 bg-white px-6 py-4 shadow-sm">
+      {/* Hidden File Input for Direct Upload */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleLogoUpload} 
+        accept="image/*" 
+        className="hidden" 
+      />
+
       <div className="flex flex-col sm:flex-row items-center space-x-0 sm:space-x-5 text-center sm:text-left mb-4 lg:mb-0" id="brand-logo-container">
         
-        {/* Official Pemda Kabupaten Nagekeo Shield Emblem Component */}
-        <div className="flex items-center space-x-3 shrink-0 mb-3 sm:mb-0">
-          <PemdaNagekeoLogo size={72} />
+        {/* Logo Container with Upload / Hover Overlay */}
+        <div className="flex items-center space-x-3 shrink-0 mb-3 sm:mb-0 group relative">
+          <div className="relative group/logo cursor-pointer" title="Klik untuk mengganti logo Pemda">
+            {customLogo ? (
+              <div className="bg-white p-1 rounded-2xl shadow-md border border-slate-200 flex items-center justify-center h-20 w-20 relative overflow-hidden">
+                <img 
+                  src={customLogo} 
+                  alt="Logo Pemda Kustom" 
+                  className="h-full w-full object-contain"
+                />
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute inset-0 bg-slate-900/70 text-white flex flex-col items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-opacity p-1 text-center"
+                >
+                  <Camera className="h-4 w-4 mb-0.5 text-emerald-400" />
+                  <span className="text-[9px] font-bold">Ganti Logo</span>
+                </div>
+              </div>
+            ) : (
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="relative"
+              >
+                <PemdaNagekeoLogo size={72} />
+                <div className="absolute inset-0 bg-slate-900/60 text-white rounded-2xl flex flex-col items-center justify-center opacity-0 group-hover/logo:opacity-100 transition-opacity cursor-pointer">
+                  <Upload className="h-4 w-4 mb-0.5 text-emerald-400" />
+                  <span className="text-[9px] font-bold">Upload Logo</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col space-y-1">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex items-center space-x-1 text-[10px] font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2 py-1 rounded-md transition-colors cursor-pointer"
+            >
+              <Upload className="h-3 w-3 text-indigo-600" />
+              <span>{customLogo ? "Ganti Logo" : "Upload Logo"}</span>
+            </button>
+
+            {customLogo ? (
+              <button
+                onClick={handleResetLogo}
+                className="inline-flex items-center space-x-1 text-[9px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md transition-colors cursor-pointer"
+                title="Kembalikan ke logo standar Pemda Nagekeo"
+              >
+                <RotateCcw className="h-2.5 w-2.5" />
+                <span>Reset Logo</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowGuideModal(true)}
+                className="inline-flex items-center space-x-1 text-[9px] font-bold text-slate-500 hover:text-slate-800 underline cursor-pointer"
+              >
+                <Info className="h-2.5 w-2.5 text-indigo-500" />
+                <span>Info Lokasi File</span>
+              </button>
+            )}
+          </div>
+
           <div className="h-12 w-px bg-slate-200 hidden sm:block"></div>
         </div>
 
@@ -144,6 +242,69 @@ export default function LogoOrbitGizi({
           )
         )}
       </div>
+
+      {/* MODAL PETUNJUK PENEMPATAN LOGO */}
+      {showGuideModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 space-y-4">
+            <div className="flex justify-between items-start border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-black text-slate-900 flex items-center space-x-2">
+                  <Building className="h-5 w-5 text-indigo-600" />
+                  <span>Petunjuk Penempatan Logo Pemda</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">2 cara mudah untuk memasang logo daerah Anda</p>
+              </div>
+              <button 
+                onClick={() => setShowGuideModal(false)}
+                className="text-slate-400 hover:text-slate-600 font-bold p-1 text-lg leading-none cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="bg-indigo-50/70 p-3.5 rounded-2xl border border-indigo-100">
+                <p className="font-bold text-indigo-900 mb-1 flex items-center space-x-1">
+                  <span className="bg-indigo-600 text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]">1</span>
+                  <span>Cara Mudah (Langsung via Aplikasi):</span>
+                </p>
+                <p className="text-slate-700 leading-relaxed">
+                  Klik tombol <strong>"Upload Logo"</strong> di samping gambar logo di bagian atas, lalu pilih file gambar logo dari HP/Komputer Anda (Format PNG, JPG, atau WEBP). Logo akan langsung tersimpan dan tampil otomatis.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                <p className="font-bold text-slate-900 mb-1 flex items-center space-x-1">
+                  <span className="bg-slate-700 text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px]">2</span>
+                  <span>Cara via File Project (Code Editor):</span>
+                </p>
+                <p className="text-slate-700 leading-relaxed mb-2">
+                  Anda bisa meng-upload file gambar logo Anda langsung ke dalam struktur folder aplikasi:
+                </p>
+                <ul className="list-disc pl-5 space-y-1 font-mono text-[11px] text-slate-800">
+                  <li><strong className="text-indigo-600">/src/assets/images/logo_pemda.png</strong></li>
+                  <li>Atau di folder <strong className="text-indigo-600">/public/logo_pemda.png</strong></li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => {
+                  setShowGuideModal(false);
+                  fileInputRef.current?.click();
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer"
+              >
+                <Upload className="h-3.5 w-3.5" />
+                <span>Pilih & Upload File Sekarang</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
+
