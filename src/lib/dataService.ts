@@ -1,6 +1,9 @@
+import { UnitType } from "../types";
+
 export interface Village {
   id: string;
   name: string;
+  unitType?: UnitType;
   riskLevel: "Hijau" | "Kuning" | "Merah";
   score: number;
   coordinates: { x: number; y: number };
@@ -732,14 +735,15 @@ export async function updateWeightsApi(body: {
 }
 
 /**
- * ADD VILLAGE
+ * ADD VILLAGE / UNIT
  */
-export async function addVillageApi(name: string): Promise<OrbitGiziData> {
+export async function addVillageApi(name: string, unitType?: UnitType): Promise<OrbitGiziData> {
   if (isUsingLocalMode) {
     const id = "v_" + Date.now();
     const newVillage: Village = {
       id,
       name: name.trim(),
+      unitType: unitType || "Desa",
       riskLevel: "Kuning",
       score: 50,
       coordinates: {
@@ -786,12 +790,12 @@ export async function addVillageApi(name: string): Promise<OrbitGiziData> {
     const res = await fetch("/api/villages/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name })
+      body: JSON.stringify({ name, unitType })
     });
     return await parseResponseSafely(res);
   } catch {
     isUsingLocalMode = true;
-    return addVillageApi(name);
+    return addVillageApi(name, unitType);
   }
 }
 

@@ -116,8 +116,9 @@ export default function DataInputCenter({
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
 
-  // New Beneficiary Form Location & Details State
+  // New / Edit Beneficiary Form Location & Details State
   const [showAddBenModal, setShowAddBenModal] = useState<boolean>(false);
+  const [editingBenId, setEditingBenId] = useState<string | null>(null);
   const [benName, setBenName] = useState<string>("");
   const [benNik, setBenNik] = useState<string>("");
   const [benGender, setBenGender] = useState<"Laki-laki" | "Perempuan">("Laki-laki");
@@ -134,6 +135,45 @@ export default function DataInputCenter({
   const [benDusun, setBenDusun] = useState<string>(selectedDusun);
   const [benPosyandu, setBenPosyandu] = useState<string>(selectedPosyandu);
   const [benPuskesmas, setBenPuskesmas] = useState<string>(selectedPuskesmas);
+
+  const handleOpenAddBenModal = () => {
+    setEditingBenId(null);
+    setBenName("");
+    setBenNik("");
+    setBenGender("Laki-laki");
+    setBenAge("7 Tahun");
+    setBenBirthDate("");
+    setBenCategory("Siswa SD");
+    setBenReceivedMBG(true);
+    setBenInitialWeight("18.5");
+    setBenInitialHeight("110");
+    setBenNotes("");
+    setBenKelurahan(selectedKelurahan);
+    setBenDusun(selectedDusun);
+    setBenPosyandu(selectedPosyandu);
+    setBenPuskesmas(selectedPuskesmas);
+    setShowAddBenModal(true);
+  };
+
+  const handleOpenEditBenModal = (b: MBGBeneficiary) => {
+    setEditingBenId(b.id);
+    setBenName(b.name);
+    setBenNik(b.nik || "");
+    setBenGender(b.gender || "Laki-laki");
+    setBenAge(b.age || "");
+    setBenBirthDate(b.birthDate || "");
+    setBenCategory(b.category);
+    setBenReceivedMBG(b.isReceivedMBG);
+    setBenKelurahan(b.location.kelurahan || selectedKelurahan);
+    setBenDusun(b.location.dusun || selectedDusun);
+    setBenPosyandu(b.location.posyandu || selectedPosyandu);
+    setBenPuskesmas(b.location.puskesmas || selectedPuskesmas);
+    setBenNotes(b.notes || "");
+    const latestWeight = b.weightRecords[b.weightRecords.length - 1];
+    setBenInitialWeight(latestWeight?.weightKg?.toString() || "18.5");
+    setBenInitialHeight(latestWeight?.heightCm?.toString() || "110");
+    setShowAddBenModal(true);
+  };
 
   // Sync beneficiary location state when header changes or modal opens
   useEffect(() => {
@@ -221,7 +261,7 @@ export default function DataInputCenter({
     return "Normal";
   };
 
-  // Submit Handler for New Beneficiary
+  // Submit Handler for New or Edited Beneficiary
   const handleCreateBeneficiary = (e: FormEvent) => {
     e.preventDefault();
     if (!benName.trim()) return;
@@ -229,8 +269,35 @@ export default function DataInputCenter({
     const initialWeightVal = parseFloat(benInitialWeight) || 15;
     const initialHeightVal = parseFloat(benInitialHeight) || 100;
 
-    const newBen: MBGBeneficiary = {
-      id: "ben_" + Date.now(),
+    const existingBen = editingBenId ? beneficiaries.find(b => b.id === editingBenId) : null;
+    
+    // Maintain weight records history or update initial
+    let weightRecords: WeightRecord[] = existingBen?.weightRecords || [];
+    if (weightRecords.length === 0) {
+      weightRecords = [
+        {
+          period: "Januari 2026",
+          weightKg: initialWeightVal,
+          heightCm: initialHeightVal,
+          statusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal),
+          measuredAt: new Date().toISOString().split("T")[0]
+        }
+      ];
+    } else if (editingBenId && (initialWeightVal || initialHeightVal)) {
+      // Update latest record with new weight/height if changed
+      const updated = [...weightRecords];
+      const lastIndex = updated.length - 1;
+      updated[lastIndex] = {
+        ...updated[lastIndex],
+        weightKg: initialWeightVal,
+        heightCm: initialHeightVal,
+        statusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal)
+      };
+      weightRecords = updated;
+    }
+
+    const savedBen: MBGBeneficiary = {
+      id: editingBenId || ("ben_" + Date.now()),
       name: benName.trim(),
       nik: benNik.trim() || `5316${Math.floor(1000000000 + Math.random() * 9000000000)}`,
       gender: benGender,
@@ -246,19 +313,12 @@ export default function DataInputCenter({
         posyandu: benPosyandu || selectedPosyandu
       },
       isReceivedMBG: benReceivedMBG,
-      weightRecords: [
-        {
-          period: "Januari 2026",
-          weightKg: initialWeightVal,
-          heightCm: initialHeightVal,
-          statusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal),
-          measuredAt: new Date().toISOString().split("T")[0]
-        }
-      ],
+      weightRecords,
       notes: benNotes.trim() || undefined
     };
 
-    onSaveBeneficiary(newBen);
+    onSaveBeneficiary(savedBen);
+    setEditingBenId(null);
     setBenName("");
     setBenNik("");
     setBenGender("Laki-laki");
@@ -340,7 +400,7 @@ export default function DataInputCenter({
             </div>
 
             <button
-              onClick={() => setShowAddBenModal(true)}
+              onClick={handleOpenAddBenModal}
               className="inline-flex items-center justify-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-white font-black px-5 py-3.5 rounded-2xl shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer text-xs sm:text-sm shrink-0"
             >
               <Plus className="h-4 w-4" />
@@ -644,7 +704,7 @@ export default function DataInputCenter({
               </select>
 
               <button
-                onClick={() => setShowAddBenModal(true)}
+                onClick={handleOpenAddBenModal}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer"
               >
                 <Plus className="h-4 w-4" />
@@ -739,13 +799,22 @@ export default function DataInputCenter({
                           )}
                         </td>
                         <td className="p-3.5 text-center">
-                          <button
-                            onClick={() => onDeleteBeneficiary(b.id)}
-                            className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
-                            title="Hapus Penerima"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          <div className="flex items-center justify-center space-x-1">
+                            <button
+                              onClick={() => handleOpenEditBenModal(b)}
+                              className="p-1.5 hover:bg-indigo-50 text-indigo-600 hover:text-indigo-800 rounded-lg transition-colors cursor-pointer"
+                              title="Edit Data Penerima"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => onDeleteBeneficiary(b.id)}
+                              className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
+                              title="Hapus Penerima"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -916,7 +985,9 @@ export default function DataInputCenter({
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center space-x-2 text-indigo-600">
                 <Users className="h-5 w-5" />
-                <h3 className="text-sm font-black uppercase text-slate-900">Tambah Penerima MBG Baru</h3>
+                <h3 className="text-sm font-black uppercase text-slate-900">
+                  {editingBenId ? "Edit Data Penerima MBG" : "Tambah Penerima MBG Baru"}
+                </h3>
               </div>
               <button
                 onClick={() => setShowAddBenModal(false)}
@@ -1109,7 +1180,7 @@ export default function DataInputCenter({
                   type="submit"
                   className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black cursor-pointer shadow-md"
                 >
-                  Simpan Penerima Baru
+                  {editingBenId ? "Simpan Perubahan" : "Simpan Penerima Baru"}
                 </button>
               </div>
             </form>

@@ -18,14 +18,14 @@ import {
   Award
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { Village } from "../types";
+import { Village, UnitType } from "../types";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 interface PetaRisikoProps {
   villages: Village[];
   onVillageUpdate: (updatedVillage: Partial<Village>) => Promise<void>;
-  onVillageAdd: (name: string) => Promise<void>;
+  onVillageAdd: (name: string, unitType?: UnitType) => Promise<void>;
   onVillageDelete: (id: string) => Promise<void>;
   onResetData: () => Promise<void>;
   onClearData: () => Promise<void>;
@@ -45,10 +45,14 @@ export default function PetaRisiko({
   const [saving, setSaving] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<"p1" | "p2" | "p3" | "p4" | "p5">("p1");
 
-  // New Village state
+  // New Unit state
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [newVillageName, setNewVillageName] = useState<string>("");
+  const [newUnitType, setNewUnitType] = useState<UnitType>("Desa");
   const [adding, setAdding] = useState<boolean>(false);
+
+  // Unit Type Filter state
+  const [filterUnitType, setFilterUnitType] = useState<string>("Semua");
 
   // Confirmation Modals State
   const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
@@ -57,6 +61,7 @@ export default function PetaRisiko({
 
   // Edit fields
   const [editName, setEditName] = useState<string>("");
+  const [editUnitType, setEditUnitType] = useState<UnitType>("Desa");
   const [editX, setEditX] = useState<number>(50);
   const [editY, setEditY] = useState<number>(50);
 
@@ -210,6 +215,7 @@ export default function PetaRisiko({
     if (!v) return;
     setSelectedVillageId(v.id);
     setEditName(v.name);
+    setEditUnitType(v.unitType || "Desa");
     setEditX(v.coordinates.x);
     setEditY(v.coordinates.y);
 
@@ -262,6 +268,7 @@ export default function PetaRisiko({
       await onVillageUpdate({
         id: selectedVillage.id,
         name: editName,
+        unitType: editUnitType,
         coordinates: { x: editX, y: editY },
         pilar1_mbg_sync: p1MbgSync,
         pilar1_mbg_total: p1MbgTotal,
@@ -309,8 +316,9 @@ export default function PetaRisiko({
     if (!newVillageName.trim()) return;
     setAdding(true);
     try {
-      await onVillageAdd(newVillageName);
+      await onVillageAdd(newVillageName, newUnitType);
       setNewVillageName("");
+      setNewUnitType("Desa");
       setShowAddModal(false);
     } catch (e) {
       console.error(e);
@@ -533,12 +541,28 @@ export default function PetaRisiko({
 
               {/* Form Content */}
               <div className="space-y-4">
-                {/* Section: Nama & Lokasi */}
+                {/* Section: Nama, Jenis & Lokasi */}
                 <div className="bg-slate-50/60 p-3 rounded-xl border border-slate-200/50 space-y-2.5">
-                  <span className="text-[9px] font-black tracking-widest text-slate-400 uppercase block">INFO & KOORDINAT DESA</span>
-                  <div className="grid grid-cols-3 gap-2">
+                  <span className="text-[9px] font-black tracking-widest text-slate-400 uppercase block">INFO & KOORDINAT ENTITAS DATA</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                     <div>
-                      <label className="block text-[8px] font-bold text-slate-500 uppercase mb-0.5">Nama Desa</label>
+                      <label className="block text-[8px] font-bold text-slate-500 uppercase mb-0.5">Tingkat / Jenis Unit</label>
+                      <select
+                        value={editUnitType}
+                        onChange={(e) => setEditUnitType(e.target.value as UnitType)}
+                        className="w-full text-xs font-bold px-2 py-1.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-800 cursor-pointer"
+                      >
+                        <option value="Desa">🏞️ Desa</option>
+                        <option value="Kelurahan">🏙️ Kelurahan</option>
+                        <option value="Sekolah">🏫 Sekolah</option>
+                        <option value="Posyandu">🏥 Posyandu</option>
+                        <option value="Puskesmas">🏥 Puskesmas</option>
+                        <option value="Kabupaten">🏛️ Kabupaten</option>
+                        <option value="Propinsi">🌐 Propinsi</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[8px] font-bold text-slate-500 uppercase mb-0.5">Nama Unit / Wilayah</label>
                       <input
                         type="text"
                         value={editName}
@@ -941,15 +965,15 @@ export default function PetaRisiko({
         </div>
       </div>
 
-      {/* Add Village Modal */}
+      {/* Add Village / Unit Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-              <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">Tambah Desa Baru</h3>
+              <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">Tambah Unit / Wilayah Baru</h3>
               <button 
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-xs font-bold"
+                className="text-slate-400 hover:text-slate-600 text-xs font-bold cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -957,14 +981,31 @@ export default function PetaRisiko({
             
             <div className="p-6 space-y-4">
               <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                Sistem akan menambahkan desa baru dengan koordinat acak di peta dan inisialisasi form kosong. Anda dapat melengkapi datanya setelah desa ditambahkan.
+                Sistem dapat mencatat data berbagai entitas administrasi dan operasional: Desa, Kelurahan, Sekolah, Posyandu, Puskesmas, Kabupaten, atau Propinsi.
               </p>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Nama Desa / Kelurahan</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Tingkat / Jenis Unit Data</label>
+                <select
+                  value={newUnitType}
+                  onChange={(e) => setNewUnitType(e.target.value as UnitType)}
+                  className="w-full text-xs font-bold px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 bg-slate-50/50 text-slate-800 cursor-pointer"
+                >
+                  <option value="Desa">🏞️ Desa</option>
+                  <option value="Kelurahan">🏙️ Kelurahan</option>
+                  <option value="Sekolah">🏫 Sekolah / Satuan Pendidikan (PAUD/SD/SMP/SMA)</option>
+                  <option value="Posyandu">🏥 Posyandu</option>
+                  <option value="Puskesmas">🏥 Puskesmas / Kecamatan</option>
+                  <option value="Kabupaten">🏛️ Kabupaten / Kota</option>
+                  <option value="Propinsi">🌐 Propinsi</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Nama Unit / Wilayah</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Desa Karanganyar, Desa Pasir Luhur, dll."
+                  placeholder="Contoh: Kelurahan Mbay I, SD Negeri 1 Boawae, Posyandu Mawar, dll."
                   value={newVillageName}
                   onChange={(e) => setNewVillageName(e.target.value)}
                   className="w-full text-xs font-semibold px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 bg-slate-50/50"
@@ -976,13 +1017,13 @@ export default function PetaRisiko({
                 <button
                   onClick={handleAddVillage}
                   disabled={adding || !newVillageName.trim()}
-                  className="flex-1 text-center bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-xs font-bold py-2.5 rounded-xl transition-colors shadow-xs"
+                  className="flex-1 text-center bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-xs font-bold py-2.5 rounded-xl transition-colors shadow-xs cursor-pointer"
                 >
                   {adding ? "Menyimpan..." : "Tambah ke Basis Data"}
                 </button>
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2.5 text-center text-slate-500 hover:bg-slate-100 text-xs font-bold rounded-xl transition-colors border border-slate-200"
+                  className="px-4 py-2.5 text-center text-slate-500 hover:bg-slate-100 text-xs font-bold rounded-xl transition-colors border border-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>

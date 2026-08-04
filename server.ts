@@ -15,6 +15,7 @@ app.use(express.json());
 interface Village {
   id: string;
   name: string;
+  unitType?: "Desa" | "Kelurahan" | "Sekolah" | "Posyandu" | "Puskesmas" | "Kabupaten" | "Propinsi";
   riskLevel: "Hijau" | "Kuning" | "Merah";
   score: number;
   coordinates: { x: number; y: number };
@@ -376,18 +377,19 @@ app.post("/api/weights/update", (req, res) => {
   });
 });
 
-// API: Add New Village
+// API: Add New Village / Unit
 app.post("/api/villages/add", (req, res) => {
-  const { name } = req.body;
+  const { name, unitType } = req.body;
   if (!name || name.trim() === "") {
-    return res.status(400).json({ error: "Nama desa tidak boleh kosong." });
+    return res.status(400).json({ error: "Nama unit/wilayah tidak boleh kosong." });
   }
 
   const id = "v_" + Date.now();
-  // generate standard initial values for a new village so they can edit it
-  const newVillage = {
+  // generate standard initial values for a new village/unit so they can edit it
+  const newVillage: Village = {
     id,
     name: name.trim(),
+    unitType: unitType || "Desa",
     riskLevel: "Kuning" as const,
     score: 50,
     coordinates: {
@@ -486,9 +488,12 @@ app.post("/api/villages/update", (req, res) => {
     }
   };
 
-  // Update Name & position if present
+  // Update Name, unitType & position if present
   if (data.name && typeof data.name === "string" && data.name.trim() !== "") {
     v.name = data.name.trim();
+  }
+  if (data.unitType && typeof data.unitType === "string") {
+    v.unitType = data.unitType as any;
   }
   if (data.coordinates && typeof data.coordinates.x === "number" && typeof data.coordinates.y === "number") {
     v.coordinates = data.coordinates;

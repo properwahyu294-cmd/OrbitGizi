@@ -113,14 +113,20 @@ export default function IndexGauge({ score, category, weights, lastUpdated }: In
         </div>
       </div>
 
-      {/* District Status */}
+      {/* District & Unit Status */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col justify-between relative overflow-hidden">
         <div className={`absolute top-0 left-0 right-0 h-1.5 ${catInfo.bgColor}`}></div>
         
         <div>
-          <h3 className="text-xs font-bold tracking-widest text-slate-400 uppercase mb-3">
-            STATUS KABUPATEN
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-bold tracking-widest text-slate-400 uppercase">
+              STATUS KABUPATEN / WILAYAH
+            </h3>
+            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">
+              Multi-Level Unit
+            </span>
+          </div>
+
           <div className="flex items-center space-x-3 mb-4">
             <div className={`p-2.5 rounded-xl ${catInfo.ringColor} bg-slate-50 ring-4`}>
               {catInfo.icon}

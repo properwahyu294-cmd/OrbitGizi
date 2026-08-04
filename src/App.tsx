@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 
 // Types
-import { OrbitGiziData, Village, Pillar, Indicator, MBGBeneficiary, WeightRecord } from "./types";
+import { OrbitGiziData, Village, Pillar, Indicator, MBGBeneficiary, WeightRecord, UnitType } from "./types";
 import {
   getAppData,
   updateWeightsApi,
@@ -425,10 +425,10 @@ export default function App() {
     }
   };
 
-  // Handle adding a new village
-  const handleVillageAdd = async (name: string) => {
+  // Handle adding a new village or unit
+  const handleVillageAdd = async (name: string, unitType?: UnitType) => {
     try {
-      const json = await addVillageApi(name);
+      const json = await addVillageApi(name, unitType);
       setData(json);
       setRefreshTrigger(prev => prev + 1);
     } catch (e: any) {
@@ -838,49 +838,60 @@ export default function App() {
                   lastUpdated={data.lastUpdated}
                 />
                 
-                {/* Zona Sebaran Desa Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center space-x-3.5 shadow-2xs">
-                    <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
-                      <MapPin className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Zona Hijau (Aman)</span>
-                      <span className="text-lg font-black text-slate-800">
-                        {data.villages.filter(v => v.riskLevel === "Hijau").length} Desa
+                {/* Zona Sebaran Unit & Wilayah Cards */}
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white p-3 rounded-xl border border-slate-200">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs font-black text-slate-700 uppercase tracking-wider">Cakupan Wilayah & Unit Data:</span>
+                      <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">
+                        Multi-Level (Desa, Kelurahan, Sekolah, Posyandu, Puskesmas, Kabupaten)
                       </span>
                     </div>
                   </div>
 
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center space-x-3.5 shadow-2xs">
-                    <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
-                      <MapPin className="h-5 w-5" />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center space-x-3.5 shadow-2xs">
+                      <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                        <MapPin className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Zona Hijau (Aman)</span>
+                        <span className="text-lg font-black text-slate-800">
+                          {data.villages.filter(v => v.riskLevel === "Hijau").length} Unit / Wilayah
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Zona Kuning (Waspada)</span>
-                      <span className="text-lg font-black text-slate-800">
-                        {data.villages.filter(v => v.riskLevel === "Kuning").length} Desa
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center space-x-3.5 shadow-2xs">
-                    <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
-                      <MapPin className="h-5 w-5" />
+                    <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center space-x-3.5 shadow-2xs">
+                      <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+                        <MapPin className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Zona Kuning (Waspada)</span>
+                        <span className="text-lg font-black text-slate-800">
+                          {data.villages.filter(v => v.riskLevel === "Kuning").length} Unit / Wilayah
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Zona Merah (Rentan)</span>
-                      <span className="text-lg font-black text-slate-800">
-                        {data.villages.filter(v => v.riskLevel === "Merah").length} Desa
-                      </span>
+
+                    <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center space-x-3.5 shadow-2xs">
+                      <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
+                        <MapPin className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Zona Merah (Rentan)</span>
+                        <span className="text-lg font-black text-slate-800">
+                          {data.villages.filter(v => v.riskLevel === "Merah").length} Unit / Wilayah
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-slate-100/60 rounded-2xl p-4 border border-slate-200/60 flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="space-y-1">
-                    <h4 className="text-xs font-black text-slate-800 uppercase">Input Berkala Data Gizi Riil Desa</h4>
-                    <p className="text-[11px] text-slate-500">Mulai integrasikan data bulanan MBG, PMT, Posyandu, dan e-PPGBM menggunakan Modul Wizard.</p>
+                    <h4 className="text-xs font-black text-slate-800 uppercase">Input Berkala Data Gizi Riil Unit & Wilayah</h4>
+                    <p className="text-[11px] text-slate-500">Integrasikan data bulanan MBG, PMT, Posyandu, & e-PPGBM untuk Desa, Kelurahan, Sekolah, Posyandu, Puskesmas, atau Kabupaten.</p>
                   </div>
                   <button
                     onClick={() => setShowInputWizard(true)}
@@ -927,14 +938,14 @@ export default function App() {
                   />
                 </div>
 
-                {/* 8. Kinerja Desa (Leaderboard) */}
+                {/* 8. Kinerja Unit & Wilayah (Leaderboard) */}
                 <div className="xl:col-span-4">
                   <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs" id="kinerja-desa">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-2">
-                        <MapPin className="h-4.5 w-4.5 text-slate-500" />
-                        <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase">
-                          PERINGKAT KINERJA DESA
+                        <MapPin className="h-4.5 w-4.5 text-indigo-600" />
+                        <h3 className="text-xs font-black tracking-widest text-slate-500 uppercase">
+                          PERINGKAT KINERJA UNIT & WILAYAH
                         </h3>
                       </div>
                       <span className="text-[10px] font-bold text-slate-400">Total: {data.villages.length}</span>
@@ -944,7 +955,7 @@ export default function App() {
                     <div className="relative mb-3.5">
                       <input
                         type="text"
-                        placeholder="Cari desa..."
+                        placeholder="Cari desa, kelurahan, sekolah, posyandu..."
                         value={villageSearch}
                         onChange={(e) => setVillageSearch(e.target.value)}
                         className="w-full text-xs font-semibold pl-8 pr-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 bg-slate-50/50"
@@ -954,7 +965,7 @@ export default function App() {
 
                     <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
                       {filteredVillages.length === 0 ? (
-                        <p className="text-xs font-bold text-slate-400 text-center py-4">Desa tidak ditemukan.</p>
+                        <p className="text-xs font-bold text-slate-400 text-center py-4">Data unit/wilayah tidak ditemukan.</p>
                       ) : (
                         filteredVillages.map((v) => {
                           let riskColor = "bg-emerald-500";
@@ -967,15 +978,22 @@ export default function App() {
                             riskText = "text-amber-600 bg-amber-50";
                           }
 
+                          const uType = v.unitType || "Desa";
+
                           return (
                             <div 
                               key={v.id} 
                               className="flex items-center justify-between p-2.5 bg-white border border-slate-100 rounded-xl hover:shadow-2xs transition-shadow"
                             >
                               <div className="flex-1 pr-3">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-bold text-slate-800">{v.name}</span>
-                                  <span className="text-[9px] font-mono text-slate-400 font-semibold">{v.pilar5_stunting_curr} Kasus</span>
+                                <div className="flex items-center justify-between gap-1">
+                                  <div className="flex items-center space-x-1.5 truncate">
+                                    <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded">
+                                      {uType}
+                                    </span>
+                                    <span className="text-xs font-bold text-slate-800 truncate">{v.name}</span>
+                                  </div>
+                                  <span className="text-[9px] font-mono text-slate-400 font-semibold shrink-0">{v.pilar5_stunting_curr} Kasus</span>
                                 </div>
                                 <div className="h-1 w-full bg-slate-100 rounded-full mt-1.5 overflow-hidden">
                                   <div className={`h-full ${riskColor} rounded-full`} style={{ width: `${v.score}%` }}></div>

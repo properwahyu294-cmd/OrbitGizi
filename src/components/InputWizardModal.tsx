@@ -218,8 +218,8 @@ export default function InputWizardModal({
               <Database className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-black tracking-tight">Formulir Input Data & Indeks Desa</h2>
-              <p className="text-xs text-slate-400">Pembaruan indikator kinerja & lokasi berjenjang secara mandiri</p>
+              <h2 className="text-base font-black tracking-tight">Formulir Input Data & Indeks Entitas Wilayah</h2>
+              <p className="text-xs text-slate-400">Pembaruan indikator untuk Desa, Kelurahan, Sekolah, Posyandu, Puskesmas, atau Kabupaten</p>
             </div>
           </div>
 
@@ -240,7 +240,7 @@ export default function InputWizardModal({
             <div className="space-y-3">
               <div className="px-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">
-                  PILIH DESA SASARAN
+                  PILIH ENTITAS SASARAN
                 </label>
                 <select
                   value={selectedVillageId}
@@ -249,7 +249,7 @@ export default function InputWizardModal({
                 >
                   {villages.map((v) => (
                     <option key={v.id} value={v.id}>
-                      {v.name} ({v.riskLevel})
+                      [{v.unitType || "Desa"}] {v.name} ({v.riskLevel})
                     </option>
                   ))}
                 </select>

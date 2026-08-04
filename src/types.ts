@@ -43,9 +43,12 @@ export interface Pillar {
   indicators: Indicator[];
 }
 
+export type UnitType = "Desa" | "Kelurahan" | "Sekolah" | "Posyandu" | "Puskesmas" | "Kabupaten" | "Propinsi";
+
 export interface Village {
   id: string;
   name: string;
+  unitType?: UnitType;
   riskLevel: "Hijau" | "Kuning" | "Merah";
   score: number; // calculated village performance score (0-100)
   coordinates: {
