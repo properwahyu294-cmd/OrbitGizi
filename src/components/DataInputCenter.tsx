@@ -120,6 +120,7 @@ export default function DataInputCenter({
   const [showAddBenModal, setShowAddBenModal] = useState<boolean>(false);
   const [editingBenId, setEditingBenId] = useState<string | null>(null);
   const [benName, setBenName] = useState<string>("");
+  const [benParentName, setBenParentName] = useState<string>("");
   const [benNik, setBenNik] = useState<string>("");
   const [benGender, setBenGender] = useState<"Laki-laki" | "Perempuan">("Laki-laki");
   const [benAge, setBenAge] = useState<string>("7 Tahun");
@@ -139,6 +140,7 @@ export default function DataInputCenter({
   const handleOpenAddBenModal = () => {
     setEditingBenId(null);
     setBenName("");
+    setBenParentName("");
     setBenNik("");
     setBenGender("Laki-laki");
     setBenAge("7 Tahun");
@@ -158,6 +160,7 @@ export default function DataInputCenter({
   const handleOpenEditBenModal = (b: MBGBeneficiary) => {
     setEditingBenId(b.id);
     setBenName(b.name);
+    setBenParentName(b.parentName || "");
     setBenNik(b.nik || "");
     setBenGender(b.gender || "Laki-laki");
     setBenAge(b.age || "");
@@ -246,6 +249,7 @@ export default function DataInputCenter({
   const filteredBeneficiaries = useMemo(() => {
     return beneficiaries.filter(b => {
       const matchSearch = b.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (b.parentName && b.parentName.toLowerCase().includes(searchTerm.toLowerCase())) ||
                           (b.nik && b.nik.includes(searchTerm)) ||
                           b.location.kelurahan.toLowerCase().includes(searchTerm.toLowerCase());
       const matchCategory = categoryFilter === "ALL" || b.category === categoryFilter;
@@ -299,6 +303,7 @@ export default function DataInputCenter({
     const savedBen: MBGBeneficiary = {
       id: editingBenId || ("ben_" + Date.now()),
       name: benName.trim(),
+      parentName: benParentName.trim() || undefined,
       nik: benNik.trim() || `5316${Math.floor(1000000000 + Math.random() * 9000000000)}`,
       gender: benGender,
       age: benAge.trim() || undefined,
@@ -320,6 +325,7 @@ export default function DataInputCenter({
     onSaveBeneficiary(savedBen);
     setEditingBenId(null);
     setBenName("");
+    setBenParentName("");
     setBenNik("");
     setBenGender("Laki-laki");
     setBenAge("7 Tahun");
@@ -749,7 +755,12 @@ export default function DataInputCenter({
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 mt-0.5">
+                          {b.parentName && (
+                            <p className="text-[10px] font-bold text-indigo-700 mt-0.5">
+                              Ortu/Wali: <span className="font-semibold text-slate-700">{b.parentName}</span>
+                            </p>
+                          )}
+                          <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
                             <span className="font-mono">NIK: {b.nik || "-"}</span>
                             {b.age && <span className="text-slate-700 font-bold">• {b.age}</span>}
                             {b.birthDate && <span className="text-slate-400 font-mono">• Lahir: {b.birthDate}</span>}
@@ -1012,15 +1023,26 @@ export default function DataInputCenter({
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">NIK / NISN (OPSIONAL)</label>
+                  <label className="font-bold text-slate-700 block mb-1">NAMA ORANG TUA / WALI (OPSIONAL)</label>
                   <input
                     type="text"
-                    placeholder="5316..."
-                    value={benNik}
-                    onChange={(e) => setBenNik(e.target.value)}
+                    placeholder="Contoh: Bpk. Yohanes & Ibu Maria"
+                    value={benParentName}
+                    onChange={(e) => setBenParentName(e.target.value)}
                     className="w-full border border-slate-200 rounded-xl p-2.5 font-medium focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">NIK / NISN (OPSIONAL)</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: 5316010101210001"
+                  value={benNik}
+                  onChange={(e) => setBenNik(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl p-2.5 font-medium focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                />
               </div>
 
               {/* JENIS KELAMIN, UMUR, TANGGAL LAHIR */}

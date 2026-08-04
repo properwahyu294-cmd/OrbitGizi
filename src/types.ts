@@ -18,6 +18,7 @@ export interface WeightRecord {
 export interface MBGBeneficiary {
   id: string;
   name: string;
+  parentName?: string; // Nama Orang Tua / Wali
   nik?: string;
   gender?: "Laki-laki" | "Perempuan";
   age?: string; // e.g. "3 Tahun", "7 Tahun", "14 Tahun", "28 Tahun"

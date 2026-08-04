@@ -62,6 +62,7 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
   {
     id: "ben_1",
     name: "Maria Clarita",
+    parentName: "Petrus Lada & Katarina",
     nik: "5316010101210001",
     gender: "Perempuan",
     age: "2 Tahun",
@@ -88,6 +89,7 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
   {
     id: "ben_2",
     name: "Yohanes Dapa",
+    parentName: "Stefanus Dapa",
     nik: "5316011205160002",
     gender: "Laki-laki",
     age: "8 Tahun",
