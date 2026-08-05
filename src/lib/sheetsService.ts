@@ -241,24 +241,25 @@ export async function syncToGoogleSheets(
     ["ID", "Nama Beneficiary", "Nama Orang Tua/Wali", "NIK", "Gender", "Usia", "Kategori", "Propinsi", "Kabupaten", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Menerima MBG", "Catatan"]
   ];
   try {
-    const mbgData = JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
+    let mbgData = JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
+    if (!Array.isArray(mbgData)) mbgData = [];
     mbgData.forEach((b: any) => {
       mbgValues.push([
-        b.id,
-        b.name,
-        b.parentName || "-",
-        b.nik || "-",
-        b.gender || "-",
-        b.age || "-",
-        b.category,
-        b.location?.propinsi || "-",
-        b.location?.kabupaten || "-",
-        b.location?.puskesmas || "-",
-        b.location?.kelurahan || "-",
-        b.location?.dusun || "-",
-        b.location?.posyandu || "-",
-        b.isReceivedMBG ? "YA" : "TIDAK",
-        b.notes || "-"
+        b?.id || "-",
+        b?.name || "-",
+        b?.parentName || "-",
+        b?.nik || "-",
+        b?.gender || "-",
+        b?.age || "-",
+        b?.category || "-",
+        b?.location?.propinsi || "-",
+        b?.location?.kabupaten || "-",
+        b?.location?.puskesmas || "-",
+        b?.location?.kelurahan || "-",
+        b?.location?.dusun || "-",
+        b?.location?.posyandu || "-",
+        b?.isReceivedMBG ? "YA" : "TIDAK",
+        b?.notes || "-"
       ]);
     });
   } catch (e) {
@@ -270,20 +271,21 @@ export async function syncToGoogleSheets(
     ["ID", "Nama Ibu", "Umur", "NIK", "Alamat", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Usia Kehamilan", "Catatan"]
   ];
   try {
-    const ibuHamilData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
+    let ibuHamilData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
+    if (!Array.isArray(ibuHamilData)) ibuHamilData = [];
     ibuHamilData.forEach((b: any) => {
       ibuHamilValues.push([
-        b.id,
-        b.namaIbu,
-        b.umur,
-        b.nik,
-        b.alamat,
-        b.puskesmas || "-",
-        b.kelurahan || "-",
-        b.dusun || "-",
-        b.posyandu || "-",
-        b.usiaKehamilan || "-",
-        b.catatan || "-"
+        b?.id || "-",
+        b?.namaIbu || "-",
+        b?.umur || "-",
+        b?.nik || "-",
+        b?.alamat || "-",
+        b?.puskesmas || "-",
+        b?.kelurahan || "-",
+        b?.dusun || "-",
+        b?.posyandu || "-",
+        b?.usiaKehamilan || "-",
+        b?.catatan || "-"
       ]);
     });
   } catch (e) {
@@ -295,20 +297,21 @@ export async function syncToGoogleSheets(
     ["ID", "Nama Ibu", "Umur", "NIK", "Alamat", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Nama Bayi", "Catatan"]
   ];
   try {
-    const ibuMenyusuiData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
+    let ibuMenyusuiData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
+    if (!Array.isArray(ibuMenyusuiData)) ibuMenyusuiData = [];
     ibuMenyusuiData.forEach((b: any) => {
       ibuMenyusuiValues.push([
-        b.id,
-        b.namaIbu,
-        b.umur,
-        b.nik,
-        b.alamat,
-        b.puskesmas || "-",
-        b.kelurahan || "-",
-        b.dusun || "-",
-        b.posyandu || "-",
-        b.bayiNama || "-",
-        b.catatan || "-"
+        b?.id || "-",
+        b?.namaIbu || "-",
+        b?.umur || "-",
+        b?.nik || "-",
+        b?.alamat || "-",
+        b?.puskesmas || "-",
+        b?.kelurahan || "-",
+        b?.dusun || "-",
+        b?.posyandu || "-",
+        b?.bayiNama || "-",
+        b?.catatan || "-"
       ]);
     });
   } catch (e) {
@@ -319,34 +322,38 @@ export async function syncToGoogleSheets(
   const catatanTimbangValues = [
     ["ID Penerima", "Nama", "Kategori", "Periode", "Berat (kg)", "Tinggi (cm)", "Status Gizi", "Waktu Pengukuran"]
   ];
-  
+    
   try {
     const processRecords = (data: any[], categoryStr: string | null = null) => {
+      if (!Array.isArray(data)) return;
       data.forEach(b => {
-        if (b.weightRecords && b.weightRecords.length > 0) {
+        if (b && b.weightRecords && Array.isArray(b.weightRecords)) {
           b.weightRecords.forEach((record: any) => {
             catatanTimbangValues.push([
-              b.id,
-              b.name || b.namaIbu,
-              categoryStr || b.category,
-              record.period,
-              record.weightKg,
-              record.heightCm || "-",
-              record.statusGizi || "-",
-              record.measuredAt || "-"
+              b?.id || "-",
+              b?.name || b?.namaIbu || "-",
+              categoryStr || b?.category || "-",
+              record?.period || "-",
+              record?.weightKg != null ? record.weightKg : "-",
+              record?.heightCm != null ? record.heightCm : "-",
+              record?.statusGizi || "-",
+              record?.measuredAt || "-"
             ]);
           });
         }
       });
     };
 
-    const mbgData = JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
+    let mbgData = JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
+    if (!Array.isArray(mbgData)) mbgData = [];
     processRecords(mbgData);
 
-    const ibuHamilData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
+    let ibuHamilData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
+    if (!Array.isArray(ibuHamilData)) ibuHamilData = [];
     processRecords(ibuHamilData, "Ibu Hamil");
 
-    const ibuMenyusuiData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
+    let ibuMenyusuiData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
+    if (!Array.isArray(ibuMenyusuiData)) ibuMenyusuiData = [];
     processRecords(ibuMenyusuiData, "Ibu Menyusui");
   } catch (e) {
     console.error(e);
