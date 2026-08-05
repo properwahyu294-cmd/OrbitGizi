@@ -562,7 +562,7 @@ export default function DataInputCenter({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-black text-slate-900">
-                Pusat Integrasi Data Desa / Kelurahan: {selectedKelurahan}
+                Pusat Sinkronisasi Data Desa / Kelurahan: {selectedKelurahan}
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 Wilayah: {selectedPropinsi} → {selectedKabupaten} → {selectedPuskesmas} → {selectedKelurahan}
