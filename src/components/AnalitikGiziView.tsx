@@ -452,7 +452,7 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
             <div className="flex items-center space-x-2">
               <Database className="h-5 w-5 text-indigo-600" />
               <h3 className="text-xs font-black tracking-widest text-slate-800 uppercase">
-                STATUS INTEGRASI DATA
+                STATUS SINKRONISASI DATA
               </h3>
             </div>
             <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">
