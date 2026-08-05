@@ -1,6 +1,6 @@
 {
   "name": "Orbit Gizi",
-  "description": "Dashboard Transformasi Orbit Gizi Kabupaten Nagekeo untuk integrasi data gizi (MBG, PMT, Posyandu, e-PPGBM), analisis risiko, prioritas sasaran, dan rekomendasi kebijakan berbasis AI.",
+  "description": "Dashboard Transformasi Orbit Gizi Kabupaten Nagekeo untuk sinkronisasi data gizi (MBG, PMT, Posyandu, e-PPGBM), analisis risiko, prioritas sasaran, dan rekomendasi kebijakan berbasis AI.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
