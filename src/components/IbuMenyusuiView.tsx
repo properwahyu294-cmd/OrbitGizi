@@ -94,9 +94,11 @@ export default function IbuMenyusuiView() {
       try {
         return JSON.parse(stored);
       } catch {
+        localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(DEFAULT_IBU_MENYUSUI));
         return DEFAULT_IBU_MENYUSUI;
       }
     }
+    localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(DEFAULT_IBU_MENYUSUI));
     return DEFAULT_IBU_MENYUSUI;
   });
 

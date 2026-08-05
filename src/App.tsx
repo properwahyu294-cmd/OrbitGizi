@@ -519,9 +519,11 @@ export default function App() {
       try {
         return JSON.parse(stored);
       } catch {
+        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(DEFAULT_BENEFICIARIES));
         return DEFAULT_BENEFICIARIES;
       }
     }
+    localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(DEFAULT_BENEFICIARIES));
     return DEFAULT_BENEFICIARIES;
   });
 

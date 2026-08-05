@@ -68,9 +68,11 @@ export default function IbuHamilView() {
       try {
         return JSON.parse(stored);
       } catch {
+        localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(DEFAULT_IBU_HAMIL));
         return DEFAULT_IBU_HAMIL;
       }
     }
+    localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(DEFAULT_IBU_HAMIL));
     return DEFAULT_IBU_HAMIL;
   });
 
