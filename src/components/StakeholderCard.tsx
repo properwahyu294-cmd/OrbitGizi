@@ -113,7 +113,7 @@ export default function StakeholderCard({ pillar2 }: StakeholderCardProps) {
       </div>
 
       <div className="mt-4 pt-3.5 border-t border-slate-100">
-        <span className="text-[9px] font-black text-slate-400 uppercase block mb-1">Realisasi Program Terintegrasi</span>
+        <span className="text-[9px] font-black text-slate-400 uppercase block mb-1">Realisasi Program Tersinkronisasi</span>
         <div className="flex items-center justify-between text-xs text-slate-600">
           <div className="flex items-center space-x-1 font-semibold">
             <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />

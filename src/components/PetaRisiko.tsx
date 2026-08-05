@@ -592,12 +592,12 @@ export default function PetaRisiko({
                   </div>
                 </div>
 
-                {/* Section: Pilar 1 - Integrasi Data Gizi */}
+                {/* Section: Pilar 1 - Sinkronisasi Data Gizi */}
                 <div className="bg-white p-3 rounded-xl border border-slate-200/80 space-y-3">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
                     <span className="text-[9px] font-black tracking-widest text-slate-400 uppercase flex items-center space-x-1">
                       <Database className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                      <span>P1: INTEGRASI DATA GIZI (SINKRON / TOTAL)</span>
+                      <span>P1: SINKRONISASI DATA GIZI (SINKRON / TOTAL)</span>
                     </span>
                   </div>
                   

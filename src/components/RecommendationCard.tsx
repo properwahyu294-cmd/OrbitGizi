@@ -164,7 +164,7 @@ export default function RecommendationCard({ lastUpdated, triggerRefresh }: Reco
               <div className="absolute inset-0 rounded-lg border-4 border-emerald-500 border-t-transparent animate-spin"></div>
             </div>
             <p className="text-xs font-bold text-slate-500">Menganalisis indikator dan risiko spasial desa...</p>
-            <p className="text-[10px] text-slate-400 mt-1">Mengintegrasikan data indikator untuk merumuskan kebijakan secara dinamis</p>
+            <p className="text-[10px] text-slate-400 mt-1">Mengsinkronisasikan data indikator untuk merumuskan kebijakan secara dinamis</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-10 text-center h-full">
@@ -187,7 +187,7 @@ export default function RecommendationCard({ lastUpdated, triggerRefresh }: Reco
       {/* Footer Controls */}
       <div className="border-t border-slate-100 px-5 py-3.5 bg-slate-50/50 flex items-center justify-between mt-auto">
         <div className="text-[10px] text-slate-400 font-mono">
-          Sistem Orbit Gizi Terintegrasi
+          Sistem Orbit Gizi Tersinkronisasi
         </div>
         <div className="flex space-x-2">
           <button

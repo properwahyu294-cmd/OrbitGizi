@@ -168,7 +168,7 @@ export default function IndexGauge({ score, category, weights, lastUpdated }: In
           <div className="space-y-3">
             <div>
               <div className="flex justify-between text-xs text-slate-600 font-medium mb-1">
-                <span>P1. Integrasi Data</span>
+                <span>P1. Sinkronisasi Data</span>
                 <span>{(weights.pilar1 * 100).toFixed(0)}%</span>
               </div>
               <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">

@@ -127,7 +127,7 @@ export async function syncToGoogleSheets(
 
   // Prepare Ringkasan Indeks data
   const summaryValues = [
-    ["LAPORAN INDEKS TRANSFORMASI ORBIT GIZI (TERINTEGRASI SINKRON)", ""],
+    ["LAPORAN INDEKS TRANSFORMASI ORBIT GIZI (TERSINKRONISASI SINKRON)", ""],
     ["Kabupaten:", kabupatenName],
     ["Waktu Sinkronisasi:", new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }) + " WITA"],
     ["Skor Indeks Kabupaten:", `${data.indexScore} / 100`],

@@ -88,7 +88,7 @@ export interface Village {
   };
   locationHierarchy?: LocationHierarchy;
 
-  // Pilar 1: Integrasi Data (raw counts)
+  // Pilar 1: Sinkronisasi Data (raw counts)
   pilar1_mbg_sync: number;
   pilar1_mbg_total: number;
   pilar1_pmt_sync: number;

@@ -787,7 +787,7 @@ export default function App() {
           <div className="absolute inset-0 rounded-xl border-4 border-emerald-500 border-t-transparent animate-spin"></div>
         </div>
         <p className="text-sm font-bold text-slate-600 animate-pulse">Memuat Panel Transformasi Orbit Gizi...</p>
-        <p className="text-xs text-slate-400 mt-1">Mengintegrasikan basis data MBG, PMT, Posyandu & e-PPGBM</p>
+        <p className="text-xs text-slate-400 mt-1">Mengsinkronisasikan basis data MBG, PMT, Posyandu & e-PPGBM</p>
       </div>
     );
   }
@@ -821,7 +821,7 @@ export default function App() {
 
   // Extract Pilar 2 (Kolaborasi)
   const pillar2 = data.pillars.find(p => p.id === "pilar2")!;
-  // Extract Pilar 1 (Integrasi Data)
+  // Extract Pilar 1 (Sinkronisasi Data)
   const pillar1 = data.pillars.find(p => p.id === "pilar1")!;
 
   return (
@@ -957,7 +957,7 @@ export default function App() {
                 {
                   id: "analitik",
                   name: "Analitik Gizi (MBG/PMT)",
-                  desc: "Grafik & Integrasi Data",
+                  desc: "Grafik & Sinkronisasi Data",
                   icon: <Activity className="h-4.5 w-4.5" />
                 },
                 {
@@ -1106,7 +1106,7 @@ export default function App() {
             <div className="hidden lg:block bg-slate-900 text-slate-300 rounded-2xl p-4.5 border border-slate-800 shadow-xs space-y-3.5">
               <div className="flex items-center space-x-2">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span className="text-[10px] font-black text-indigo-400 tracking-wider uppercase">SISTEM INTEGRASI</span>
+                <span className="text-[10px] font-black text-indigo-400 tracking-wider uppercase">SISTEM SINKRONISASI</span>
               </div>
               <div>
                 <span className="text-[11px] font-bold text-slate-400 block">Kecamatan Pantauan</span>
@@ -1190,7 +1190,7 @@ export default function App() {
                 <div className="bg-slate-100/60 rounded-2xl p-4 border border-slate-200/60 flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="space-y-1">
                     <h4 className="text-xs font-black text-slate-800 uppercase">Input Berkala Data Gizi Riil Unit & Wilayah</h4>
-                    <p className="text-[11px] text-slate-500">Integrasikan data bulanan MBG, PMT, Posyandu, & e-PPGBM untuk Desa, Kelurahan, Posyandu, Puskesmas, atau Kabupaten.</p>
+                    <p className="text-[11px] text-slate-500">Sinkronisasikan data bulanan MBG, PMT, Posyandu, & e-PPGBM untuk Desa, Kelurahan, Posyandu, Puskesmas, atau Kabupaten.</p>
                   </div>
                   <button
                     onClick={() => setShowInputWizard(true)}
@@ -1370,7 +1370,7 @@ export default function App() {
 
       {/* Footer Branding */}
       <footer className="mt-12 bg-slate-900 border-t border-slate-800 text-slate-400 py-6 text-center text-xs font-medium">
-        <p>© 2026 Orbit Gizi Kabupaten • Sistem Analisis Gizi Terintegrasi Nasional</p>
+        <p>© 2026 Orbit Gizi Kabupaten • Sistem Analisis Gizi Tersinkronisasi Nasional</p>
         <p className="text-[10px] text-slate-600 mt-1">Dinkes • Badan Gizi Nasional • PKK • Pemdes • Puskesmas</p>
       </footer>
 
@@ -1402,7 +1402,7 @@ export default function App() {
               <div className="space-y-3.5">
                 <div>
                   <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                    <span>P1. Integrasi Data</span>
+                    <span>P1. Sinkronisasi Data</span>
                     <span>{weightP1}%</span>
                   </div>
                   <input 

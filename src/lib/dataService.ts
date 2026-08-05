@@ -565,13 +565,13 @@ function buildLocalAppData(): OrbitGiziData {
   const pillarsList: Pillar[] = [
     {
       id: "pilar1",
-      name: "Pilar 1. Integrasi Data",
+      name: "Pilar 1. Sinkronisasi Data",
       weight: Math.round(localWeights.pilar1 * 100),
       indicators: [
-        { id: "mbg_data", name: "Data MBG Terintegrasi", score: mbg_data_score, description: `Penerima data MBG tersinkronisasi (${mbg_sync_sum} dari ${mbg_total_sum} anak)` },
-        { id: "pmt_data", name: "Data PMT Terintegrasi", score: pmt_data_score, description: `Data ibu hamil KEK & balita gizi kurang tersinkronisasi (${pmt_sync_sum} dari ${pmt_total_sum} sasaran)` },
+        { id: "mbg_data", name: "Data MBG Tersinkronisasi", score: mbg_data_score, description: `Penerima data MBG tersinkronisasi (${mbg_sync_sum} dari ${mbg_total_sum} anak)` },
+        { id: "pmt_data", name: "Data PMT Tersinkronisasi", score: pmt_data_score, description: `Data ibu hamil KEK & balita gizi kurang tersinkronisasi (${pmt_sync_sum} dari ${pmt_total_sum} sasaran)` },
         { id: "posyandu_data", name: "Data Posyandu Digital", score: posyandu_data_score, description: `Data pendaftaran & pengukuran posyandu terdigitalisasi (${pos_sync_sum} dari ${pos_total_sum} unit)` },
-        { id: "eppgbm_data", name: "Data e-PPGBM Sinkron", score: eppgbm_data_score, description: `Integrasi dengan e-PPGBM Kemenkes RI (${epp_sync_sum} dari ${epp_total_sum} balita)` },
+        { id: "eppgbm_data", name: "Data e-PPGBM Sinkron", score: eppgbm_data_score, description: `Sinkronisasi dengan e-PPGBM Kemenkes RI (${epp_sync_sum} dari ${epp_total_sum} balita)` },
       ]
     },
     {
@@ -995,7 +995,7 @@ function generateLocalRecommendations(aggregatedData: OrbitGiziData): { text: st
 
 #### 1. ⚠️ Analisis Risiko Utama (Fokus pada Pilar Terlemah)
 Berdasarkan analisis performa, **${weakestPillar.name}** adalah pilar dengan skor rata-rata terendah yaitu **${lowestAvg.toFixed(1)}/100**. 
-* **Risiko Fatal**: Hambatan utama terletak pada indikator dengan skor di bawah optimal. Jika tidak segera diintervensi, kesenjangan data dan kurangnya integrasi layanan akan menyebabkan bantuan makanan bergizi gratis (MBG) dan pemberian makanan tambahan (PMT) salah sasaran.
+* **Risiko Fatal**: Hambatan utama terletak pada indikator dengan skor di bawah optimal. Jika tidak segera diintervensi, kesenjangan data dan kurangnya sinkronisasi layanan akan menyebabkan bantuan makanan bergizi gratis (MBG) dan pemberian makanan tambahan (PMT) salah sasaran.
 * **Kerentanan Sektoral**: Koordinasi antar-instansi (OPD) seperti Dinas Kesehatan, PKK, dan Pemerintah Desa masih perlu disinkronkan, terutama dalam pemanfaatan Dana Desa untuk posyandu aktif dan pendampingan gizi di lapangan.
 
 #### 2. 🎯 Prioritas Sasaran (Desa Berisiko Tinggi)
@@ -1006,13 +1006,13 @@ Berdasarkan analisis performa, **${weakestPillar.name}** adalah pilar dengan sko
 * **Aktivasi Posyandu Mandiri (Kolaborasi Pemdes & Dinkes & PKK)**:
   Bupati mengeluarkan Instruksi Bersama untuk mewajibkan alokasi minimal 10% Dana Desa untuk operasional Posyandu, insentif kader PKK, dan pengadaan timbangan digital standar Kemenkes.
 * **Sinkronisasi Data Multi-Sektor (Kolaborasi BGN & Dinkes)**:
-  Mengintegrasikan sistem pelaporan e-PPGBM Puskesmas secara real-time dengan data penerima program Makan Bergizi Gratis (MBG) dari Badan Gizi Nasional untuk memastikan balita *stunting* mendapat porsi protein ganda.
+  Mengsinkronisasikan sistem pelaporan e-PPGBM Puskesmas secara real-time dengan data penerima program Makan Bergizi Gratis (MBG) dari Badan Gizi Nasional untuk memastikan balita *stunting* mendapat porsi protein ganda.
 * **Gerakan Home Visit Terpadu (Kolaborasi Puskesmas & Kader PKK)**:
   Meluncurkan program *"Satu Kader Satu Balita Berisiko Gizi"* untuk kunjungan rumah mingguan guna memantau asupan PMT lokal secara langsung di rumah tangga sasaran.
 
 #### 4. 📈 Target Jangka Pendek (3 Bulan)
 * Re-aktivasi Posyandu di Desa prioritas tinggi menjadi 100% Aktif pada bulan pertama.
-* Integrasi data rujukan e-PPGBM dan MBG mencapai 95% tingkat kevalidan.
+* Sinkronisasi data rujukan e-PPGBM dan MBG mencapai 95% tingkat kevalidan.
 * Penurunan jumlah balita berisiko stunting di Desa Prioritas minimal sebesar 15% melalui pemantauan intensif.
   `;
 

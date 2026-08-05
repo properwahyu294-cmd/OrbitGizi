@@ -267,7 +267,7 @@ export default function InputWizardModal({
                   }`}
                 >
                   <Activity className="h-4 w-4 shrink-0" />
-                  <span>1. Integrasi & Realisasi MBG</span>
+                  <span>1. Sinkronisasi & Realisasi MBG</span>
                 </button>
 
                 <button
@@ -343,7 +343,7 @@ export default function InputWizardModal({
               {activeTab === "mbg" && (
                 <div className="space-y-5 animate-in fade-in duration-150">
                   <div className="border-b border-slate-100 pb-3">
-                    <h3 className="text-base font-black text-slate-900">🍱 Integrasi & Realisasi Makan Bergizi Gratis (MBG)</h3>
+                    <h3 className="text-base font-black text-slate-900">🍱 Sinkronisasi & Realisasi Makan Bergizi Gratis (MBG)</h3>
                     <p className="text-xs text-slate-500 mt-0.5">Atur keterhubungan data sasaran anak & realisasi distribusi harian.</p>
                   </div>
 
@@ -497,7 +497,7 @@ export default function InputWizardModal({
               {activeTab === "eppgbm" && (
                 <div className="space-y-5 animate-in fade-in duration-150">
                   <div className="border-b border-slate-100 pb-3">
-                    <h3 className="text-base font-black text-slate-900">📊 Integrasi Data e-PPGBM Kemenkes RI</h3>
+                    <h3 className="text-base font-black text-slate-900">📊 Sinkronisasi Data e-PPGBM Kemenkes RI</h3>
                     <p className="text-xs text-slate-500 mt-0.5">Tingkat kelengkapan entri penimbangan balita e-PPGBM.</p>
                   </div>
 

@@ -14,7 +14,7 @@ export default function TheoryOfChange({ onInputClick }: { onInputClick?: () => 
       icon: <Settings className="h-5 w-5 text-cyan-500" />,
       color: "border-cyan-200 bg-cyan-50/50 text-cyan-900",
       accent: "bg-cyan-500",
-      items: ["Integrasi data", "Validasi Berjenjang", "Analisis Risiko"],
+      items: ["Sinkronisasi data", "Validasi Berjenjang", "Analisis Risiko"],
     },
     {
       title: "OUTPUT",

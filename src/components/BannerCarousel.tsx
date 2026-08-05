@@ -341,7 +341,7 @@ export default function BannerCarousel() {
               <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
                 <p className="font-bold text-slate-800">Catatan Pelaksanaan:</p>
                 <p className="text-slate-600">
-                  Seluruh kegiatan penimbangan posyandu dan pemantauan gizi terintegrasi otomatis dengan sistem e-PPGBM Puskesmas Boawae. Pastikan data terekam dengan akurat setiap bulan.
+                  Seluruh kegiatan penimbangan posyandu dan pemantauan gizi tersinkronisasi otomatis dengan sistem e-PPGBM Puskesmas Boawae. Pastikan data terekam dengan akurat setiap bulan.
                 </p>
               </div>
             </div>
