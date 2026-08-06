@@ -173,7 +173,7 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
       </div>
 
       {/* Dynamic Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex items-center justify-between">
           <div>
             <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">Total Penerima Input</span>
@@ -190,7 +190,7 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
 
         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex items-center justify-between">
           <div>
-            <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">Total Catatan Pengukuran BB</span>
+            <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">Total Pengukuran BB</span>
             <span className="text-2xl font-black text-slate-900 mt-0.5 block">
               {beneficiaries.reduce((acc, b) => acc + (b.weightRecords ? b.weightRecords.length : 0), 0)} <span className="text-xs font-bold text-slate-500">Entri</span>
             </span>
@@ -206,9 +206,9 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
 
         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex items-center justify-between">
           <div>
-            <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">Cakupan Terlayani MBG</span>
+            <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">Terlayani MBG</span>
             <span className="text-2xl font-black text-slate-900 mt-0.5 block">
-              {beneficiaries.filter((b) => b.isReceivedMBG).length} <span className="text-xs font-bold text-slate-500">Anak</span>
+              {beneficiaries.filter((b) => b.isReceivedMBG !== false).length} <span className="text-xs font-bold text-slate-500">Anak</span>
             </span>
             <span className="text-[10px] text-amber-600 font-semibold mt-1 flex items-center space-x-1">
               <Sparkles className="h-3 w-3" />
@@ -221,6 +221,22 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">Terlayani PMT Pemulihan</span>
+            <span className="text-2xl font-black text-purple-900 mt-0.5 block">
+              {beneficiaries.filter((b) => b.isReceivedPMT !== false).length} <span className="text-xs font-bold text-purple-600">Sasaran</span>
+            </span>
+            <span className="text-[10px] text-purple-600 font-semibold mt-1 flex items-center space-x-1">
+              <CheckCircle2 className="h-3 w-3" />
+              <span>Makanan Tambahan</span>
+            </span>
+          </div>
+          <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
+            <Database className="h-6 w-6" />
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex items-center justify-between col-span-1 sm:col-span-2 lg:col-span-1">
           <div>
             <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">Rata-rata BB Anak</span>
             <span className="text-2xl font-black text-slate-900 mt-0.5 block">

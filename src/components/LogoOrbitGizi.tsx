@@ -11,6 +11,7 @@ interface LogoOrbitGiziProps {
   onSync?: () => void;
   syncingSheets?: boolean;
   sheetsSyncUrl?: string | null;
+  onOpenLauncher?: () => void;
 }
 
 export default function LogoOrbitGizi({ 
@@ -19,7 +20,8 @@ export default function LogoOrbitGizi({
   onLogin,
   onSync,
   syncingSheets,
-  sheetsSyncUrl
+  sheetsSyncUrl,
+  onOpenLauncher
 }: LogoOrbitGiziProps) {
   const [customLogo, setCustomLogo] = useState<string | null>(() => {
     return localStorage.getItem("orbit_gizi_custom_logo") || null;
@@ -153,6 +155,17 @@ export default function LogoOrbitGizi({
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mt-4 lg:mt-0 justify-center">
+        {onOpenLauncher && (
+          <button
+            onClick={onOpenLauncher}
+            className="flex items-center space-x-1.5 text-xs font-black text-slate-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-xs"
+            title="Kembali ke Halaman Utama Launcher"
+          >
+            <RotateCcw className="h-3.5 w-3.5 text-emerald-700" />
+            <span>Laman Launcher</span>
+          </button>
+        )}
+
         {currentUser ? (
           <>
             {/* Sync Status Badge */}

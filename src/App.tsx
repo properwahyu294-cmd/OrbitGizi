@@ -61,6 +61,7 @@ import { AnalitikGiziView } from "./components/AnalitikGiziView";
 import IbuMenyusuiView from "./components/IbuMenyusuiView";
 import IbuHamilView from "./components/IbuHamilView";
 import BannerCarousel from "./components/BannerCarousel";
+import { LauncherLanding } from "./components/LauncherLanding";
 
 const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
   {
@@ -585,6 +586,7 @@ export default function App() {
   const [showInputWizard, setShowInputWizard] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [showLauncher, setShowLauncher] = useState<boolean>(true);
 
   // Firebase & Google Sheets integration state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -916,6 +918,18 @@ export default function App() {
   // Extract Pilar 1 (Sinkronisasi Data)
   const pillar1 = data.pillars.find(p => p.id === "pilar1")!;
 
+  if (showLauncher) {
+    return (
+      <LauncherLanding
+        onLaunchDashboard={() => setShowLauncher(false)}
+        totalBeneficiariesCount={beneficiaries.length}
+        totalMbgCount={beneficiaries.filter(b => b.isReceivedMBG !== false).length}
+        totalPmtCount={beneficiaries.filter(b => b.isReceivedPMT !== false).length}
+        selectedKabupaten={data.kabupatenName || "Kabupaten Nagekeo"}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
       {/* 1. Header & Brand Logo */}
@@ -926,6 +940,7 @@ export default function App() {
         onSync={handleSyncSheets}
         syncingSheets={syncingSheets}
         sheetsSyncUrl={sheetsSyncUrl}
+        onOpenLauncher={() => setShowLauncher(true)}
       />
 
       <main className="flex-1 max-w-[1400px] w-full mx-auto p-4 sm:p-6 space-y-6">
