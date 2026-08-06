@@ -1350,66 +1350,66 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
       <div id="printable-portfolio-report" className="hidden print:block text-slate-900 font-sans space-y-6 text-xs bg-white p-0">
         
         {/* COVER PAGE (PAGE 1) */}
-        <div className="print-cover-page flex flex-col justify-between min-h-[92vh] bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 text-white p-8 rounded-3xl border-4 border-emerald-500/40 shadow-2xl relative overflow-hidden">
+        <div className="print-cover-page flex flex-col justify-between min-h-[92vh] bg-gradient-to-br from-slate-50 via-blue-50/70 to-indigo-100/60 text-slate-900 p-8 rounded-3xl border-2 border-blue-300/80 shadow-xl relative overflow-hidden">
           {/* Decorative background watermark seal */}
-          <div className="absolute -right-16 -bottom-16 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute -left-16 -top-16 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -right-16 -bottom-16 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -left-16 -top-16 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="space-y-6 pt-4 relative z-10">
-            <div className="flex items-center justify-between border-b border-emerald-500/30 pb-6">
+            <div className="flex items-center justify-between border-b border-blue-200 pb-6">
               <div className="flex items-center space-x-4">
-                <div className="h-14 w-14 bg-emerald-500 text-slate-950 rounded-2xl flex items-center justify-center font-black text-2xl shadow-xl">
+                <div className="h-14 w-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center font-black text-2xl shadow-md">
                   OG
                 </div>
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 block">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">
                     PEMERINTAH KABUPATEN NAGEKEO • DINAS KESEHATAN
                   </span>
-                  <span className="text-xs font-bold text-white tracking-wide">ORBIT GIZI SYSTEM ENTERPRISE v2.5</span>
+                  <span className="text-xs font-bold text-slate-900 tracking-wide">ORBIT GIZI SYSTEM ENTERPRISE v2.5</span>
                 </div>
               </div>
               <div className="text-right">
-                <span className="px-3.5 py-1.5 bg-amber-500 text-slate-950 text-[10px] font-black rounded-xl uppercase tracking-wider block shadow-lg">
+                <span className="px-3.5 py-1.5 bg-blue-900 text-white text-[10px] font-black rounded-xl uppercase tracking-wider block shadow">
                   DOKUMEN RESMI PORTOFOLIO
                 </span>
-                <span className="text-[10px] text-emerald-300/80 mt-1 block font-mono">ID: OGT-PRT-{Math.floor(100000 + Math.random() * 900000)}</span>
+                <span className="text-[10px] text-slate-600 mt-1 block font-mono">ID: OGT-PRT-{Math.floor(100000 + Math.random() * 900000)}</span>
               </div>
             </div>
 
-            <div className="py-16 space-y-6 text-center">
-              <div className="inline-block px-5 py-2 bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-md">
+            <div className="py-14 space-y-6 text-center">
+              <div className="inline-block px-5 py-2 bg-blue-100 border border-blue-300 text-blue-800 rounded-full text-xs font-black uppercase tracking-widest shadow-sm">
                 LAPORAN ANALISIS INTERVENSI & GIZI MASYARAKAT
               </div>
-              <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight uppercase tracking-tight max-w-3xl mx-auto drop-shadow-md">
+              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 leading-tight uppercase tracking-tight max-w-3xl mx-auto">
                 PORTOFOLIO EKSEKUTIF KINERJA PUSKESMAS & POSYANDU WILAYAH {selectedKelurahan}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-700 max-w-2xl mx-auto leading-relaxed">
                 Laporan komprehensif penanganan Stunting, Wasting, distribusi Makanan Bergizi Gratis (MBG), Pemberian Makanan Tambahan (PMT), serta Evaluasi Kolaborasi Lintas Sektor 5 Pilar Berbasis e-PPGBM.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 py-6 border-t border-b border-emerald-500/30 bg-slate-900/80 backdrop-blur-md p-5 rounded-2xl relative z-10">
+          <div className="grid grid-cols-3 gap-4 py-6 border-t border-b border-blue-200 bg-white/80 backdrop-blur-md p-5 rounded-2xl relative z-10 shadow-sm">
             <div>
-              <span className="text-[10px] font-bold uppercase text-emerald-400 block">Wilayah Intervensi</span>
-              <span className="text-xs sm:text-sm font-black text-white">{selectedKelurahan}</span>
+              <span className="text-[10px] font-bold uppercase text-blue-700 block">Wilayah Intervensi</span>
+              <span className="text-xs sm:text-sm font-black text-slate-900">{selectedKelurahan}</span>
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase text-emerald-400 block">Tanggal Laporan</span>
-              <span className="text-xs sm:text-sm font-black text-white">{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              <span className="text-[10px] font-bold uppercase text-blue-700 block">Tanggal Laporan</span>
+              <span className="text-xs sm:text-sm font-black text-slate-900">{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase text-emerald-400 block">Pengembang / Developer</span>
-              <span className="text-xs sm:text-sm font-black text-amber-300">CV. Enam Bintang Indonesia</span>
+              <span className="text-[10px] font-bold uppercase text-blue-700 block">Status Validasi e-PPGBM</span>
+              <span className="text-xs sm:text-sm font-black text-emerald-700">100% Sinkron & Valid</span>
             </div>
           </div>
 
-          <div className="pt-6 flex items-center justify-between text-xs text-slate-300 relative z-10 border-t border-slate-800">
+          <div className="pt-6 flex items-center justify-between text-xs text-slate-600 relative z-10 border-t border-slate-200">
             <div className="flex items-center space-x-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="font-semibold text-emerald-300">Terenkripsi Keamanan ABAC & Cyber Guard Protection</span>
+              <span className="h-2.5 w-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+              <span className="font-semibold text-blue-900">Terenkripsi Keamanan ABAC & Cyber Guard Protection</span>
             </div>
-            <span className="font-mono text-slate-400 font-bold">Halaman Cover (1) • Portal Resmi Nagekeo</span>
+            <span className="font-mono text-slate-500 font-bold">Halaman Cover (1) • Portal Resmi Nagekeo</span>
           </div>
         </div>
 
