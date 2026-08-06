@@ -15,7 +15,7 @@ export function PosyanduOfflineFormTemplateModal({
   const [kelurahanInput, setKelurahanInput] = useState<string>(defaultKelurahan);
   const [posyanduName, setPosyanduName] = useState<string>("Posyandu Nangateke");
   const [puskesmasName, setPuskesmasName] = useState<string>("Puskesmas Boawae");
-  const [rowCount, setRowCount] = useState<number>(10);
+  const [rowCount, setRowCount] = useState<number>(15);
   const [printOrientation, setPrintOrientation] = useState<"portrait" | "landscape">("landscape");
 
   if (!isOpen) return null;
@@ -209,9 +209,9 @@ export function PosyanduOfflineFormTemplateModal({
                 </thead>
                 <tbody>
                   {Array.from({ length: rowCount }).map((_, idx) => (
-                    <tr key={idx} className="h-9">
-                      <td className="border border-slate-400 text-center font-bold text-slate-500">{idx + 1}</td>
-                      <td className="border border-slate-400 px-2 text-slate-400 italic">Tulis nama lengkap anak & orang tua...</td>
+                    <tr key={idx} className="h-7">
+                      <td className="border border-slate-400 text-center font-bold text-slate-500"></td>
+                      <td className="border border-slate-400 px-2 text-slate-400 italic"></td>
                       <td className="border border-slate-400 px-2 font-mono text-center"></td>
                       <td className="border border-slate-400 text-center"></td>
                       <td className="border border-slate-400 text-center"></td>
