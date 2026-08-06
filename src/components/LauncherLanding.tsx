@@ -43,8 +43,8 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
   totalPmtCount,
   selectedKabupaten = "Kabupaten Nagekeo"
 }) => {
-  const [activeTab, setActiveTab] = useState<"ABOUT" | "GUIDE">("ABOUT");
-  const [showModal, setShowModal] = useState<"NONE" | "ABOUT" | "GUIDE">("NONE");
+  const [activeTab, setActiveTab] = useState<"ABOUT" | "GUIDE" | "SPBE">("ABOUT");
+  const [showModal, setShowModal] = useState<"NONE" | "ABOUT" | "GUIDE" | "SPBE">("NONE");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-teal-950 to-slate-950 text-white flex flex-col justify-between selection:bg-emerald-500 selection:text-white relative overflow-hidden font-sans">
@@ -606,19 +606,26 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
               Panduan Pengguna
             </button>
             <span>•</span>
-            <span className="text-emerald-300">e-PPGBM Synchronized</span>
+            <button 
+              onClick={() => setShowModal("SPBE")}
+              className="hover:text-amber-400 underline cursor-pointer font-bold text-amber-300"
+            >
+              SPBE & Kebijakan Data
+            </button>
           </div>
         </div>
         {/* FAINT WATERMARK FOR MOBILE */}
-        <div className="mt-2 text-center text-white/20 text-[10px] font-medium tracking-widest uppercase md:hidden">
-          Developed by CV. Enam Bintang Indonesia
+        <div className="mt-2 text-center text-white/20 text-[10px] font-medium tracking-widest uppercase md:hidden flex items-center justify-center space-x-2">
+          <span>Developed by CV. Enam Bintang Indonesia</span>
+          <span>•</span>
+          <button onClick={() => setShowModal("SPBE")} className="text-amber-400 underline">SPBE Compliance</button>
         </div>
       </footer>
 
       {/* MODAL DIALOG POPUP FOR HEADER / FOOTER CLICKS */}
       {showModal !== "NONE" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-          <div className="bg-slate-900 border border-emerald-500/30 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl relative text-slate-200">
+          <div className="bg-slate-900 border border-emerald-500/30 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl relative text-slate-200">
             
             <button
               onClick={() => setShowModal("NONE")}
@@ -659,7 +666,7 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
                   <p className="text-[11px] text-slate-400">Penyedia Solusi Perangkat Lunak & Sistem Analisis Gizi Terpadu.</p>
                 </div>
               </div>
-            ) : (
+            ) : showModal === "GUIDE" ? (
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-2xl">
@@ -743,6 +750,48 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
                   </div>
                 </div>
               </div>
+            ) : (
+              <div className="space-y-4 text-xs text-slate-300">
+                <div className="flex items-center space-x-3 border-b border-slate-800 pb-3">
+                  <div className="p-3 bg-amber-500/20 text-amber-400 rounded-2xl">
+                    <ShieldCheck className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-white">Syarat, Ketentuan & Kebijakan SPBE</h3>
+                    <p className="text-xs text-amber-400 font-medium">Sistem Pemerintahan Berbasis Elektronik • Pelindungan Data & Integritas Sistem</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 leading-relaxed">
+                  <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+                    <span className="font-black text-amber-300 block">1. Landasan Hukum & Kepatuhan SPBE</span>
+                    <p>
+                      Platform <strong>Orbit Gizi System v2.5</strong> dikembangkan dan dioperasikan sesuai dengan Peraturan Presiden Nomor 95 Tahun 2018 tentang Sistem Pemerintahan Berbasis Elektronik (SPBE), serta Undang-Undang Pelindungan Data Pribadi (UU PDP) yang berlaku di Republik Indonesia.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+                    <span className="font-black text-emerald-400 block">2. Pelindungan & Keamanan Data Sasaran (Privacy & Encryption)</span>
+                    <p>
+                      Seluruh data kesehatan masyarakat (balita, ibu hamil KEK, sasaran MBG & PMT) dilindungi menggunakan standar enkripsi tinggi serta arsitektur keamanan <em>Firestore ABAC Security Fortress & Cyber Guard Protection</em>. Data tidak diperjualbelikan atau disebarluaskan untuk kepentingan komersial di luar program kesehatan daerah.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+                    <span className="font-black text-cyan-400 block">3. Pencegahan Penyalahgunaan Data & Larangan Akses Ilegal</span>
+                    <p>
+                      Setiap pengguna (Petugas Dinas Kesehatan, Kader Posyandu, Perangkat Desa) wajib menjaga kerahasiaan kredensial akses. Dilarang keras melakukan penyalahgunaan data, manipulasi laporan e-PPGBM, atau ekstraksi data unauthorized. Pelanggaran terhadap integritas data dikenakan sanksi administratif dan hukum sesuai peraturan perundang-undangan yang berlaku.
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+                    <span className="font-black text-indigo-400 block">4. Kepemilikan & Pengembang Resmi (Developer)</span>
+                    <p>
+                      Sistem dan hak kekayaan intelektual platform dikembangkan oleh <strong>CV. Enam Bintang Indonesia</strong> sebagai mitra pengembang teknologi resmi untuk Pemerintah Kabupaten Nagekeo. Seluruh hak cipta modul, kode sumber, dan desain antarmuka dilindungi undang-undang.
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
 
             <div className="pt-3 border-t border-slate-800 flex justify-end">
@@ -750,7 +799,7 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
                 onClick={() => setShowModal("NONE")}
                 className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl cursor-pointer"
               >
-                Tutup Panduan
+                Tutup Jendela
               </button>
             </div>
 
