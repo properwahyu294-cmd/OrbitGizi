@@ -32,7 +32,8 @@ import {
   X,
   Building2,
   Heart,
-  FileText
+  FileText,
+  BookOpen
 } from "lucide-react";
 
 // Types
@@ -66,6 +67,7 @@ import { LauncherLanding } from "./components/LauncherLanding";
 import DashboardExecutiveRecap from "./components/DashboardExecutiveRecap";
 import { AnalyticDataPivotModal } from "./components/AnalyticDataPivotModal";
 import { PosyanduOfflineFormTemplateModal } from "./components/PosyanduOfflineFormTemplateModal";
+import { UserManualModal } from "./components/UserManualModal";
 
 const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
   {
@@ -593,6 +595,7 @@ export default function App() {
   const [showLauncher, setShowLauncher] = useState<boolean>(true);
   const [showPivotModal, setShowPivotModal] = useState<boolean>(false);
   const [showOfflineFormModal, setShowOfflineFormModal] = useState<boolean>(false);
+  const [showManualModal, setShowManualModal] = useState<boolean>(false);
 
   // Firebase & Google Sheets integration state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -1013,6 +1016,14 @@ export default function App() {
             >
               <FileText className="h-4 w-4 text-indigo-600" />
               <span>Cetak Form Offline</span>
+            </button>
+
+            <button
+              onClick={() => setShowManualModal(true)}
+              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3.5 py-2 rounded-xl hover:bg-blue-100 transition-colors shadow-2xs cursor-pointer"
+            >
+              <BookOpen className="h-4 w-4 text-blue-600" />
+              <span>Buku Panduan (20 Hal)</span>
             </button>
 
             <button
@@ -1670,6 +1681,12 @@ export default function App() {
       <PosyanduOfflineFormTemplateModal
         isOpen={showOfflineFormModal}
         onClose={() => setShowOfflineFormModal(false)}
+      />
+
+      {/* User Manual 5 Chapters & 20 Pages Modal */}
+      <UserManualModal
+        isOpen={showManualModal}
+        onClose={() => setShowManualModal(false)}
       />
 
     </div>
