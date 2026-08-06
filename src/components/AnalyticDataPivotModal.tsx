@@ -12,10 +12,18 @@ import {
   Filter, 
   Activity, 
   AlertTriangle, 
+  AlertCircle,
+  CheckCircle2,
+  Info,
+  User,
+  FileText,
+  Calendar,
+  MapPin,
   Users, 
   Layers, 
   TrendingUp,
   Lock,
+  Heart,
   PieChart as PieChartIcon
 } from "lucide-react";
 import { 
@@ -77,10 +85,11 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
   selectedKelurahan,
   collaborationMetrics
 }) => {
-  const [activeTab, setActiveTab] = useState<"PIVOT_TABLE" | "CHARTS" | "AI_EXECUTIVE" | "CYBER_SECURITY">("PIVOT_TABLE");
+  const [activeTab, setActiveTab] = useState<"REKAP_INDEKS" | "PIVOT_TABLE" | "BENEFICIARY_LIST" | "CHARTS" | "AI_EXECUTIVE" | "CYBER_SECURITY">("REKAP_INDEKS");
   const [rowDimension, setRowDimension] = useState<RowDimension>("POSYANDU");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filterCategory, setFilterCategory] = useState<string>("ALL");
+  const [filterProgram, setFilterProgram] = useState<string>("ALL");
   const [sortColumn, setSortColumn] = useState<keyof PivotRowData>("totalCount");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [copiedSuccess, setCopiedSuccess] = useState<boolean>(false);
@@ -223,6 +232,79 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
       }
     );
   }, [pivotData]);
+
+  // Calculated Transformation Index Score & Status Wilayah (Gambar 1)
+  const transformIndexScore = useMemo(() => {
+    if (grandTotal.totalCount === 0) return 0;
+    const mbgRatio = grandTotal.mbgCount / grandTotal.totalCount;
+    const pmtRatio = grandTotal.pmtCount / grandTotal.totalCount;
+    const attendanceRatio = (grandTotal.totalCount - grandTotal.homeVisitCount) / grandTotal.totalCount;
+    const normalRatio = grandTotal.normalCount / grandTotal.totalCount;
+
+    const rawScore = Math.round(
+      (mbgRatio * 35) + 
+      (pmtRatio * 30) + 
+      (attendanceRatio * 20) + 
+      (normalRatio * 15)
+    );
+    return Math.min(100, Math.max(0, rawScore));
+  }, [grandTotal]);
+
+  const regionStatus = useMemo(() => {
+    if (transformIndexScore < 50) {
+      return {
+        category: "Kategori Merah",
+        categoryBg: "bg-rose-100 text-rose-800 border-rose-300",
+        badgeBg: "bg-rose-500",
+        title: "Kritis (Butuh Intervensi Segera)",
+        description: "Kritis! Diperlukan intervensi tanggap darurat multisektoral untuk menurunkan stunting secara agresif.",
+        icon: AlertTriangle,
+        iconBg: "bg-rose-100 text-rose-600 border-rose-200"
+      };
+    } else if (transformIndexScore <= 75) {
+      return {
+        category: "Kategori Kuning",
+        categoryBg: "bg-amber-100 text-amber-800 border-amber-300",
+        badgeBg: "bg-amber-500",
+        title: "Waspada (Perlu Peningkatan Intervensi)",
+        description: "Waspada! Diperlukan penguatan cakupan PMT Pemulihan dan pemantauan rutin posyandu bulanan.",
+        icon: AlertCircle,
+        iconBg: "bg-amber-100 text-amber-600 border-amber-200"
+      };
+    } else {
+      return {
+        category: "Kategori Hijau",
+        categoryBg: "bg-emerald-100 text-emerald-800 border-emerald-300",
+        badgeBg: "bg-emerald-500",
+        title: "Optimal & Baik (Pertahankan Kinerja)",
+        description: "Sangat Baik! Target penanganan gizi dan cakupan program MBG & PMT berjalan optimal.",
+        icon: CheckCircle2,
+        iconBg: "bg-emerald-100 text-emerald-600 border-emerald-200"
+      };
+    }
+  }, [transformIndexScore]);
+
+  // Beneficiary Roster List filtering for Tab 3
+  const filteredBeneficiaryList = useMemo(() => {
+    return beneficiaries.filter(b => {
+      if (filterCategory !== "ALL" && b.category !== filterCategory) return false;
+      
+      const isMbg = b.isReceivedMBG !== false;
+      const isPmt = b.isReceivedPMT !== false;
+      if (filterProgram === "MBG_ONLY" && (!isMbg || isPmt)) return false;
+      if (filterProgram === "PMT_ONLY" && (!isPmt || isMbg)) return false;
+      if (filterProgram === "BOTH" && (!isMbg || !isPmt)) return false;
+
+      if (safeSearch) {
+        const nameMatch = b.name.toLowerCase().includes(safeSearch);
+        const parentMatch = (b.parentName || "").toLowerCase().includes(safeSearch);
+        const posyanduMatch = (b.location.posyandu || b.location.kelurahan || "").toLowerCase().includes(safeSearch);
+        const nikMatch = (b.nik || "").toLowerCase().includes(safeSearch);
+        if (!nameMatch && !parentMatch && !posyanduMatch && !nikMatch) return false;
+      }
+      return true;
+    });
+  }, [beneficiaries, filterCategory, filterProgram, safeSearch]);
 
   // Data for Charts
   const stuntingPieData = useMemo(() => {
@@ -391,15 +473,39 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
         <div className="bg-slate-100 px-5 pt-3 pb-0 border-b border-slate-200 flex items-center justify-between shrink-0 overflow-x-auto">
           <div className="flex space-x-2">
             <button
+              onClick={() => setActiveTab("REKAP_INDEKS")}
+              className={`px-4 py-2.5 rounded-t-2xl font-black text-xs flex items-center space-x-2 cursor-pointer transition-all ${
+                activeTab === "REKAP_INDEKS"
+                  ? "bg-white text-emerald-900 border-t-2 border-emerald-500 border-x border-slate-200 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Activity className="h-4 w-4 text-emerald-600" />
+              <span>Rekap Indeks & Status Wilayah</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab("PIVOT_TABLE")}
               className={`px-4 py-2.5 rounded-t-2xl font-black text-xs flex items-center space-x-2 cursor-pointer transition-all ${
                 activeTab === "PIVOT_TABLE"
-                  ? "bg-white text-indigo-900 border-t-2 border-x border-slate-200 shadow-xs"
+                  ? "bg-white text-indigo-900 border-t-2 border-indigo-600 border-x border-slate-200 shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
               <Table className="h-4 w-4 text-indigo-600" />
               <span>Matriks Pivot Table Interaktif</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("BENEFICIARY_LIST")}
+              className={`px-4 py-2.5 rounded-t-2xl font-black text-xs flex items-center space-x-2 cursor-pointer transition-all ${
+                activeTab === "BENEFICIARY_LIST"
+                  ? "bg-white text-purple-900 border-t-2 border-purple-600 border-x border-slate-200 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Users className="h-4 w-4 text-purple-600" />
+              <span>Tabel Daftar Sasaran Lengkap</span>
             </button>
 
             <button
@@ -442,6 +548,249 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
 
         {/* TAB CONTENTS (SCROLLABLE AREA) */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-white">
+
+          {/* TAB 0: REKAP INDEKS TRANSFORMASI & STATUS WILAYAH (GAMBAR 1) */}
+          {activeTab === "REKAP_INDEKS" && (
+            <div className="space-y-6">
+              
+              {/* INDEKS TRANSFORMASI ORBIT GIZI (GAMBAR 1 TOP CARD) */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xs text-center space-y-6">
+                <span className="text-xs font-black uppercase text-slate-400 tracking-widest block">
+                  INDEKS TRANSFORMASI ORBIT GIZI
+                </span>
+
+                <div className="flex justify-center items-center">
+                  <div className="relative h-40 w-40 rounded-full bg-slate-50 border-8 border-slate-100 flex flex-col items-center justify-center shadow-inner">
+                    <span className="text-5xl font-black text-slate-900 tracking-tight">
+                      {transformIndexScore}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 mt-1">
+                      skor 0 - 100
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center space-x-2 text-xs font-medium text-slate-500">
+                  <Calendar className="h-4 w-4 text-slate-400" />
+                  <span>Sinc: 6 Agustus 2026 pukul 11.30</span>
+                </div>
+              </div>
+
+              {/* STATUS KABUPATEN / WILAYAH (GAMBAR 1 BOTTOM CARD) */}
+              <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs relative">
+                
+                {/* Top Accent Line */}
+                <div className={`h-1.5 w-full ${regionStatus.badgeBg}`}></div>
+
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black uppercase text-slate-500 tracking-wider">
+                      STATUS KABUPATEN / WILAYAH
+                    </span>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full border border-indigo-200">
+                      Multi-Level Unit
+                    </span>
+                  </div>
+
+                  <div className="flex items-start space-x-4">
+                    <div className={`p-3.5 rounded-2xl border ${regionStatus.iconBg} shrink-0`}>
+                      <regionStatus.icon className="h-7 w-7" />
+                    </div>
+                    <div className="space-y-1">
+                      <span className={`inline-block text-xs font-black px-3 py-1 rounded-lg border ${regionStatus.categoryBg}`}>
+                        {regionStatus.category}
+                      </span>
+                      <h3 className="text-lg font-black text-slate-900">
+                        {regionStatus.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Informational Box */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-medium text-slate-700 flex items-start space-x-3">
+                    <Info className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
+                    <span>{regionStatus.description}</span>
+                  </div>
+
+                  {/* Classification Legend */}
+                  <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between text-xs font-bold text-slate-400">
+                    <span>Klasifikasi Skor:</span>
+                    <div className="flex items-center space-x-4">
+                      <span className="text-rose-600 font-extrabold">&lt;50 Merah</span>
+                      <span className="text-amber-600 font-extrabold">51-75 Kuning</span>
+                      <span className="text-emerald-600 font-extrabold">76-100 Hijau</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB 2: TABEL DAFTAR SASARAN LENGKAP (GAMBAR 2 DETAILS) */}
+          {activeTab === "BENEFICIARY_LIST" && (
+            <div className="space-y-4">
+              
+              {/* Filter Bar */}
+              <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center space-x-2">
+                  <Users className="h-4 w-4 text-purple-600" />
+                  <span className="font-black text-slate-800 uppercase text-[11px]">Daftar Sasaran Terdaftar ({filteredBeneficiaryList.length} Jiwa)</span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className="border border-slate-200 rounded-xl px-3 py-1.5 font-bold bg-white text-slate-700 text-xs focus:outline-none"
+                  >
+                    <option value="ALL">Semua Kategori</option>
+                    <option value="Balita">Balita</option>
+                    <option value="Ibu Hamil">Ibu Hamil</option>
+                    <option value="Ibu Menyusui">Ibu Menyusui</option>
+                  </select>
+
+                  <select
+                    value={filterProgram}
+                    onChange={(e) => setFilterProgram(e.target.value)}
+                    className="border border-slate-200 rounded-xl px-3 py-1.5 font-bold bg-white text-slate-700 text-xs focus:outline-none"
+                  >
+                    <option value="ALL">Semua Program</option>
+                    <option value="MBG_ONLY">MBG Saja</option>
+                    <option value="PMT_ONLY">PMT Saja</option>
+                    <option value="BOTH">MBG + PMT (Lengkap)</option>
+                  </select>
+
+                  <input
+                    type="text"
+                    placeholder="Cari Nama / NIK / Posyandu..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="border border-slate-200 rounded-xl px-3 py-1.5 font-bold text-xs bg-white text-slate-800 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Beneficiary Table */}
+              <div className="overflow-x-auto border border-slate-200 rounded-2xl shadow-xs">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead className="bg-slate-900 text-white font-black uppercase text-[10px] tracking-wider">
+                    <tr>
+                      <th className="p-3 border-r border-slate-800">No / NIK</th>
+                      <th className="p-3 border-r border-slate-800">Nama Sasaran & Umur</th>
+                      <th className="p-3 border-r border-slate-800">Kategori</th>
+                      <th className="p-3 border-r border-slate-800">Posyandu & Desa</th>
+                      <th className="p-3 text-center border-r border-slate-800 text-emerald-300">Status MBG</th>
+                      <th className="p-3 text-center border-r border-slate-800 text-purple-300">Status PMT</th>
+                      <th className="p-3 text-center border-r border-slate-800">Status Gizi</th>
+                      <th className="p-3 text-center border-r border-slate-800">BB / TB Terakhir</th>
+                      <th className="p-3 text-center">Kehadiran</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 bg-white font-medium">
+                    {filteredBeneficiaryList.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="p-8 text-center text-slate-400 font-bold">
+                          Tidak ada data sasaran yang sesuai dengan kriteria filter.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredBeneficiaryList.map((ben, idx) => {
+                        const isMbg = ben.isReceivedMBG !== false;
+                        const isPmt = ben.isReceivedPMT !== false;
+                        const lastRec = ben.weightRecords && ben.weightRecords.length > 0 ? ben.weightRecords[ben.weightRecords.length - 1] : null;
+                        const statusGizi = lastRec?.statusGizi || "Normal";
+
+                        return (
+                          <tr key={ben.id || idx} className="hover:bg-slate-50 transition-colors">
+                            <td className="p-3 border-r border-slate-100 font-mono text-[11px] text-slate-500">
+                              <span className="font-bold text-slate-900 block">#{idx + 1}</span>
+                              <span>{ben.nik || "531600000"}</span>
+                            </td>
+
+                            <td className="p-3 border-r border-slate-100 font-bold text-slate-900">
+                              <div className="flex items-center space-x-1.5">
+                                <span>{ben.name}</span>
+                                {ben.gender && (
+                                  <span className="text-[10px] text-slate-400">({ben.gender === "L" ? "L" : "P"})</span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-slate-400 block font-medium">Ortu: {ben.parentName || "-"}</span>
+                            </td>
+
+                            <td className="p-3 border-r border-slate-100">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
+                                ben.category === "Balita" ? "bg-sky-100 text-sky-800" :
+                                ben.category === "Ibu Hamil" ? "bg-pink-100 text-pink-800" : "bg-purple-100 text-purple-800"
+                              }`}>
+                                {ben.category}
+                              </span>
+                            </td>
+
+                            <td className="p-3 border-r border-slate-100 text-slate-700">
+                              <span className="font-bold block">{ben.location.posyandu || "Posyandu Main"}</span>
+                              <span className="text-[10px] text-slate-400">{ben.location.kelurahan || selectedKelurahan}</span>
+                            </td>
+
+                            <td className="p-3 text-center border-r border-slate-100">
+                              {isMbg ? (
+                                <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-black text-[10px]">
+                                  ✅ Layani MBG
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-400 text-[10px]">
+                                  Tidak
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="p-3 text-center border-r border-slate-100">
+                              {isPmt ? (
+                                <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-black text-[10px]">
+                                  🍇 PMT Pemulihan
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-400 text-[10px]">
+                                  Tidak
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="p-3 text-center border-r border-slate-100">
+                              <span className={`px-2 py-0.5 rounded font-black text-[10px] ${
+                                statusGizi === "Normal" ? "bg-emerald-100 text-emerald-800" :
+                                statusGizi === "Stunting" ? "bg-rose-100 text-rose-800" :
+                                statusGizi === "Risiko Stunting" ? "bg-amber-100 text-amber-800" : "bg-purple-100 text-purple-800"
+                              }`}>
+                                {statusGizi}
+                              </span>
+                            </td>
+
+                            <td className="p-3 text-center border-r border-slate-100 font-bold text-slate-800">
+                              {lastRec ? `${lastRec.weightKg} kg / ${lastRec.heightCm || "-"} cm` : "-"}
+                            </td>
+
+                            <td className="p-3 text-center">
+                              {ben.attendanceStatus === "Tidak Mengunjungi" ? (
+                                <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-black text-[10px]">
+                                  🚨 Wajib Visit
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-[10px]">
+                                  Hadir Posyandu
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          )}
 
           {/* TAB 1: PIVOT TABLE MATRIX */}
           {activeTab === "PIVOT_TABLE" && (
@@ -888,6 +1237,212 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
         </div>
 
       </div>
+
+      {/* PRINT STYLES & EXPLICIT PORTFOLIO PRINTABLE REPORT CONTAINER (GAMBAR 3) */}
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          #printable-portfolio-report, #printable-portfolio-report * {
+            visibility: visible !important;
+          }
+          #printable-portfolio-report {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 24px !important;
+            background: white !important;
+            color: black !important;
+          }
+        }
+      `}</style>
+
+      <div id="printable-portfolio-report" className="hidden print:block text-slate-900 font-sans space-y-6 text-xs">
+        
+        {/* PRINT HEADER / EMBLEM */}
+        <div className="border-b-2 border-slate-900 pb-4 flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">
+              PEMERINTAH KABUPATEN NAGEKEO • DINAS KESEHATAN
+            </span>
+            <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight mt-0.5">
+              LAPORAN PORTOFOLIO ANALISIS ORBIT GIZI & PROGRAM MBG/PMT
+            </h1>
+            <p className="text-xs text-slate-600 font-medium">
+              Wilayah Intervensi: <strong>{selectedKelurahan}</strong> • Tanggal Cetak: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="px-3 py-1.5 bg-slate-900 text-white rounded-lg font-black text-xs inline-block">
+              REKAP ANALITIK RESMI
+            </div>
+            <span className="text-[10px] text-slate-500 block mt-1">Dokumen Terenkripsi Cyber Guard</span>
+          </div>
+        </div>
+
+        {/* SECTION 1: INDEKS TRANSFORMASI & STATUS WILAYAH (GAMBAR 1 PRINT) */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="border border-slate-300 rounded-2xl p-4 text-center space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+              INDEKS TRANSFORMASI ORBIT GIZI
+            </span>
+            <div className="inline-flex h-20 w-20 rounded-full border-4 border-slate-900 items-center justify-center font-black text-2xl text-slate-900 mx-auto">
+              {transformIndexScore}
+            </div>
+            <span className="text-[10px] font-bold text-slate-500 block">Skor Kinerja Gizi (0 - 100)</span>
+          </div>
+
+          <div className="border border-slate-300 rounded-2xl p-4 space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+              STATUS KABUPATEN / WILAYAH
+            </span>
+            <span className={`inline-block px-3 py-1 rounded-md text-xs font-black border ${regionStatus.categoryBg}`}>
+              {regionStatus.category}
+            </span>
+            <h3 className="font-black text-sm text-slate-900">{regionStatus.title}</h3>
+            <p className="text-[10px] text-slate-600 leading-tight">{regionStatus.description}</p>
+          </div>
+        </div>
+
+        {/* SECTION 2: SUMMARY KPI CARDS */}
+        <div className="grid grid-cols-5 gap-2 border border-slate-300 rounded-xl p-3 text-center bg-slate-50">
+          <div>
+            <span className="text-[9px] font-bold text-slate-500 uppercase block">Total Sasaran</span>
+            <span className="text-sm font-black text-slate-900">{grandTotal.totalCount} Jiwa</span>
+          </div>
+          <div>
+            <span className="text-[9px] font-bold text-slate-500 uppercase block">Penerima MBG</span>
+            <span className="text-sm font-black text-emerald-700">{grandTotal.mbgCount} ({((grandTotal.mbgCount / (grandTotal.totalCount || 1)) * 100).toFixed(0)}%)</span>
+          </div>
+          <div>
+            <span className="text-[9px] font-bold text-slate-500 uppercase block">Penerima PMT</span>
+            <span className="text-sm font-black text-purple-700">{grandTotal.pmtCount} ({((grandTotal.pmtCount / (grandTotal.totalCount || 1)) * 100).toFixed(0)}%)</span>
+          </div>
+          <div>
+            <span className="text-[9px] font-bold text-slate-500 uppercase block">MBG + PMT</span>
+            <span className="text-sm font-black text-amber-700">{grandTotal.bothCount} Sasaran</span>
+          </div>
+          <div>
+            <span className="text-[9px] font-bold text-slate-500 uppercase block">Wajib Visit</span>
+            <span className="text-sm font-black text-rose-700">{grandTotal.homeVisitCount} Sasaran</span>
+          </div>
+        </div>
+
+        {/* SECTION 3: PIVOT MATRIX TABLE */}
+        <div className="space-y-2">
+          <h3 className="font-black text-xs uppercase tracking-wider text-slate-800">
+            1. REKAPITULASI MATRIKS PIVOT (PER POSYANDU)
+          </h3>
+          <table className="w-full text-left border-collapse text-[10px] border border-slate-300">
+            <thead className="bg-slate-800 text-white font-bold uppercase">
+              <tr>
+                <th className="p-2 border border-slate-600">Posyandu</th>
+                <th className="p-2 text-center border border-slate-600">Total</th>
+                <th className="p-2 text-center border border-slate-600">MBG</th>
+                <th className="p-2 text-center border border-slate-600">PMT</th>
+                <th className="p-2 text-center border border-slate-600">MBG+PMT</th>
+                <th className="p-2 text-center border border-slate-600">Normal</th>
+                <th className="p-2 text-center border border-slate-600">Stunting</th>
+                <th className="p-2 text-center border border-slate-600">Risiko</th>
+                <th className="p-2 text-center border border-slate-600">Home Visit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pivotData.map((row, i) => (
+                <tr key={i} className="border-b border-slate-200">
+                  <td className="p-2 font-bold border-r border-slate-200">{row.rowKey}</td>
+                  <td className="p-2 text-center border-r border-slate-200">{row.totalCount}</td>
+                  <td className="p-2 text-center border-r border-slate-200 font-bold text-emerald-700">{row.mbgCount}</td>
+                  <td className="p-2 text-center border-r border-slate-200 font-bold text-purple-700">{row.pmtCount}</td>
+                  <td className="p-2 text-center border-r border-slate-200">{row.bothCount}</td>
+                  <td className="p-2 text-center border-r border-slate-200 text-emerald-700">{row.normalCount}</td>
+                  <td className="p-2 text-center border-r border-slate-200 text-rose-700">{row.stuntingCount}</td>
+                  <td className="p-2 text-center border-r border-slate-200 text-amber-700">{row.risikoStuntingCount}</td>
+                  <td className="p-2 text-center font-bold text-rose-700">{row.homeVisitCount}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot className="bg-slate-100 font-black uppercase text-[10px]">
+              <tr>
+                <td className="p-2 border border-slate-300">TOTAL</td>
+                <td className="p-2 text-center border border-slate-300">{grandTotal.totalCount}</td>
+                <td className="p-2 text-center border border-slate-300">{grandTotal.mbgCount}</td>
+                <td className="p-2 text-center border border-slate-300">{grandTotal.pmtCount}</td>
+                <td className="p-2 text-center border border-slate-300">{grandTotal.bothCount}</td>
+                <td className="p-2 text-center border border-slate-300">{grandTotal.normalCount}</td>
+                <td className="p-2 text-center border border-slate-300">{grandTotal.stuntingCount}</td>
+                <td className="p-2 text-center border border-slate-300">{grandTotal.risikoStuntingCount}</td>
+                <td className="p-2 text-center border border-slate-300">{grandTotal.homeVisitCount}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        {/* SECTION 4: DAFTAR SASARAN LENGKAP */}
+        <div className="space-y-2">
+          <h3 className="font-black text-xs uppercase tracking-wider text-slate-800">
+            2. DAFTAR INDIVIDUAL SASARAN TERDAFTAR
+          </h3>
+          <table className="w-full text-left border-collapse text-[9px] border border-slate-300">
+            <thead className="bg-slate-900 text-white font-bold uppercase">
+              <tr>
+                <th className="p-1.5 border border-slate-700">No / NIK</th>
+                <th className="p-1.5 border border-slate-700">Nama Sasaran</th>
+                <th className="p-1.5 border border-slate-700">Kategori</th>
+                <th className="p-1.5 border border-slate-700">Posyandu</th>
+                <th className="p-1.5 text-center border border-slate-700">MBG</th>
+                <th className="p-1.5 text-center border border-slate-700">PMT</th>
+                <th className="p-1.5 text-center border border-slate-700">Status Gizi</th>
+                <th className="p-1.5 text-center border border-slate-700">BB / TB</th>
+              </tr>
+            </thead>
+            <tbody>
+              {beneficiaries.map((b, idx) => {
+                const isMbg = b.isReceivedMBG !== false;
+                const isPmt = b.isReceivedPMT !== false;
+                const lastRec = b.weightRecords && b.weightRecords.length > 0 ? b.weightRecords[b.weightRecords.length - 1] : null;
+                const statusGizi = lastRec?.statusGizi || "Normal";
+                return (
+                  <tr key={idx} className="border-b border-slate-200">
+                    <td className="p-1.5 font-mono border-r border-slate-200">#{idx+1} {b.nik || "5316000"}</td>
+                    <td className="p-1.5 font-bold border-r border-slate-200">{b.name}</td>
+                    <td className="p-1.5 border-r border-slate-200">{b.category}</td>
+                    <td className="p-1.5 border-r border-slate-200">{b.location.posyandu || "-"}</td>
+                    <td className="p-1.5 text-center border-r border-slate-200">{isMbg ? "✅ Ya" : "-"}</td>
+                    <td className="p-1.5 text-center border-r border-slate-200">{isPmt ? "🍇 Ya" : "-"}</td>
+                    <td className="p-1.5 text-center border-r border-slate-200 font-bold">{statusGizi}</td>
+                    <td className="p-1.5 text-center font-bold">{lastRec ? `${lastRec.weightKg}kg` : "-"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* SECTION 5: SIGNATURE BLOCK */}
+        <div className="pt-8 grid grid-cols-2 gap-8 text-center text-xs">
+          <div>
+            <p className="font-medium text-slate-600">Mengetahui,</p>
+            <p className="font-bold text-slate-900 mt-1">Kepala Puskesmas / Dinas Kesehatan</p>
+            <div className="h-16"></div>
+            <p className="font-black text-slate-900 underline">( ___________________________ )</p>
+            <p className="text-[10px] text-slate-500">NIP. 19820512 201001 1 004</p>
+          </div>
+
+          <div>
+            <p className="font-medium text-slate-600">Penanggung Jawab Data,</p>
+            <p className="font-bold text-slate-900 mt-1">Petugas Posyandu / Desa {selectedKelurahan}</p>
+            <div className="h-16"></div>
+            <p className="font-black text-slate-900 underline">( ___________________________ )</p>
+            <p className="text-[10px] text-slate-500">Kader Koordinator Orbit Gizi</p>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   );
 };
