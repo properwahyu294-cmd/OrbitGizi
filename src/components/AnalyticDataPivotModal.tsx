@@ -93,6 +93,7 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
   const [sortColumn, setSortColumn] = useState<keyof PivotRowData>("totalCount");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [copiedSuccess, setCopiedSuccess] = useState<boolean>(false);
+  const [printOrientation, setPrintOrientation] = useState<"portrait" | "landscape">("portrait");
 
   // Sanitize search query input
   const safeSearch = useMemo(() => {
@@ -420,13 +421,30 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
               <span className="hidden sm:inline">{copiedSuccess ? "Tersalin!" : "Salin Tabel"}</span>
             </button>
 
+            <div className="flex items-center space-x-1 bg-slate-900 p-1 rounded-xl border border-slate-700">
+              <button
+                onClick={() => setPrintOrientation("portrait")}
+                className={`px-2 py-1 rounded-lg text-[10px] font-black cursor-pointer transition-all ${printOrientation === 'portrait' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                title="Atur Format Cetak Portrait"
+              >
+                Portrait
+              </button>
+              <button
+                onClick={() => setPrintOrientation("landscape")}
+                className={`px-2 py-1 rounded-lg text-[10px] font-black cursor-pointer transition-all ${printOrientation === 'landscape' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                title="Atur Format Cetak Landscape"
+              >
+                Landscape
+              </button>
+            </div>
+
             <button
               onClick={() => window.print()}
               className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl flex items-center space-x-1.5 transition-all cursor-pointer border border-slate-700"
               title="Cetak Laporan"
             >
               <Printer className="h-4 w-4" />
-              <span className="hidden sm:inline">Cetak</span>
+              <span className="hidden sm:inline">Cetak ({printOrientation === 'portrait' ? 'Port.' : 'Land.'})</span>
             </button>
 
             <button
@@ -1245,8 +1263,8 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
       <style>{`
         @media print {
           @page {
-            size: A4 portrait;
-            margin: 12mm 12mm;
+            size: A4 ${printOrientation};
+            margin: 10mm 10mm;
           }
 
           html, body {
@@ -1271,7 +1289,9 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
 
           #printable-portfolio-report {
             display: block !important;
-            position: static !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
             width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
@@ -1282,9 +1302,19 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
             overflow: visible !important;
           }
 
+          .print-cover-page {
+            page-break-after: always !important;
+            break-after: page !important;
+            height: 100vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+          }
+
           .print-avoid-break {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
+            margin-bottom: 16px !important;
           }
 
           table {
@@ -1308,6 +1338,7 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
 
           th, td {
             word-break: break-word !important;
+            padding: 4px 6px !important;
           }
         }
       `}</style>
@@ -1315,8 +1346,68 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
       {/* PRINT-ONLY OFFICIAL PORTFOLIO REPORT CONTAINER */}
       <div id="printable-portfolio-report" className="hidden print:block text-slate-900 font-sans space-y-6 text-xs bg-white p-0">
         
+        {/* COVER PAGE (PAGE 1) */}
+        <div className="print-cover-page flex flex-col justify-between min-h-[92vh] border-b-2 border-slate-900 pb-8">
+          <div className="space-y-6 pt-4">
+            <div className="flex items-center justify-between border-b border-slate-300 pb-4">
+              <div className="flex items-center space-x-3">
+                <div className="h-12 w-12 bg-slate-900 text-amber-300 rounded-xl flex items-center justify-center font-black text-xl shadow-md">
+                  OG
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">
+                    PEMERINTAH KABUPATEN NAGEKEO • DINAS KESEHATAN
+                  </span>
+                  <span className="text-xs font-bold text-slate-800">ORBIT GIZI SYSTEM ENTERPRISE v2.5</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="px-3 py-1 bg-slate-900 text-white text-[10px] font-black rounded-lg uppercase tracking-wider block">
+                  DOKUMEN RESMI PORTOFOLIO
+                </span>
+                <span className="text-[9px] text-slate-500 mt-1 block">ID: OGT-PRT-{Math.floor(100000 + Math.random() * 900000)}</span>
+              </div>
+            </div>
+
+            <div className="py-16 space-y-6 text-center">
+              <div className="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-800 rounded-full text-xs font-black uppercase tracking-wider">
+                LAPORAN ANALISIS INTERVENSI & GIZI MASYARAKAT
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 leading-tight uppercase tracking-tight max-w-3xl mx-auto">
+                PORTOFOLIO EKSEKUTIF KINERJA PUSKESMAS & POSYANDU WILAYAH {selectedKelurahan}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                Laporan komprehensif penanganan Stunting, Wasting, distribusi Makanan Bergizi Gratis (MBG), Pemberian Makanan Tambahan (PMT), serta Evaluasi Kolaborasi Lintas Sektor 5 Pilar Berbasis e-PPGBM.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 py-6 border-t border-b border-slate-300 bg-slate-50 p-4 rounded-2xl">
+            <div>
+              <span className="text-[10px] font-bold uppercase text-slate-500 block">Wilayah Intervensi</span>
+              <span className="text-xs sm:text-sm font-black text-slate-900">{selectedKelurahan}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase text-slate-500 block">Tanggal Laporan</span>
+              <span className="text-xs sm:text-sm font-black text-slate-900">{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase text-slate-500 block">Pengembang / Developer</span>
+              <span className="text-xs sm:text-sm font-black text-emerald-700">CV. Enam Bintang Indonesia</span>
+            </div>
+          </div>
+
+          <div className="pt-6 flex items-center justify-between text-xs text-slate-500">
+            <div className="flex items-center space-x-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="font-semibold text-slate-700">Terenkripsi Keamanan ABAC & Cyber Guard Protection</span>
+            </div>
+            <span className="font-mono text-slate-400">Halaman Cover (1)</span>
+          </div>
+        </div>
+
         {/* PRINT HEADER / EMBLEM */}
-        <div className="border-b-2 border-slate-900 pb-4 flex items-center justify-between print-avoid-break">
+        <div className="border-b-2 border-slate-900 pb-4 flex items-center justify-between print-avoid-break pt-4">
           <div>
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">
               PEMERINTAH KABUPATEN NAGEKEO • DINAS KESEHATAN
@@ -1384,6 +1475,72 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
           </div>
         </div>
 
+        {/* SECTION 2.5: VISUAL CHART SUMMARIES FOR PRINT */}
+        <div className="space-y-3 print-avoid-break">
+          <h3 className="font-black text-xs uppercase tracking-wider text-slate-800 border-b pb-1">
+            GRAFIK & VISUALISASI ANALISIS UTAMA
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="border border-slate-300 rounded-xl p-3 bg-slate-50 space-y-2">
+              <span className="font-bold text-slate-800 text-[11px] block">Distribusi Sasaran per Status Gizi</span>
+              <div className="space-y-1.5 text-[10px]">
+                <div className="flex justify-between items-center">
+                  <span>Normal (Gizi Baik)</span>
+                  <span className="font-bold text-emerald-700">{grandTotal.normalCount} Jiwa ({((grandTotal.normalCount / (grandTotal.totalCount || 1)) * 100).toFixed(1)}%)</span>
+                </div>
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div className="bg-emerald-600 h-full" style={{ width: `${(grandTotal.normalCount / (grandTotal.totalCount || 1)) * 100}%` }}></div>
+                </div>
+
+                <div className="flex justify-between items-center pt-1">
+                  <span>Stunting (Kronis)</span>
+                  <span className="font-bold text-rose-700">{grandTotal.stuntingCount} Jiwa ({((grandTotal.stuntingCount / (grandTotal.totalCount || 1)) * 100).toFixed(1)}%)</span>
+                </div>
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div className="bg-rose-600 h-full" style={{ width: `${(grandTotal.stuntingCount / (grandTotal.totalCount || 1)) * 100}%` }}></div>
+                </div>
+
+                <div className="flex justify-between items-center pt-1">
+                  <span>Risiko Stunting / Wasting</span>
+                  <span className="font-bold text-amber-700">{grandTotal.risikoStuntingCount} Jiwa ({((grandTotal.risikoStuntingCount / (grandTotal.totalCount || 1)) * 100).toFixed(1)}%)</span>
+                </div>
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div className="bg-amber-500 h-full" style={{ width: `${(grandTotal.risikoStuntingCount / (grandTotal.totalCount || 1)) * 100}%` }}></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-slate-300 rounded-xl p-3 bg-slate-50 space-y-2">
+              <span className="font-bold text-slate-800 text-[11px] block">Cakupan Program Intervensi MBG & PMT</span>
+              <div className="space-y-1.5 text-[10px]">
+                <div className="flex justify-between items-center">
+                  <span>Penerima Makanan Bergizi Gratis (MBG)</span>
+                  <span className="font-bold text-teal-700">{grandTotal.mbgCount} Jiwa ({((grandTotal.mbgCount / (grandTotal.totalCount || 1)) * 100).toFixed(1)}%)</span>
+                </div>
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div className="bg-teal-600 h-full" style={{ width: `${(grandTotal.mbgCount / (grandTotal.totalCount || 1)) * 100}%` }}></div>
+                </div>
+
+                <div className="flex justify-between items-center pt-1">
+                  <span>Penerima PMT Pemulihan</span>
+                  <span className="font-bold text-purple-700">{grandTotal.pmtCount} Jiwa ({((grandTotal.pmtCount / (grandTotal.totalCount || 1)) * 100).toFixed(1)}%)</span>
+                </div>
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div className="bg-purple-600 h-full" style={{ width: `${(grandTotal.pmtCount / (grandTotal.totalCount || 1)) * 100}%` }}></div>
+                </div>
+
+                <div className="flex justify-between items-center pt-1">
+                  <span>Wajib Home Visit (Absen Timbang)</span>
+                  <span className="font-bold text-rose-700">{grandTotal.homeVisitCount} Jiwa</span>
+                </div>
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div className="bg-rose-500 h-full" style={{ width: `${(grandTotal.homeVisitCount / (grandTotal.totalCount || 1)) * 100}%` }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* SECTION 3: PIVOT MATRIX TABLE */}
         <div className="space-y-2 print-avoid-break">
           <h3 className="font-black text-xs uppercase tracking-wider text-slate-800">
@@ -1435,7 +1592,7 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
         </div>
 
         {/* SECTION 4: DAFTAR SASARAN LENGKAP */}
-        <div className="space-y-2 mt-4">
+        <div className="space-y-2 mt-4 print-avoid-break">
           <h3 className="font-black text-xs uppercase tracking-wider text-slate-800">
             2. DAFTAR INDIVIDUAL SASARAN TERDAFTAR
           </h3>
