@@ -345,8 +345,19 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
                     <p className="text-[11px] text-slate-400">Pengamanan data sensitif kesehatan masyarakat berstandar Firestore ABAC Security Fortress.</p>
                   </div>
                 </div>
-              </div>
 
+                {/* DEVELOPER CREDITS CARD */}
+                <div className="mt-6 bg-gradient-to-r from-slate-950 via-emerald-950/30 to-slate-950 border border-emerald-500/30 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="space-y-1 text-center sm:text-left">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">PENGEMBANG UTAMA / DEVELOPER</span>
+                    <h4 className="text-base font-black text-white">CV. Enam Bintang Indonesia</h4>
+                    <p className="text-xs text-slate-300">Mitra Solusi Teknologi Analisis Gizi & Sistem Informasi Eksekutif Daerah.</p>
+                  </div>
+                  <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-300 font-bold text-xs">
+                    Official Release v2.5
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -579,6 +590,8 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>© 2026 Orbit Gizi System • Kabupaten Nagekeo. Hak Cipta Dilindungi.</span>
           <div className="flex items-center space-x-3 text-slate-300">
+            <span className="text-white/25 text-[11px] font-medium tracking-widest uppercase hidden md:inline">Developed by CV. Enam Bintang Indonesia</span>
+            <span>•</span>
             <button 
               onClick={() => setShowModal("ABOUT")}
               className="hover:text-emerald-400 underline cursor-pointer"
@@ -595,6 +608,10 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
             <span>•</span>
             <span className="text-emerald-300">e-PPGBM Synchronized</span>
           </div>
+        </div>
+        {/* FAINT WATERMARK FOR MOBILE */}
+        <div className="mt-2 text-center text-white/20 text-[10px] font-medium tracking-widest uppercase md:hidden">
+          Developed by CV. Enam Bintang Indonesia
         </div>
       </footer>
 
@@ -634,6 +651,12 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
                     <li>Laporan Portofolio Printable Resmi untuk pertanggungjawaban program MBG/PMT.</li>
                     <li>Pengamanan data terenkripsi berbasis Firestore ABAC Fortress & Cyber Guard Protection.</li>
                   </ul>
+                </div>
+
+                <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 mt-4 space-y-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 block">Tim Pengembang / Developer</span>
+                  <p className="font-bold text-white text-xs">CV. Enam Bintang Indonesia</p>
+                  <p className="text-[11px] text-slate-400">Penyedia Solusi Perangkat Lunak & Sistem Analisis Gizi Terpadu.</p>
                 </div>
               </div>
             ) : (
