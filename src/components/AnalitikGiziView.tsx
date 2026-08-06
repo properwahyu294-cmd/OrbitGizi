@@ -16,6 +16,7 @@ interface AnalitikGiziViewProps {
   mbgMonthlyTrend: Array<{ month: string; target: number; realized: number }>;
   pmtMonthlyTrend: Array<{ month: string; target: number; realized: number }>;
   onAddWeightRecord?: (beneficiaryId: string, record: WeightRecord) => void;
+  onOpenPivotModal?: () => void;
 }
 
 export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
@@ -24,7 +25,8 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
   pillars,
   mbgMonthlyTrend,
   pmtMonthlyTrend,
-  onAddWeightRecord
+  onAddWeightRecord,
+  onOpenPivotModal
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [selectedBeneficiaryId, setSelectedBeneficiaryId] = useState<string>(
@@ -170,6 +172,16 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
             );
           })}
         </div>
+
+        {onOpenPivotModal && (
+          <button
+            onClick={onOpenPivotModal}
+            className="flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer ml-auto"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-emerald-200" />
+            <span>Matriks Pivot & Rekap Laporan</span>
+          </button>
+        )}
       </div>
 
       {/* Dynamic Summary Cards */}

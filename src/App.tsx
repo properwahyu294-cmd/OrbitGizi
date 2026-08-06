@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   ResponsiveContainer, 
@@ -62,6 +62,8 @@ import IbuMenyusuiView from "./components/IbuMenyusuiView";
 import IbuHamilView from "./components/IbuHamilView";
 import BannerCarousel from "./components/BannerCarousel";
 import { LauncherLanding } from "./components/LauncherLanding";
+import DashboardExecutiveRecap from "./components/DashboardExecutiveRecap";
+import { AnalyticDataPivotModal } from "./components/AnalyticDataPivotModal";
 
 const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
   {
@@ -587,6 +589,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [showLauncher, setShowLauncher] = useState<boolean>(true);
+  const [showPivotModal, setShowPivotModal] = useState<boolean>(false);
 
   // Firebase & Google Sheets integration state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -618,6 +621,36 @@ export default function App() {
     localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(DEFAULT_BENEFICIARIES));
     return DEFAULT_BENEFICIARIES;
   });
+
+  const collaborationMetrics = useMemo(() => {
+    const total = beneficiaries.length;
+    const notAttending = beneficiaries.filter(b => b.attendanceStatus === "Tidak Mengunjungi" || b.attendanceStatus === "Perlu Kunjungan Rumah");
+    const pmtReceived = beneficiaries.filter(b => b.isReceivedPMT !== false);
+    const desaPresent = beneficiaries.filter(b => b.isPetugasDesaHadir);
+    const posyanduPresent = beneficiaries.filter(b => b.isPetugasPosyanduHadir);
+
+    const desaRate = total ? (desaPresent.length / total) * 100 : 0;
+    const posyanduRate = total ? (posyanduPresent.length / total) * 100 : 0;
+    const pmtRate = total ? (pmtReceived.length / total) * 100 : 0;
+    const collabRateScore = Math.round((desaRate + posyanduRate + pmtRate) / 3);
+
+    const criticalWeaknesses = [];
+    if (desaRate < 50) criticalWeaknesses.push("Kehadiran Perangkat Desa Rendah");
+    if (posyanduRate < 70) criticalWeaknesses.push("Kehadiran Kader Posyandu Belum Optimal");
+    if (pmtRate < 80) criticalWeaknesses.push("Cakupan PMT Perlu Peningkatan");
+
+    return {
+      total,
+      notAttendingCount: notAttending.length,
+      pmtReceivedCount: pmtReceived.length,
+      desaRate: Math.round(desaRate),
+      posyanduRate: Math.round(posyanduRate),
+      collabRateScore,
+      homeVisitList: notAttending,
+      criticalWeaknesses,
+      pmtRate: Math.round(pmtRate)
+    };
+  }, [beneficiaries]);
 
   const handleSaveBeneficiary = (ben: MBGBeneficiary) => {
     setBeneficiaries(prev => {
@@ -1243,6 +1276,14 @@ export default function App() {
                   weights={data.weights} 
                   lastUpdated={data.lastUpdated}
                 />
+
+                {/* Dashboard Executive Data Recap Panel */}
+                <DashboardExecutiveRecap
+                  villages={data.villages}
+                  beneficiaries={beneficiaries}
+                  onOpenAnalyticPivot={() => setShowPivotModal(true)}
+                  onOpenInputWizard={() => setShowInputWizard(true)}
+                />
                 
                 {/* Zona Sebaran Unit & Wilayah Cards */}
                 <div className="space-y-3">
@@ -1444,6 +1485,7 @@ export default function App() {
                   mbgMonthlyTrend={data.mbgMonthlyTrend}
                   pmtMonthlyTrend={data.pmtMonthlyTrend}
                   onAddWeightRecord={handleAddWeightRecord}
+                  onOpenPivotModal={() => setShowPivotModal(true)}
                 />
               </div>
             )}
@@ -1602,6 +1644,15 @@ export default function App() {
         villages={data.villages}
         onSave={handleVillageUpdate}
         weights={data.weights}
+      />
+
+      {/* Analytic Data Pivot & Executive Report Modal */}
+      <AnalyticDataPivotModal
+        isOpen={showPivotModal}
+        onClose={() => setShowPivotModal(false)}
+        beneficiaries={beneficiaries}
+        selectedKelurahan="SEMUA"
+        collaborationMetrics={collaborationMetrics}
       />
 
     </div>
