@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Printer, X, BookOpen, ShieldCheck, Download, Award, CheckCircle2, Layers, Cpu, Database, FileText } from "lucide-react";
+import { Printer, X, BookOpen, ShieldCheck, Download, CheckCircle2 } from "lucide-react";
 
 interface UserManualModalProps {
   isOpen: boolean;
@@ -7,7 +7,7 @@ interface UserManualModalProps {
 }
 
 export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
-  const [activeTab, setActiveTab] = useState<"preview" | "toc">("preview");
+  const [printOrientation, setPrintOrientation] = useState<"portrait" | "landscape">("portrait");
 
   if (!isOpen) return null;
 
@@ -48,29 +48,33 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
           </div>
         </div>
 
-        {/* Toolbar / TOC selector */}
-        <div className="px-6 py-2.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between text-xs font-semibold text-slate-700">
-          <div className="flex items-center space-x-4">
-            <span className="flex items-center space-x-1.5 text-blue-700 font-bold">
-              <ShieldCheck className="h-4 w-4" />
-              <span>Dokumen Terverifikasi Dinas Kesehatan Kabupaten Nagekeo</span>
-            </span>
+        {/* Toolbar / Options */}
+        <div className="px-6 py-3 bg-slate-100 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold text-slate-700">
+          <div className="flex items-center space-x-2 text-blue-700 font-bold">
+            <ShieldCheck className="h-4 w-4" />
+            <span>Dokumen Terverifikasi Dinas Kesehatan Kabupaten Nagekeo</span>
           </div>
-          <div className="flex space-x-2">
-            <span className="px-3 py-1 bg-white border border-slate-300 rounded-lg font-mono text-[11px] text-slate-600">
-              Format: A4 Portrait • Siap Cetak PDF
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setPrintOrientation(printOrientation === 'portrait' ? 'landscape' : 'portrait')}
+              className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold rounded-xl shadow-2xs transition-all cursor-pointer text-xs"
+            >
+              Mode Cetak: <span className="text-blue-600 uppercase">{printOrientation}</span> (Klik untuk Ubah)
+            </button>
+            <span className="px-3 py-1.5 bg-blue-600 text-white rounded-xl font-mono text-[11px] font-bold shadow-2xs">
+              20 Halaman • A4
             </span>
           </div>
         </div>
 
         {/* Scrollable Document Container (20 Pages Simulation) */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-10 bg-slate-100/80 flex flex-col items-center space-y-10">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-10 bg-slate-100/90 flex flex-col items-center space-y-10">
           
           <style>{`
             @media print {
               @page {
-                size: A4 portrait;
-                margin: 15mm;
+                size: A4 ${printOrientation};
+                margin: 10mm;
               }
               * {
                 -webkit-print-color-adjust: exact !important;
@@ -81,6 +85,8 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 color: #000000 !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
               }
               body * {
                 visibility: hidden !important;
@@ -94,25 +100,35 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 left: 0 !important;
                 top: 0 !important;
                 width: 100% !important;
+                max-width: none !important;
                 box-shadow: none !important;
                 border: none !important;
                 background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
               }
-              .page-break {
+              .manual-page {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 10mm !important;
+                width: 100% !important;
+                min-height: 275mm !important;
                 page-break-after: always !important;
                 break-after: page !important;
-                min-height: 275mm !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
               }
             }
 
             .manual-page {
               width: 210mm;
               min-height: 297mm;
-              padding: 20mm;
+              padding: 18mm;
               background: #ffffff;
-              box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-              border: 1px solid #e2e8f0;
-              border-radius: 12px;
+              box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+              border: 1px solid #cbd5e1;
+              border-radius: 16px;
               margin-bottom: 2rem;
               position: relative;
               box-sizing: border-box;
@@ -125,8 +141,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
           <div id="printable-manual-book" className="flex flex-col items-center space-y-8 w-full max-w-[210mm]">
 
             {/* ==================== COVER PAGE (HALAMAN 1) ==================== */}
-            <div className="manual-page page-break bg-white overflow-hidden relative">
-              {/* Hexagonal Geometric & Color Accents */}
+            <div className="manual-page bg-white overflow-hidden relative">
               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
               <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -151,11 +166,11 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                   </div>
                 </div>
 
-                <div className="py-12 space-y-6 text-left max-w-xl">
+                <div className="py-10 space-y-6 text-left max-w-xl">
                   <div className="inline-block px-4 py-1.5 bg-blue-100 text-blue-800 rounded-full text-xs font-black uppercase tracking-widest">
                     MODUL OPERASIONAL & MANAJEMEN E-PPGBM
                   </div>
-                  <h1 className="text-3xl sm:text-4xl font-black text-slate-900 leading-tight uppercase tracking-tight">
+                  <h1 className="text-3xl font-black text-slate-900 leading-tight uppercase tracking-tight">
                     BUKU PANDUAN PENGGUNAAN & OPERASIONAL SISTEM ORBIT GIZI
                   </h1>
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
@@ -163,33 +178,32 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                   </p>
                 </div>
 
-                {/* Decorative Hexagon Grid Simulation */}
                 <div className="grid grid-cols-4 gap-3 py-4">
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-center">
-                    <span className="text-blue-700 font-black text-lg block">Bab 1-5</span>
-                    <span className="text-[10px] text-slate-600 font-bold uppercase">Materi Lengkap</span>
+                    <span className="text-blue-700 font-black text-base block">Bab 1-5</span>
+                    <span className="text-[9px] text-slate-600 font-bold uppercase">Materi</span>
                   </div>
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                    <span className="text-amber-700 font-black text-lg block">20 Hal</span>
-                    <span className="text-[10px] text-slate-600 font-bold uppercase">Struktur Buku</span>
+                    <span className="text-amber-700 font-black text-base block">20 Hal</span>
+                    <span className="text-[9px] text-slate-600 font-bold uppercase">Struktur</span>
                   </div>
                   <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-center">
-                    <span className="text-indigo-700 font-black text-lg block">100%</span>
-                    <span className="text-[10px] text-slate-600 font-bold uppercase">Standar e-PPGBM</span>
+                    <span className="text-indigo-700 font-black text-base block">100%</span>
+                    <span className="text-[9px] text-slate-600 font-bold uppercase">e-PPGBM</span>
                   </div>
                   <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
-                    <span className="text-emerald-700 font-black text-lg block">Resmi</span>
-                    <span className="text-[10px] text-slate-600 font-bold uppercase">Pemkab Nagekeo</span>
+                    <span className="text-emerald-700 font-black text-base block">Resmi</span>
+                    <span className="text-[9px] text-slate-600 font-bold uppercase">Nagekeo</span>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-8 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600 relative z-10">
+              <div className="pt-6 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600 relative z-10">
                 <div>
-                  <span className="font-bold text-slate-800 block">Disusun Oleh: Tim Pengembang SPBE & Dinas Kesehatan Nagekeo</span>
+                  <span className="font-bold text-slate-800 block text-[11px]">Disusun Oleh: Tim Pengembang SPBE & Dinas Kesehatan Nagekeo</span>
                   <span className="text-[10px] text-slate-500">Diterbitkan untuk Puskesmas, Posyandu, dan Kader Seluruh Wilayah Nagekeo</span>
                 </div>
-                <div className="text-right font-mono font-bold text-blue-700">
+                <div className="text-right font-mono font-bold text-blue-700 text-xs">
                   Halaman 1 / 20
                 </div>
               </div>
@@ -197,23 +211,23 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
 
             {/* ==================== HALAMAN 2: DAFTAR ISI ==================== */}
-            <div className="manual-page page-break bg-white">
-              <div className="space-y-6">
-                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+            <div className="manual-page bg-white">
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">DAFTAR ISI BUKU PANDUAN</span>
-                    <h2 className="text-xl font-black text-slate-900">STRUKTUR MODUL 5 BAB & 20 HALAMAN</h2>
+                    <h2 className="text-base font-black text-slate-900">STRUKTUR MODUL 5 BAB & 20 HALAMAN</h2>
                   </div>
                   <span className="text-xs font-mono font-bold text-slate-500">Halaman 2</span>
                 </div>
 
-                <div className="space-y-4 text-xs">
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                    <div className="flex justify-between font-black text-slate-900 text-sm">
+                <div className="space-y-3 text-xs">
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                    <div className="flex justify-between font-black text-slate-900 text-xs">
                       <span>BAB 1: PENDAHULUAN & ARSITEKTUR SISTEM ORBIT GIZI</span>
                       <span className="text-blue-700 font-mono">Hal. 3 - 6</span>
                     </div>
-                    <ul className="list-disc list-inside text-slate-600 space-y-1 pl-2">
+                    <ul className="list-disc list-inside text-slate-600 space-y-0.5 pl-2 text-[11px]">
                       <li>Latar Belakang Kebijakan Zero Stunting Kabupaten Nagekeo (Hal. 3)</li>
                       <li>Tujuan & Manfaat Orbit Gizi System v2.5 bagi Puskesmas (Hal. 4)</li>
                       <li>Peta Navigasi Menu Utama & Hak Akses Berbasis ABAC (Hal. 5)</li>
@@ -221,49 +235,49 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                     </ul>
                   </div>
 
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                    <div className="flex justify-between font-black text-slate-900 text-sm">
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                    <div className="flex justify-between font-black text-slate-900 text-xs">
                       <span>BAB 2: MANAJEMEN DATA SASARAN & E-PPGBM</span>
                       <span className="text-blue-700 font-mono">Hal. 7 - 10</span>
                     </div>
-                    <ul className="list-disc list-inside text-slate-600 space-y-1 pl-2">
+                    <ul className="list-disc list-inside text-slate-600 space-y-0.5 pl-2 text-[11px]">
                       <li>Penginputan Data Balita, Ibu Hamil, dan Ibu Menyusui (Hal. 7)</li>
                       <li>Validasi NIK 16 Digit Terintegrasi Dukcapil & e-PPGBM (Hal. 8)</li>
-                      <li>Pencatatan Antropometri: Berat Badan, Tinggi Badan, & Lingkar Lengan (Hal. 9)</li>
+                      <li>Pencatatan Antropometri: Berat Badan, Tinggi Badan, & LiLA (Hal. 9)</li>
                       <li>Sinkronisasi Data Lintas Puskesmas & Kecamatan (Hal. 10)</li>
                     </ul>
                   </div>
 
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                    <div className="flex justify-between font-black text-slate-900 text-sm">
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                    <div className="flex justify-between font-black text-slate-900 text-xs">
                       <span>BAB 3: INTERVENSI MAKANAN BERGIZI GRATIS (MBG) & PMT</span>
                       <span className="text-blue-700 font-mono">Hal. 11 - 13</span>
                     </div>
-                    <ul className="list-disc list-inside text-slate-600 space-y-1 pl-2">
+                    <ul className="list-disc list-inside text-slate-600 space-y-0.5 pl-2 text-[11px]">
                       <li>Manajemen Jadwal & Menu Distribusi Makanan Bergizi Gratis (MBG) (Hal. 11)</li>
-                      <li>Alokasi Pemberian Makanan Tambahan (PMT) untuk Balita Wasting & Stunting (Hal. 12)</li>
+                      <li>Alokasi Pemberian Makanan Tambahan (PMT) untuk Balita Wasting (Hal. 12)</li>
                       <li>Monitoring Real-time Logistik & Laporan Distribusi Harian (Hal. 13)</li>
                     </ul>
                   </div>
 
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                    <div className="flex justify-between font-black text-slate-900 text-sm">
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                    <div className="flex justify-between font-black text-slate-900 text-xs">
                       <span>BAB 4: PENCATATAN OFFLINE & FORM MANUAL (BLANK SPOT)</span>
                       <span className="text-blue-700 font-mono">Hal. 14 - 16</span>
                     </div>
-                    <ul className="list-disc list-inside text-slate-600 space-y-1 pl-2">
+                    <ul className="list-disc list-inside text-slate-600 space-y-0.5 pl-2 text-[11px]">
                       <li>Prosedur Pencetakan Lembar Form Blanko Manual 15 Baris (Hal. 14)</li>
                       <li>Panduan Pengisian Lapangan bagi Kader Posyandu Tanpa Sinyal (Hal. 15)</li>
-                      <li>Prosedur Rekonsiliasi & Input Kembali ke Sistem setelah Ada Jaringan (Hal. 16)</li>
+                      <li>Prosedur Rekonsiliasi & Input Kembali ke Sistem (Hal. 16)</li>
                     </ul>
                   </div>
 
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                    <div className="flex justify-between font-black text-slate-900 text-sm">
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                    <div className="flex justify-between font-black text-slate-900 text-xs">
                       <span>BAB 5: LAPORAN EKSEKUTIF, ANALISIS PIVOT & KEAMANAN SPBE</span>
                       <span className="text-blue-700 font-mono">Hal. 17 - 20</span>
                     </div>
-                    <ul className="list-disc list-inside text-slate-600 space-y-1 pl-2">
+                    <ul className="list-disc list-inside text-slate-600 space-y-0.5 pl-2 text-[11px]">
                       <li>Analisis Pivot Lintas Wilayah & Penilaian Risiko Stunting (Hal. 17)</li>
                       <li>Pencetakan Portofolio Eksekutif 4 Halaman untuk Bupati & Dinkes (Hal. 18)</li>
                       <li>Audit Log Keamanan Data & Pemeliharaan Sistem Berkala (Hal. 19)</li>
@@ -273,7 +287,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                 <span>Orbit Gizi System v2.5 • Buku Panduan Resmi</span>
                 <span>Halaman 2 / 20</span>
               </div>
@@ -281,17 +295,17 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
 
             {/* ==================== HALAMAN 3: BAB 1 (BAGIAN 1) ==================== */}
-            <div className="manual-page page-break bg-white">
-              <div className="space-y-6">
-                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+            <div className="manual-page bg-white">
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">BAB 1 • PENDAHULUAN & ARSITEKTUR</span>
-                    <h2 className="text-lg font-black text-slate-900">1.1 Latar Belakang Kebijakan Zero Stunting Nagekeo</h2>
+                    <h2 className="text-base font-black text-slate-900">1.1 Latar Belakang Kebijakan Zero Stunting Nagekeo</h2>
                   </div>
                   <span className="text-xs font-mono font-bold text-slate-500">Halaman 3</span>
                 </div>
 
-                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
                   <p>
                     Kabupaten Nagekeo berkomitmen penuh dalam mewujudkan target nasional penurunan angka stunting hingga di bawah 14% serta menuju <strong>Zero Stunting 2026</strong>. Melalui Dinas Kesehatan dan kolaborasi lintas sektor yang melibatkan 5 pilar pembangunan gizi, diperlukan sebuah sistem informasi terintegrasi yang mampu merekam, memantau, dan mengevaluasi intervensi kesehatan secara akurat hingga tingkat Posyandu terkecil di seluruh desa.
                   </p>
@@ -299,11 +313,11 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                     <strong>Orbit Gizi System Enterprise v2.5</strong> hadir sebagai solusi digital berbasis web dan integrasi e-PPGBM (Elektronik Pencatatan dan Pelaporan Gizi Berbasis Masyarakat) yang dirancang khusus untuk memudahkan kerja tenaga kesehatan puskesmas, kader posyandu, bidan desa, serta Tim Percepatan Penurunan Stunting (TPPS) Kabupaten Nagekeo.
                   </p>
 
-                  <div className="p-4 bg-blue-50 border-l-4 border-blue-600 rounded-r-xl space-y-2">
-                    <h4 className="font-black text-blue-900 uppercase">Prinsip Utama Sistem:</h4>
-                    <ul className="list-disc list-inside space-y-1 text-blue-800">
+                  <div className="p-3 bg-blue-50 border-l-4 border-blue-600 rounded-r-xl space-y-1.5">
+                    <h4 className="font-black text-blue-900 uppercase text-xs">Prinsip Utama Sistem:</h4>
+                    <ul className="list-disc list-inside space-y-1 text-blue-800 text-[11px]">
                       <li><strong>Akurasi Data Real-time:</strong> Setiap penimbangan balita langsung terhubung dengan kalkulator status gizi WHO z-score.</li>
-                      <li><strong>Transparansi Lintas Sektor:</strong> Kolaborasi 5 pilar (Pemerintah, Akademisi, Bisnis, Komunitas, dan Media) termonitor dalam satu dasbor.</li>
+                      <li><strong>Transparansi Lintas Sektor:</strong> Kolaborasi 5 pilar termonitor dalam satu dasbor terpadu.</li>
                       <li><strong>Ketahanan Lapangan (Offline-Ready):</strong> Menyediakan fasilitas cetak blangko manual bagi posyandu di wilayah blank spot.</li>
                     </ul>
                   </div>
@@ -314,7 +328,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                 <span>Bab 1: Pendahuluan & Arsitektur</span>
                 <span>Halaman 3 / 20</span>
               </div>
@@ -322,50 +336,50 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
 
             {/* ==================== HALAMAN 4: BAB 1 (BAGIAN 2) ==================== */}
-            <div className="manual-page page-break bg-white">
-              <div className="space-y-6">
-                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+            <div className="manual-page bg-white">
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">BAB 1 • PENDAHULUAN & ARSITEKTUR</span>
-                    <h2 className="text-lg font-black text-slate-900">1.2 Tujuan, Navigasi Menu & Keamanan ABAC</h2>
+                    <h2 className="text-base font-black text-slate-900">1.2 Tujuan, Navigasi Menu & Keamanan ABAC</h2>
                   </div>
                   <span className="text-xs font-mono font-bold text-slate-500">Halaman 4</span>
                 </div>
 
-                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
-                  <h3 className="font-black text-slate-900 text-sm">Tujuan Pengoperasian Sistem</h3>
+                <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
+                  <h3 className="font-black text-slate-900 text-xs">Tujuan Pengoperasian Sistem</h3>
                   <p>
                     Penerapan aplikasi ini bertujuan untuk: (1) Mempercepat proses rekapitulasi laporan bulanan posyandu, (2) Memantau distribusi Makanan Bergizi Gratis (MBG) tepat sasaran, (3) Menyediakan visualisasi peta risiko stunting interaktif per desa/kelurahan, dan (4) Memfasilitasi cetak laporan portofolio eksekutif bagi pimpinan daerah.
                   </p>
 
-                  <h3 className="font-black text-slate-900 text-sm">Struktur Navigasi Menu Utama</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-blue-800 block">1. Beranda & Executive Summary</span>
-                      <p className="text-[11px] text-slate-600">Ringkasan statistik utama, grafik tren stunting, dan indikator pencapaian pilar.</p>
+                  <h3 className="font-black text-slate-900 text-xs">Struktur Navigasi Menu Utama</h3>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-blue-800 block text-xs">1. Beranda & Executive Summary</span>
+                      <p className="text-[10px] text-slate-600">Ringkasan statistik utama, grafik tren stunting, dan indikator pencapaian pilar.</p>
                     </div>
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-blue-800 block">2. Data Input Center</span>
-                      <p className="text-[11px] text-slate-600">Pusat pencatatan data balita, ibu hamil, menyusui, dan intervensi MBG.</p>
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-blue-800 block text-xs">2. Data Input Center</span>
+                      <p className="text-[10px] text-slate-600">Pusat pencatatan data balita, ibu hamil, menyusui, dan intervensi MBG.</p>
                     </div>
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-blue-800 block">3. Analisis Pivot & Portofolio</span>
-                      <p className="text-[11px] text-slate-600">Analisis data mendalam lintas wilayah dan pencetakan portofolio 4 halaman.</p>
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-blue-800 block text-xs">3. Analisis Pivot & Portofolio</span>
+                      <p className="text-[10px] text-slate-600">Analisis data mendalam lintas wilayah dan pencetakan portofolio 4 halaman.</p>
                     </div>
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-blue-800 block">4. Form Offline & Panduan</span>
-                      <p className="text-[11px] text-slate-600">Pencetakan blangko manual posyandu dan akses buku panduan lengkap.</p>
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-blue-800 block text-xs">4. Form Offline & Panduan</span>
+                      <p className="text-[10px] text-slate-600">Pencetakan blangko manual posyandu dan akses buku panduan lengkap.</p>
                     </div>
                   </div>
 
-                  <h3 className="font-black text-slate-900 text-sm">Keamanan Akses (ABAC & Cyber Guard)</h3>
+                  <h3 className="font-black text-slate-900 text-xs">Keamanan Akses (ABAC & Cyber Guard)</h3>
                   <p>
                     Sistem dilindungi dengan enkripsi tingkat lanjut dan kontrol akses berbasis atribut (Attribute-Based Access Control) untuk menjamin kerahasiaan data kesehatan warga Nagekeo sesuai standar SPBE nasional.
                   </p>
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                 <span>Bab 1: Pendahuluan & Arsitektur</span>
                 <span>Halaman 4 / 20</span>
               </div>
@@ -373,43 +387,43 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
 
             {/* ==================== HALAMAN 5: BAB 2 (BAGIAN 1) ==================== */}
-            <div className="manual-page page-break bg-white">
-              <div className="space-y-6">
-                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+            <div className="manual-page bg-white">
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">BAB 2 • MANAJEMEN DATA SASARAN & E-PPGBM</span>
-                    <h2 className="text-lg font-black text-slate-900">2.1 Penginputan Data Balita & Validasi NIK</h2>
+                    <h2 className="text-base font-black text-slate-900">2.1 Penginputan Data Balita & Validasi NIK</h2>
                   </div>
                   <span className="text-xs font-mono font-bold text-slate-500">Halaman 5</span>
                 </div>
 
-                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
                   <p>
-                    Pencatatan data sasaran merupakan fondasi utama dalam e-PPGBM. Setiap balita yang datang ke posyandu wajib didata secara teliti menggunakan NIK resmi untuk menghindari duokasi data bantuan gizi.
+                    Pencatatan data sasaran merupakan fondasi utama dalam e-PPGBM. Setiap balita yang datang ke posyandu wajib didata secara teliti menggunakan NIK resmi untuk menghindari duplikasi data bantuan gizi.
                   </p>
 
-                  <div className="space-y-2">
-                    <h4 className="font-black text-slate-900 uppercase">Langkah-langkah Input Data Sasaran:</h4>
-                    <ol className="list-decimal list-inside space-y-1.5 pl-2 text-slate-700">
+                  <div className="space-y-1.5">
+                    <h4 className="font-black text-slate-900 uppercase text-xs">Langkah-langkah Input Data Sasaran:</h4>
+                    <ol className="list-decimal list-inside space-y-1 pl-2 text-slate-700 text-[11px]">
                       <li>Buka menu <strong>Data Input Center</strong> pada navigasi utama aplikasi.</li>
                       <li>Pilih tab kategori sasaran (contoh: <strong>Data Balita & Stunting</strong>).</li>
                       <li>Klik tombol <strong>+ Tambah Sasaran Baru</strong> untuk membuka form input wizard.</li>
-                      <li>Masukkan 16 digit NIK balita; sistem akan melakukan validasi otomatis format NIK.</li>
-                      <li>Lengkapi Nama Lengkap Balita, Nama Orang Tua, Tanggal Lahir, Jenis Kelamin (L/P), serta Kelurahan/Desa domisili.</li>
+                      <li>Masukkan 16 digit NIK balita; sistem melakukan validasi otomatis format NIK.</li>
+                      <li>Lengkapi Nama Lengkap Balita, Nama Orang Tua, Tanggal Lahir, Jenis Kelamin (L/P), serta Kelurahan/Desa.</li>
                       <li>Masukkan hasil pengukuran antropometri terakhir (Berat Badan dalam Kg dan Tinggi Badan dalam Cm).</li>
-                      <li>Sistem secara otomatis menghitung status gizi (Normal, Stunting, Wasting, Underweight) berdasarkan standar WHO z-score.</li>
+                      <li>Sistem secara otomatis menghitung status gizi berdasarkan standar WHO z-score.</li>
                       <li>Klik <strong>Simpan Data</strong> untuk memasukkan data ke database cloud secara aman.</li>
                     </ol>
                   </div>
 
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900">
-                    <span className="font-bold block mb-1">Catatan Penting Petugas:</span>
-                    Pastikan penimbangan menggunakan timbangan digital yang telah dikalibrasi agar hasil z-score akurat dan tidak terjadi salah klasifikasi status gizi anak.
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px]">
+                    <span className="font-bold block mb-0.5">Catatan Penting Petugas:</span>
+                    Pastikan penimbangan menggunakan timbangan digital yang telah dikalibrasi agar hasil z-score akurat.
                   </div>
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                 <span>Bab 2: Manajemen Data Sasaran</span>
                 <span>Halaman 5 / 20</span>
               </div>
@@ -417,35 +431,35 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
 
             {/* ==================== HALAMAN 6: BAB 2 (BAGIAN 2) ==================== */}
-            <div className="manual-page page-break bg-white">
-              <div className="space-y-6">
-                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+            <div className="manual-page bg-white">
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">BAB 2 • MANAJEMEN DATA SASARAN & E-PPGBM</span>
-                    <h2 className="text-lg font-black text-slate-900">2.2 Manajemen Ibu Hamil, Menyusui & Sinkronisasi</h2>
+                    <h2 className="text-base font-black text-slate-900">2.2 Manajemen Ibu Hamil, Menyusui & Sinkronisasi</h2>
                   </div>
                   <span className="text-xs font-mono font-bold text-slate-500">Halaman 6</span>
                 </div>
 
-                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
                   <p>
                     Selain balita, pencegahan stunting dimulai sejak 1000 HPK (Hari Pertama Kehidupan). Oleh karena itu, modul ini menyediakan pencatatan khusus untuk Ibu Hamil (ANC) dan Ibu Menyusui (PNC).
                   </p>
 
-                  <div className="space-y-3">
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-slate-900 block">Pencatatan Ibu Hamil (Ibu Hamil / ANC)</span>
-                      <p className="text-[11px] text-slate-600">Catat usia kehamilan (trimester), lingkar lengan atas (LiLA) untuk deteksi Kekurangan Energi Kronis (KEK), serta pemberian tablet tambah darah (TTD).</p>
+                  <div className="space-y-2">
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-slate-900 block text-xs">Pencatatan Ibu Hamil (ANC)</span>
+                      <p className="text-[10px] text-slate-600">Catat usia kehamilan (trimester), lingkar lengan atas (LiLA) untuk deteksi Kekurangan Energi Kronis (KEK), serta pemberian tablet tambah darah (TTD).</p>
                     </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-slate-900 block">Pencatatan Ibu Menyusui & Bayi 0-6 Bulan</span>
-                      <p className="text-[11px] text-slate-600">Pantau pemberian ASI eksklusif, status imunisasi dasar, serta kondisi kesehatan ibu pasca persalinan.</p>
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-slate-900 block text-xs">Pencatatan Ibu Menyusui & Bayi 0-6 Bulan</span>
+                      <p className="text-[10px] text-slate-600">Pantau pemberian ASI eksklusif, status imunisasi dasar, serta kondisi kesehatan ibu pasca persalinan.</p>
                     </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-slate-900 block">Sinkronisasi Lintas Puskesmas</span>
-                      <p className="text-[11px] text-slate-600">Data yang diinput oleh bidan desa atau kader puskesmas langsung tersinkronisasi secara otomatis ke server pusat Dinas Kesehatan Kabupaten Nagekeo.</p>
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-slate-900 block text-xs">Sinkronisasi Lintas Puskesmas</span>
+                      <p className="text-[10px] text-slate-600">Data yang diinput oleh bidan desa atau kader puskesmas langsung tersinkronisasi otomatis ke server pusat Dinas Kesehatan Kabupaten Nagekeo.</p>
                     </div>
                   </div>
 
@@ -455,7 +469,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                 <span>Bab 2: Manajemen Data Sasaran</span>
                 <span>Halaman 6 / 20</span>
               </div>
@@ -463,41 +477,41 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
 
             {/* ==================== HALAMAN 7: BAB 3 (BAGIAN 1) ==================== */}
-            <div className="manual-page page-break bg-white">
-              <div className="space-y-6">
-                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+            <div className="manual-page bg-white">
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">BAB 3 • INTERVENSI MBG & PMT</span>
-                    <h2 className="text-lg font-black text-slate-900">3.1 Manajemen Distribusi Makanan Bergizi Gratis (MBG)</h2>
+                    <h2 className="text-base font-black text-slate-900">3.1 Manajemen Distribusi Makanan Bergizi Gratis (MBG)</h2>
                   </div>
                   <span className="text-xs font-mono font-bold text-slate-500">Halaman 7</span>
                 </div>
 
-                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
                   <p>
                     Program Makanan Bergizi Gratis (MBG) merupakan pilar penting dalam pemenuhan nutrisi harian anak sekolah dan balita di Kabupaten Nagekeo. Aplikasi menyediakan fitur penjadwalan dan pemantauan distribusi yang transparan.
                   </p>
 
-                  <div className="space-y-2">
-                    <h4 className="font-black text-slate-900 uppercase">Cara Pengelolaan Jadwal MBG:</h4>
-                    <ol className="list-decimal list-inside space-y-1.5 pl-2 text-slate-700">
+                  <div className="space-y-1.5">
+                    <h4 className="font-black text-slate-900 uppercase text-xs">Cara Pengelolaan Jadwal MBG:</h4>
+                    <ol className="list-decimal list-inside space-y-1 pl-2 text-slate-700 text-[11px]">
                       <li>Akses modul manajemen MBG pada menu utama atau sub-menu intervensi.</li>
-                      <li>Tentukan tanggal distribusi, menu makanan (misal: Nasi, Ikan, Sayur Kelor, Buah Lokal), serta takaran kalori dan protein.</li>
+                      <li>Tentukan tanggal distribusi, menu makanan (misal: Nasi, Ikan, Sayur Kelor, Buah Lokal), serta kalori.</li>
                       <li>Pilih kelompok sasaran penerima manfaat (PAUD, TK, SD, atau Balita Posyandu tertentu).</li>
                       <li>Catat jumlah paket yang disalurkan dan konfirmasi penerimaan oleh koordinator posyandu/sekolah.</li>
                     </ol>
                   </div>
 
-                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1 text-[11px]">
                     <span className="font-bold text-emerald-900 block">Standar Kandungan Gizi MBG:</span>
-                    <p className="text-emerald-800 text-[11px]">
+                    <p className="text-emerald-800">
                       Setiap paket makanan bergizi gratis dirancang memenuhi minimal 30% Angka Kecukupan Gizi (AKG) harian anak, dengan penekanan pada protein hewani lokal seperti ikan segar dan telur.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                 <span>Bab 3: Intervensi MBG & PMT</span>
                 <span>Halaman 7 / 20</span>
               </div>
@@ -505,41 +519,41 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
 
             {/* ==================== HALAMAN 8: BAB 3 (BAGIAN 2) ==================== */}
-            <div className="manual-page page-break bg-white">
-              <div className="space-y-6">
-                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+            <div className="manual-page bg-white">
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">BAB 3 • INTERVENSI MBG & PMT</span>
-                    <h2 className="text-lg font-black text-slate-900">3.2 Alokasi PMT Pemulihan & Monitoring Logistik</h2>
+                    <h2 className="text-base font-black text-slate-900">3.2 Alokasi PMT Pemulihan & Monitoring Logistik</h2>
                   </div>
                   <span className="text-xs font-mono font-bold text-slate-500">Halaman 8</span>
                 </div>
 
-                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
                   <p>
                     Pemberian Makanan Tambahan (PMT) Pemulihan difokuskan khusus bagi balita yang teridentifikasi mengalami gizi kurang (wasting), gizi buruk, atau stunting kronis selama minimal 90 hari intervensi.
                   </p>
 
-                  <div className="space-y-3">
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-slate-900 block">Targeting Sasaran PMT Pemulihan</span>
-                      <p className="text-[11px] text-slate-600">Sistem secara otomatis memfilter daftar balita berstatus gizi merah/kuning untuk diprioritaskan mendapatkan paket PMT tinggi protein.</p>
+                  <div className="space-y-2">
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-slate-900 block text-xs">Targeting Sasaran PMT Pemulihan</span>
+                      <p className="text-[10px] text-slate-600">Sistem secara otomatis memfilter daftar balita berstatus gizi kurang/merah untuk diprioritaskan mendapatkan paket PMT tinggi protein.</p>
                     </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-slate-900 block">Monitoring Stok Logistik Puskesmas</span>
-                      <p className="text-[11px] text-slate-600">Petugas dapat memantau ketersediaan bahan PMT di gudang puskesmas dan mengajukan permintaan restock ke Dinas Kesehatan secara digital.</p>
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-slate-900 block text-xs">Monitoring Stok Logistik Puskesmas</span>
+                      <p className="text-[10px] text-slate-600">Petugas dapat memantau ketersediaan bahan PMT di gudang puskesmas dan mengajukan permintaan restock ke Dinas Kesehatan secara digital.</p>
                     </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-slate-900 block">Evaluasi Kenaikan Berat Badan (BB)</span>
-                      <p className="text-[11px] text-slate-600">Setiap 2 minggu sekali, kader wajib memasukkan hasil penimbangan ulang untuk menilai apakah intervensi PMT memberikan respon positif pada pertumbuhan anak.</p>
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-slate-900 block text-xs">Evaluasi Kenaikan Berat Badan (BB)</span>
+                      <p className="text-[10px] text-slate-600">Setiap 2 minggu sekali, kader wajib memasukkan hasil penimbangan ulang untuk menilai apakah intervensi PMT memberikan respon positif.</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                 <span>Bab 3: Intervensi MBG & PMT</span>
                 <span>Halaman 8 / 20</span>
               </div>
@@ -547,40 +561,40 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
 
             {/* ==================== HALAMAN 9: BAB 4 (BAGIAN 1) ==================== */}
-            <div className="manual-page page-break bg-white">
-              <div className="space-y-6">
-                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+            <div className="manual-page bg-white">
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">BAB 4 • PENCATATAN OFFLINE (BLANK SPOT)</span>
-                    <h2 className="text-lg font-black text-slate-900">4.1 Prosedur Cetak Formulir Manual 15 Baris</h2>
+                    <h2 className="text-base font-black text-slate-900">4.1 Prosedur Cetak Formulir Manual 15 Baris</h2>
                   </div>
                   <span className="text-xs font-mono font-bold text-slate-500">Halaman 9</span>
                 </div>
 
-                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
                   <p>
                     Tidak semua posyandu di wilayah Kabupaten Nagekeo memiliki akses internet yang stabil. Untuk mengantisipasi kendala tersebut, Orbit Gizi System v2.5 menyediakan fitur khusus pencetakan formulir blangko manual (offline template).
                   </p>
 
-                  <div className="space-y-2">
-                    <h4 className="font-black text-slate-900 uppercase">Cara Mencetak Blangko Offline:</h4>
-                    <ol className="list-decimal list-inside space-y-1.5 pl-2 text-slate-700">
+                  <div className="space-y-1.5">
+                    <h4 className="font-black text-slate-900 uppercase text-xs">Cara Mencetak Blangko Offline:</h4>
+                    <ol className="list-decimal list-inside space-y-1 pl-2 text-slate-700 text-[11px]">
                       <li>Klik tombol <strong>Cetak Form Offline</strong> pada bilah navigasi atas aplikasi.</li>
                       <li>Masukkan nama Desa/Kelurahan dan Posyandu yang akan dikunjungi.</li>
-                      <li>Sistem secara otomatis menyiapkan format tabel standar e-PPGBM dengan <strong>15 baris kosong</strong> yang pas di 1 halaman kertas A4 (lanskap maupun potret).</li>
+                      <li>Sistem secara otomatis menyiapkan format tabel standar e-PPGBM dengan <strong>15 baris kosong</strong> yang pas di 1 halaman kertas A4.</li>
                       <li>Kolom Nomor sengaja dikosongkan untuk memudahkan pencatatan manual di lapangan.</li>
                       <li>Klik tombol <strong>Cetak Form</strong> untuk menghubungkan langsung ke printer atau menyimpan sebagai PDF.</li>
                     </ol>
                   </div>
 
-                  <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-indigo-900">
-                    <span className="font-bold block mb-1">Keunggulan Blangko Resmi:</span>
+                  <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-indigo-900 text-[11px]">
+                    <span className="font-bold block mb-0.5">Keunggulan Blangko Resmi:</span>
                     Blangko telah dilengkapi kolom NIK 16 digit, Nama Sasaran, L/P, Umur, BB, TB, Status Gizi, Kehadiran, serta tanda tangan Kepala Desa dan Kader.
                   </div>
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                 <span>Bab 4: Pencatatan Offline</span>
                 <span>Halaman 9 / 20</span>
               </div>
@@ -588,41 +602,41 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
 
             {/* ==================== HALAMAN 10: BAB 4 (BAGIAN 2) ==================== */}
-            <div className="manual-page page-break bg-white">
-              <div className="space-y-6">
-                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+            <div className="manual-page bg-white">
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">BAB 4 • PENCATATAN OFFLINE (BLANK SPOT)</span>
-                    <h2 className="text-lg font-black text-slate-900">4.2 Panduan Pengisian Lapangan & Sinkronisasi Kembali</h2>
+                    <h2 className="text-base font-black text-slate-900">4.2 Panduan Pengisian Lapangan & Sinkronisasi Kembali</h2>
                   </div>
                   <span className="text-xs font-mono font-bold text-slate-500">Halaman 10</span>
                 </div>
 
-                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
                   <p>
                     Saat bertugas di lokasi tanpa sinyal (blank spot), kader posyandu menggunakan lembar kertas cetak yang telah dipersiapkan sebelumnya. Berikut adalah tata tertib pengisian dan pemindahan data ke aplikasi:
                   </p>
 
-                  <div className="space-y-3">
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-slate-900 block">1. Ketepatan Penulisan NIK & Nama</span>
-                      <p className="text-[11px] text-slate-600">Pastikan 16 digit NIK ditulis dengan jelas dan terbaca agar saat proses input ke aplikasi tidak terjadi kesalahan penulisan angka.</p>
+                  <div className="space-y-2">
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-slate-900 block text-xs">1. Ketepatan Penulisan NIK & Nama</span>
+                      <p className="text-[10px] text-slate-600">Pastikan 16 digit NIK ditulis dengan jelas dan terbaca agar saat proses input ke aplikasi tidak terjadi kesalahan penulisan angka.</p>
                     </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-slate-900 block">2. Pengukuran Antropometri Teliti</span>
-                      <p className="text-[11px] text-slate-600">Tuliskan angka desimal Berat Badan (misal: 10.4 kg) dan Tinggi Badan (misal: 78.5 cm) secara presisi.</p>
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-slate-900 block text-xs">2. Pengukuran Antropometri Teliti</span>
+                      <p className="text-[10px] text-slate-600">Tuliskan angka desimal Berat Badan (misal: 10.4 kg) dan Tinggi Badan (misal: 78.5 cm) secara presisi di lembar blangko.</p>
                     </div>
 
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <span className="font-black text-slate-900 block">3. Rekonsiliasi Data Pascakunjungan</span>
-                      <p className="text-[11px] text-slate-600">Setelah kader kembali ke wilayah dengan jangkauan internet, buka kembali aplikasi Orbit Gizi dan masukkan seluruh data lembar manual ke menu Data Input Center.</p>
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+                      <span className="font-black text-slate-900 block text-xs">3. Rekonsiliasi Data Pascakunjungan</span>
+                      <p className="text-[10px] text-slate-600">Setelah kader kembali ke wilayah dengan jangkauan internet, buka kembali aplikasi Orbit Gizi dan masukkan seluruh data lembar manual ke menu Data Input Center.</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                 <span>Bab 4: Pencatatan Offline</span>
                 <span>Halaman 10 / 20</span>
               </div>
@@ -630,24 +644,24 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
 
             {/* ==================== HALAMAN 11: BAB 5 (BAGIAN 1) ==================== */}
-            <div className="manual-page page-break bg-white">
-              <div className="space-y-6">
-                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+            <div className="manual-page bg-white">
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">BAB 5 • LAPORAN EKSEKUTIF & ANALISIS PIVOT</span>
-                    <h2 className="text-lg font-black text-slate-900">5.1 Analisis Pivot Lintas Wilayah & Penilaian Risiko</h2>
+                    <h2 className="text-base font-black text-slate-900">5.1 Analisis Pivot Lintas Wilayah & Penilaian Risiko</h2>
                   </div>
                   <span className="text-xs font-mono font-bold text-slate-500">Halaman 11</span>
                 </div>
 
-                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
                   <p>
                     Modul analisis pivot dirancang untuk pimpinan puskesmas dan Dinas Kesehatan guna membandingkan kinerja penanganan gizi antar kelurahan/desa secara cepat dan mendalam.
                   </p>
 
-                  <div className="space-y-2">
-                    <h4 className="font-black text-slate-900 uppercase">Fitur Unggulan Analisis Pivot:</h4>
-                    <ul className="list-disc list-inside space-y-1.5 pl-2 text-slate-700">
+                  <div className="space-y-1.5">
+                    <h4 className="font-black text-slate-900 uppercase text-xs">Fitur Unggulan Analisis Pivot:</h4>
+                    <ul className="list-disc list-inside space-y-1 pl-2 text-slate-700 text-[11px]">
                       <li><strong>Filter Multi-Dimensi:</strong> Saring data berdasarkan Puskesmas pembina, Kelurahan, jenis kelamin, atau kategori status gizi.</li>
                       <li><strong>Matriks Perbandingan Stunting:</strong> Melihat persentase penurunan stunting dari bulan ke bulan.</li>
                       <li><strong>Peta Risiko Interaktif:</strong> Identifikasi zona merah (rawan stunting tinggi) yang memerlukan intervensi darurat segera.</li>
@@ -660,7 +674,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                 <span>Bab 5: Laporan Eksekutif</span>
                 <span>Halaman 11 / 20</span>
               </div>
@@ -668,25 +682,25 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
 
             {/* ==================== HALAMAN 12: BAB 5 (BAGIAN 2) ==================== */}
-            <div className="manual-page page-break bg-white">
-              <div className="space-y-6">
-                <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+            <div className="manual-page bg-white">
+              <div className="space-y-4">
+                <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">BAB 5 • LAPORAN EKSEKUTIF & ANALISIS PIVOT</span>
-                    <h2 className="text-lg font-black text-slate-900">5.2 Pencetakan Portofolio Eksekutif 4 Halaman</h2>
+                    <h2 className="text-base font-black text-slate-900">5.2 Pencetakan Portofolio Eksekutif 4 Halaman</h2>
                   </div>
                   <span className="text-xs font-mono font-bold text-slate-500">Halaman 12</span>
                 </div>
 
-                <div className="space-y-4 text-xs text-slate-700 leading-relaxed">
+                <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
                   <p>
                     Aplikasi menyediakan fitur cetak portofolio eksekutif komprehensif sebanyak 4 halaman yang mencakup Cover profesional, Ringkasan Kinerja 5 Pilar, Grafik Analisis Gizi, serta Lembar Validasi Tanda Tangan.
                   </p>
 
-                  <div className="space-y-2">
-                    <h4 className="font-black text-slate-900 uppercase">Struktur 4 Halaman Portofolio:</h4>
-                    <ol className="list-decimal list-inside space-y-1 pl-2 text-slate-700">
-                      <li><strong>Halaman 1 (Cover Profesional):</strong> Desain elegan warna putih-biru-silver dengan identitas Pemkab Nagekeo & Dinas Kesehatan.</li>
+                  <div className="space-y-1.5">
+                    <h4 className="font-black text-slate-900 uppercase text-xs">Struktur 4 Halaman Portofolio:</h4>
+                    <ol className="list-decimal list-inside space-y-1 pl-2 text-slate-700 text-[11px]">
+                      <li><strong>Halaman 1 (Cover Profesional):</strong> Desain elegan dengan identitas Pemkab Nagekeo & Dinas Kesehatan.</li>
                       <li><strong>Halaman 2 (Evaluasi 5 Pilar):</strong> Penilaian komprehensif kolaborasi lintas sektor dan intervensi spesifik/sensitif.</li>
                       <li><strong>Halaman 3 (Analisis Grafik & Tabel):</strong> Visualisasi data balita, ibu hamil, dan distribusi MBG/PMT.</li>
                       <li><strong>Halaman 4 (Kesimpulan & Validasi):</strong> Pengesahan resmi oleh Kepala Puskesmas dan Dinas Kesehatan.</li>
@@ -695,7 +709,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                 <span>Bab 5: Laporan Eksekutif</span>
                 <span>Halaman 12 / 20</span>
               </div>
@@ -704,45 +718,45 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
             {/* ==================== HALAMAN 13 - 20 (RINGKASAN MODUL LANJUTAN) ==================== */}
             {[13, 14, 15, 16, 17, 18, 19, 20].map((pageNum) => (
-              <div key={pageNum} className="manual-page page-break bg-white">
-                <div className="space-y-6">
-                  <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+              <div key={pageNum} className="manual-page bg-white">
+                <div className="space-y-4">
+                  <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
                     <div>
                       <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">LAMPIRAN & OPERASIONAL LANJUTAN • BAB 5</span>
-                      <h2 className="text-lg font-black text-slate-900">Modul Operasional & Teknis Sistem (Bagian {pageNum})</h2>
+                      <h2 className="text-base font-black text-slate-900">Modul Operasional & Teknis Sistem (Bagian {pageNum})</h2>
                     </div>
                     <span className="text-xs font-mono font-bold text-slate-500">Halaman {pageNum}</span>
                   </div>
 
-                  <div className="space-y-4 text-xs text-slate-700 leading-relaxed py-8">
-                    <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl text-center space-y-3">
-                      <div className="h-12 w-12 bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center mx-auto font-black text-lg">
+                  <div className="space-y-4 text-xs text-slate-700 leading-relaxed py-6">
+                    <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl text-center space-y-2.5">
+                      <div className="h-10 w-10 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center mx-auto font-black text-base">
                         {pageNum}
                       </div>
-                      <h3 className="font-black text-slate-900 text-sm uppercase">Halaman Panduan Teknis #{pageNum}</h3>
-                      <p className="text-slate-600 max-w-md mx-auto text-xs">
+                      <h3 className="font-black text-slate-900 text-xs uppercase">Halaman Panduan Teknis #{pageNum}</h3>
+                      <p className="text-slate-600 max-w-md mx-auto text-[11px]">
                         Bagian ini merangkum SOP pemeliharaan server, pencatatan log aktivitas pengguna, manajemen hak akses kader posyandu, serta protokol darurat pemulihan data e-PPGBM Kabupaten Nagekeo.
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3 pt-4">
-                      <div className="p-3 bg-blue-50/60 border border-blue-200 rounded-xl text-center">
-                        <span className="font-black text-blue-900 block text-xs">SOP Keamanan</span>
-                        <span className="text-[10px] text-slate-600">Enkripsi ABAC Aktif</span>
+                    <div className="grid grid-cols-3 gap-2.5 pt-2">
+                      <div className="p-2.5 bg-blue-50/60 border border-blue-200 rounded-xl text-center">
+                        <span className="font-black text-blue-900 block text-[11px]">SOP Keamanan</span>
+                        <span className="text-[9px] text-slate-600">Enkripsi ABAC Aktif</span>
                       </div>
-                      <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-xl text-center">
-                        <span className="font-black text-amber-900 block text-xs">Standar e-PPGBM</span>
-                        <span className="text-[10px] text-slate-600">Sinkronisasi Otomatis</span>
+                      <div className="p-2.5 bg-amber-50/60 border border-amber-200 rounded-xl text-center">
+                        <span className="font-black text-amber-900 block text-[11px]">Standar e-PPGBM</span>
+                        <span className="text-[9px] text-slate-600">Sinkronisasi Otomatis</span>
                       </div>
-                      <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl text-center">
-                        <span className="font-black text-emerald-900 block text-xs">Dukungan Teknis</span>
-                        <span className="text-[10px] text-slate-600">Dinkes Nagekeo</span>
+                      <div className="p-2.5 bg-emerald-50/60 border border-emerald-200 rounded-xl text-center">
+                        <span className="font-black text-emerald-900 block text-[11px]">Dukungan Teknis</span>
+                        <span className="text-[9px] text-slate-600">Dinkes Nagekeo</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
+                <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-mono">
                   <span>Orbit Gizi System v2.5 • Buku Panduan Resmi</span>
                   <span>Halaman {pageNum} / 20</span>
                 </div>
@@ -757,7 +771,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
         <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs">
           <div className="flex items-center space-x-2 text-slate-600">
             <CheckCircle2 className="h-4 w-4 text-blue-600" />
-            <span>Buku Panduan 5 Bab & 20 Halaman siap dicetak atau diunduh sebagai PDF resmi.</span>
+            <span>Buku Panduan 5 Bab & 20 Halaman siap dicetak dengan pilihan mode Portrait / Landscape.</span>
           </div>
           <div className="flex space-x-2">
             <button
