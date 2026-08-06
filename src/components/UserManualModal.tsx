@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Printer, X, BookOpen, ShieldCheck, Download, CheckCircle2 } from "lucide-react";
-import coverImage from "../assets/images/orbit_gizi_manual_cover_1785996155418.jpg";
+import coverImage from "../assets/images/orbit_gizi_manual_cover_clean_1785996851476.jpg";
 
 interface UserManualModalProps {
   isOpen: boolean;
