@@ -1267,9 +1267,13 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
             margin: 10mm 10mm;
           }
 
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
+
           html, body {
-            background: #ffffff !important;
-            color: #000000 !important;
             margin: 0 !important;
             padding: 0 !important;
             height: auto !important;
@@ -1295,8 +1299,6 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
             width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
-            background: #ffffff !important;
-            color: #000000 !important;
             box-shadow: none !important;
             border: none !important;
             overflow: visible !important;
@@ -1305,10 +1307,11 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
           .print-cover-page {
             page-break-after: always !important;
             break-after: page !important;
-            height: 100vh !important;
+            min-height: 100vh !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
+            background: #022c22 !important;
           }
 
           .print-avoid-break {
