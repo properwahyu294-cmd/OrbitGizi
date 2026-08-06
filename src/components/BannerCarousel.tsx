@@ -11,6 +11,13 @@ import bannerIbuHamil from "../assets/images/banner_ibu_hamil_1785817168878.jpg"
 import bannerIdulFitri from "../assets/images/banner_idul_fitri_1785817190834.jpg";
 import bannerPancasila from "../assets/images/banner_pancasila_1785817221226.jpg";
 import bannerPahlawan from "../assets/images/banner_pahlawan_1785817242388.jpg";
+import bannerNyepi from "../assets/images/banner_nyepi_1785995711918.jpg";
+import bannerWaisak from "../assets/images/banner_waisak_1785995730474.jpg";
+import bannerNatal from "../assets/images/banner_natal_1785995751537.jpg";
+import bannerImlek from "../assets/images/banner_imlek_1785995766808.jpg";
+import bannerIsraMiraj from "../assets/images/banner_isra_miraj_1785995781174.jpg";
+import bannerTahunBaruHijriyah from "../assets/images/banner_tahun_baru_hijriyah_1785995793160.jpg";
+import bannerKenaikanYesus from "../assets/images/banner_kenaikan_yesus_1785995810928.jpg";
 
 interface BannerItem {
   id: string;
@@ -127,27 +134,110 @@ export default function BannerCarousel() {
       actionText: "Data Ibu",
       image: bannerIbuHamil
     },
-    // National Calendar Holiday Greeting Banners
-    ...(currentMonth === 3 || currentMonth === 4 ? [{
-      id: "holiday_eid",
-      title: "SELAMAT HARI RAYA IDUL FITRI 1447 H",
-      subtitle: "Mohon Maaf Lahir dan Batin",
-      description: "Selamat merayakan Idul Fitri bersama keluarga tercinta. Tetap jaga pola gizi seimbang selama hari raya.",
-      badge: "Hari Besar Nasional",
-      bgGradient: "from-emerald-900/90 via-green-800/80 to-teal-950/90",
-      borderColor: "border-emerald-300",
-      textColor: "text-white",
-      badgeBg: "bg-amber-300 text-emerald-950 font-black",
-      icon: <Calendar className="h-6 w-6 text-amber-300" />,
-      actionText: "Ucapan Idul Fitri",
-      isSpecialEvent: true,
-      image: bannerIdulFitri
-    }] : []),
+    // National Calendar Holiday Greeting Banners (Automated Calendar Mapping for All Major Religions in Indonesia)
+    ...(currentMonth === 0 || currentMonth === 1 ? [
+      {
+        id: "holiday_imlek",
+        title: "SELAMAT TAHUN BARU IMLEK",
+        subtitle: "Gong Xi Fa Cai • Keberuntungan & Kesehatan",
+        description: "Selamat merayakan Tahun Baru Imlek bagi seluruh masyarakat yang merayakan. Semoga senantiasa diberikan kesehatan, kemakmuran, dan kesejahteraan.",
+        badge: "Hari Besar Nasional",
+        bgGradient: "from-red-900/90 via-rose-800/80 to-red-950/90",
+        borderColor: "border-amber-400",
+        textColor: "text-white",
+        badgeBg: "bg-amber-400 text-red-950 font-black",
+        icon: <Sparkles className="h-6 w-6 text-amber-300" />,
+        actionText: "Ucapan Imlek",
+        isSpecialEvent: true,
+        image: bannerImlek
+      },
+      {
+        id: "holiday_isra_miraj",
+        title: "PERINGATAN ISRA MIKRAJ NABI MUHAMMAD SAW",
+        subtitle: "Perjalanan Spiritual Penuh Hikmah",
+        description: "Memperingati Isra Mikraj Nabi Muhammad SAW 1447 Hijriah. Mari tingkatkan keimanan, ketakwaan, serta kepedulian sosial dalam pelayanan kesehatan gizi.",
+        badge: "Hari Besar Keagamaan",
+        bgGradient: "from-emerald-900/90 via-teal-800/80 to-emerald-950/90",
+        borderColor: "border-emerald-300",
+        textColor: "text-white",
+        badgeBg: "bg-amber-300 text-emerald-950 font-black",
+        icon: <Calendar className="h-6 w-6 text-amber-300" />,
+        actionText: "Info Isra Mikraj",
+        isSpecialEvent: true,
+        image: bannerIsraMiraj
+      }
+    ] : []),
+    ...(currentMonth === 2 ? [
+      {
+        id: "holiday_nyepi",
+        title: "SELAMAT HARI SUCI NYEPI (TAHUN BARU SAKA)",
+        subtitle: "Tahun Baru Saka 1948 • Catur Brata Penyepian",
+        description: "Selamat menyambut Hari Suci Nyepi bagi umat Hindu. Semoga melalui ketenangan dan introspeksi diri (Catur Brata Penyepian), tercipta kedamaian dan kesehatan bagi sesama.",
+        badge: "Hari Besar Keagamaan",
+        bgGradient: "from-amber-950/90 via-stone-900/80 to-amber-900/90",
+        borderColor: "border-amber-400",
+        textColor: "text-white",
+        badgeBg: "bg-amber-400 text-slate-950 font-black",
+        icon: <Star className="h-6 w-6 text-amber-300" />,
+        actionText: "Ucapan Nyepi",
+        isSpecialEvent: true,
+        image: bannerNyepi
+      }
+    ] : []),
+    ...(currentMonth === 3 || currentMonth === 4 ? [
+      {
+        id: "holiday_eid",
+        title: "SELAMAT HARI RAYA IDUL FITRI 1447 H",
+        subtitle: "Mohon Maaf Lahir dan Batin",
+        description: "Selamat merayakan Idul Fitri bersama keluarga tercinta. Tetap jaga pola gizi seimbang dan kesehatan keluarga selama hari raya.",
+        badge: "Hari Besar Keagamaan",
+        bgGradient: "from-emerald-900/90 via-green-800/80 to-teal-950/90",
+        borderColor: "border-emerald-300",
+        textColor: "text-white",
+        badgeBg: "bg-amber-300 text-emerald-950 font-black",
+        icon: <Calendar className="h-6 w-6 text-amber-300" />,
+        actionText: "Ucapan Idul Fitri",
+        isSpecialEvent: true,
+        image: bannerIdulFitri
+      },
+      {
+        id: "holiday_kenaikan",
+        title: "KENAIKAN YESUS KRISTUS",
+        subtitle: "Hari Peringatan Kenaikan Isa Almasih",
+        description: "Selamat memperingati Hari Kenaikan Yesus Kristus bagi umat Kristiani. Semoga damai sejahtera dan kasih senantiasa menyertai pelayanan kemanusiaan kita.",
+        badge: "Hari Besar Keagamaan",
+        bgGradient: "from-blue-950/90 via-indigo-900/80 to-blue-900/90",
+        borderColor: "border-blue-300",
+        textColor: "text-white",
+        badgeBg: "bg-white text-blue-900 font-black",
+        icon: <Heart className="h-6 w-6 text-blue-200" />,
+        actionText: "Info Kenaikan",
+        isSpecialEvent: true,
+        image: bannerKenaikanYesus
+      }
+    ] : []),
+    ...(currentMonth === 4 || currentMonth === 5 ? [
+      {
+        id: "holiday_waisak",
+        title: "SELAMAT HARI RAYA TRI SUCI WAISAK",
+        subtitle: "Memperingati Kelahiran, Pencerahan & Parinirvana Buddha",
+        description: "Selamat Hari Raya Trisuci Waisak bagi umat Buddha. Semoga semangat welas asih dan kedamaian membimbing langkah kita dalam mengentaskan stunting.",
+        badge: "Hari Besar Keagamaan",
+        bgGradient: "from-amber-900/90 via-orange-900/80 to-amber-950/90",
+        borderColor: "border-amber-400",
+        textColor: "text-white",
+        badgeBg: "bg-amber-300 text-amber-950 font-black",
+        icon: <Sparkles className="h-6 w-6 text-amber-200" />,
+        actionText: "Ucapan Waisak",
+        isSpecialEvent: true,
+        image: bannerWaisak
+      }
+    ] : []),
     ...(currentMonth === 5 ? [{
       id: "holiday_pancasila",
       title: "SELAMAT HARI KELAHIRAN PANCASILA",
-      subtitle: "1 Juni",
-      description: "Membumikan nilai-nilai Pancasila dalam gotong royong menurunkan angka stunting dan mewujudkan masyarakat sehat.",
+      subtitle: "1 Juni • Gotong Royong Turunkan Stunting",
+      description: "Membumikan nilai-nilai Pancasila dalam gotong royong menurunkan angka stunting dan mewujudkan masyarakat Nagekeo sehat sejahtera.",
       badge: "Hari Nasional",
       bgGradient: "from-red-900/90 via-amber-800/80 to-red-950/90",
       borderColor: "border-amber-300",
@@ -158,11 +248,28 @@ export default function BannerCarousel() {
       isSpecialEvent: true,
       image: bannerPancasila
     }] : []),
+    ...(currentMonth === 6 ? [
+      {
+        id: "holiday_hijriyah",
+        title: "SELAMAT TAHUN BARU ISLAM 1 MUHARAM",
+        subtitle: "Hijrah Menuju Kesehatan & Kesejahteraan Lebih Baik",
+        description: "Selamat Tahun Baru Islam 1 Muharam. Mari jadikan momentum tahun baru hijriyah untuk memperkuat komitmen pencegahan stunting di Kabupaten Nagekeo.",
+        badge: "Hari Besar Keagamaan",
+        bgGradient: "from-emerald-950/90 via-teal-900/80 to-emerald-900/90",
+        borderColor: "border-emerald-300",
+        textColor: "text-white",
+        badgeBg: "bg-amber-300 text-emerald-950 font-black",
+        icon: <Calendar className="h-6 w-6 text-amber-300" />,
+        actionText: "Info 1 Muharam",
+        isSpecialEvent: true,
+        image: bannerTahunBaruHijriyah
+      }
+    ] : []),
     ...(currentMonth === 10 ? [{
       id: "holiday_pahlawan",
       title: "SELAMAT HARI PAHLAWAN (10 NOVEMBER)",
       subtitle: "Pahlawanku Teladanku",
-      description: "Teladani semangat perjuangan para pahlawan dengan berjuang bersama mengentaskan gizi buruk dan stunting.",
+      description: "Teladani semangat perjuangan para pahlawan dengan berjuang bersama mengentaskan gizi buruk dan mewujudkan generasi emas Indonesia.",
       badge: "Hari Nasional",
       bgGradient: "from-slate-900/90 via-stone-800/80 to-zinc-950/90",
       borderColor: "border-amber-400",
@@ -172,7 +279,24 @@ export default function BannerCarousel() {
       actionText: "Semangat Pahlawan",
       isSpecialEvent: true,
       image: bannerPahlawan
-    }] : [])
+    }] : []),
+    ...(currentMonth === 11 ? [
+      {
+        id: "holiday_natal_tahun_baru",
+        title: "SELAMAT HARI RAYA NATAL & TAHUN BARU",
+        subtitle: "Damai Natal di Bumi & Sambut Tahun Baru Berkah",
+        description: "Selamat merayakan Hari Raya Natal bagi umat Kristiani dan menyambut Tahun Baru. Kiranya kedamaian, sukacita, dan kesehatan senantiasa memberkati keluarga kita.",
+        badge: "Hari Besar & Tahun Baru",
+        bgGradient: "from-red-950/90 via-emerald-900/80 to-slate-950/90",
+        borderColor: "border-amber-400",
+        textColor: "text-white",
+        badgeBg: "bg-amber-300 text-red-950 font-black",
+        icon: <Gift className="h-6 w-6 text-amber-300" />,
+        actionText: "Ucapan Natal & Tahun Baru",
+        isSpecialEvent: true,
+        image: bannerNatal
+      }
+    ] : [])
   ];
 
   // Auto-play carousel
