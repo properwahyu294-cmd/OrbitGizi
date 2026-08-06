@@ -81,6 +81,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu", "Puskesmas Boawae"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 13.5, heightCm: 92, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -104,6 +109,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu", "Tim PKK"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 14.2, heightCm: 96, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -127,10 +137,15 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: false,
+    attendanceStatus: "Tidak Mengunjungi",
+    isPetugasDesaHadir: false,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 13.8, heightCm: 94, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
-    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+    notes: "Telah absen 1 kali penimbangan. Harus Dilakukan Kunjungan Rumah!"
   },
   {
     id: "ben_ngt_4",
@@ -150,6 +165,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu", "BGN"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 16.5, heightCm: 105, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -173,10 +193,15 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Puskesmas",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Puskesmas Boawae", "Petugas Desa"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 9.8, heightCm: 76, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
-    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+    notes: "Rujukan pemeriksaan gizi rutin ke Puskesmas Boawae"
   },
   {
     id: "ben_ngt_6",
@@ -196,6 +221,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu", "Petugas Desa"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 11.5, heightCm: 85, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -219,6 +249,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu", "Tim PKK"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 17.0, heightCm: 106, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -242,10 +277,15 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: false,
+    attendanceStatus: "Tidak Mengunjungi",
+    isPetugasDesaHadir: false,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 9.5, heightCm: 75, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
-    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+    notes: "Tidak mengunjungi posyandu bulan ini. Perlu Kunjungan Rumah segera oleh Kader!"
   },
   {
     id: "ben_ngt_9",
@@ -265,6 +305,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 9.2, heightCm: 74, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -288,6 +333,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu", "BGN"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 14.0, heightCm: 95, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -311,6 +361,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu", "Petugas Desa"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 13.9, heightCm: 94.5, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -334,6 +389,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu", "Puskesmas Boawae"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 12.4, heightCm: 88, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -357,6 +417,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu", "Puskesmas Boawae"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 12.2, heightCm: 87.5, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -380,6 +445,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu", "Petugas Desa"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 10.4, heightCm: 80, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -403,6 +473,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu", "Petugas Desa"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 11.2, heightCm: 84, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -426,10 +501,15 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: false,
+    attendanceStatus: "Tidak Mengunjungi",
+    isPetugasDesaHadir: false,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 14.5, heightCm: 97, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
-    notes: "Penerima Manfaat Balita (6-59 Bulan) Posyandu Nangateke"
+    notes: "Absen penimbangan. Wajib Dilakukan Kunjungan Rumah oleh Petugas Posyandu."
   },
   {
     id: "ben_ngt_17",
@@ -449,6 +529,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu", "Petugas Desa"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 15.0, heightCm: 100, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],
@@ -472,6 +557,11 @@ const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
       posyandu: "Posyandu Nangateke"
     },
     isReceivedMBG: true,
+    isReceivedPMT: true,
+    attendanceStatus: "Mengunjungi Posyandu",
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu", "Petugas Desa", "Puskesmas Boawae"],
     weightRecords: [
       { period: "Januari 2026", weightKg: 12.8, heightCm: 89, statusGizi: "Normal", measuredAt: "2026-01-15" }
     ],

@@ -1,0 +1,49 @@
+{
+  "entities": {
+    "Beneficiary": {
+      "title": "Beneficiary",
+      "description": "Data Penerima Manfaat MBG (Makanan Bergizi Gratis) & PMT",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "parentName": { "type": "string", "maxLength": 100 },
+        "nik": { "type": "string", "maxLength": 20, "pattern": "^[0-9]*$" },
+        "gender": { "type": "string", "enum": ["Laki-laki", "Perempuan"] },
+        "category": { "type": "string", "enum": ["Balita", "Ibu Hamil", "Ibu Menyusui"] },
+        "isReceivedMBG": { "type": "boolean" },
+        "isReceivedPMT": { "type": "boolean" },
+        "attendanceStatus": { "type": "string", "enum": ["Mengunjungi Posyandu", "Mengunjungi Puskesmas", "Tidak Mengunjungi"] },
+        "posyanduSchedule": { "type": "string", "maxLength": 150 },
+        "posyanduAgeLimit": { "type": "string", "maxLength": 150 },
+        "isSpecialInterventionNeeded": { "type": "boolean" },
+        "specialInterventionNote": { "type": "string", "maxLength": 500 },
+        "notes": { "type": "string", "maxLength": 500 }
+      },
+      "required": ["id", "name", "category", "isReceivedMBG"]
+    },
+    "WeightRecord": {
+      "title": "WeightRecord",
+      "description": "Riwayat Penimbangan Berat dan Tinggi Badan Rutin Posyandu",
+      "type": "object",
+      "properties": {
+        "period": { "type": "string", "maxLength": 50 },
+        "weightKg": { "type": "number" },
+        "heightCm": { "type": "number" },
+        "statusGizi": { "type": "string", "enum": ["Normal", "Gizi Kurang", "Stunting", "Risiko Stunting"] },
+        "measuredAt": { "type": "string", "maxLength": 30 }
+      },
+      "required": ["period", "weightKg"]
+    }
+  },
+  "firestore": {
+    "/beneficiaries/{beneficiaryId}": {
+      "schema": "Beneficiary",
+      "description": "Koleksi data penerima manfaat gizi desa"
+    },
+    "/beneficiaries/{beneficiaryId}/weightRecords/{recordId}": {
+      "schema": "WeightRecord",
+      "description": "Subkoleksi riwayat pengukuran gizi penerima"
+    }
+  }
+}

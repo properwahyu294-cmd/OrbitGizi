@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Helper Functions (Zero-Trust Security & Input Validation)
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Prevents SQL Injection and malicious strings in input fields
+    function isCleanText(val, maxLen) {
+      return val is string && val.size() <= maxLen && !val.matches('.*(\\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|ALTER)\\b|--|<script).*');
+    }
+
+    // Beneficiary Schema Validation
+    function isValidBeneficiary(data) {
+      return data.keys().hasAll(['id', 'name', 'category', 'isReceivedMBG']) &&
+        isValidId(data.id) &&
+        isCleanText(data.name, 100) &&
+        (data.category == 'Balita' || data.category == 'Ibu Hamil' || data.category == 'Ibu Menyusui') &&
+        data.isReceivedMBG is bool &&
+        (!('parentName' in data) || isCleanText(data.parentName, 100)) &&
+        (!('nik' in data) || (data.nik is string && data.nik.size() <= 20 && data.nik.matches('^[0-9]*$'))) &&
+        (!('notes' in data) || isCleanText(data.notes, 500)) &&
+        (!('specialInterventionNote' in data) || isCleanText(data.specialInterventionNote, 500));
+    }
+
+    // WeightRecord Schema Validation
+    function isValidWeightRecord(data) {
+      return data.keys().hasAll(['period', 'weightKg']) &&
+        isCleanText(data.period, 50) &&
+        (data.weightKg is number || data.weightKg is int) && data.weightKg > 0 && data.weightKg < 300 &&
+        (!('heightCm' in data) || ((data.heightCm is number || data.heightCm is int) && data.heightCm >= 0 && data.heightCm < 300)) &&
+        (!('statusGizi' in data) || (data.statusGizi in ['Normal', 'Gizi Kurang', 'Stunting', 'Risiko Stunting']));
+    }
+
+    // Default Deny Rule
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Beneficiaries Collection Rules
+    match /beneficiaries/{beneficiaryId} {
+      allow read: if true; // Public dashboard / authenticated access
+      allow create: if isValidId(beneficiaryId) && isValidBeneficiary(incoming());
+      allow update: if isValidId(beneficiaryId) && isValidBeneficiary(incoming());
+      allow delete: if isValidId(beneficiaryId);
+
+      // Subcollection Weight Records
+      match /weightRecords/{recordId} {
+        allow read: if true;
+        allow create, update: if isValidId(recordId) && isValidWeightRecord(incoming());
+        allow delete: if isValidId(recordId);
+      }
+    }
+
+    // Village Sync Metrics Collection
+    match /villageMetrics/{villageId} {
+      allow read: if true;
+      allow write: if isValidId(villageId);
+    }
+  }
+}

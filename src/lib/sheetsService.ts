@@ -238,12 +238,21 @@ export async function syncToGoogleSheets(
 
   // Prepare Penerima MBG values
   const mbgValues = [
-    ["ID", "Nama Beneficiary", "Nama Orang Tua/Wali", "NIK", "Gender", "Usia", "Kategori", "Propinsi", "Kabupaten", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Menerima MBG", "Catatan"]
+    ["ID", "Nama Beneficiary", "Nama Orang Tua/Wali", "NIK", "Gender", "Usia", "Kategori", "Propinsi", "Kabupaten", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Status Kunjungan", "Wajib Kunjungan Rumah", "Menerima MBG", "Menerima PMT", "Petugas Desa Hadir", "Petugas Posyandu Hadir", "Stakeholder Kolaborasi", "Catatan"]
   ];
   try {
     let mbgData = JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
     if (!Array.isArray(mbgData)) mbgData = [];
     mbgData.forEach((b: any) => {
+      const attendance = b?.attendanceStatus || "Mengunjungi Posyandu";
+      const needsVisit = attendance === "Tidak Mengunjungi" ? "YA (WAJIB KUNJUNGAN RUMAH)" : "TIDAK";
+      const pmt = b?.isReceivedPMT !== false ? "YA" : "TIDAK";
+      const desaHadir = b?.isPetugasDesaHadir !== false ? "YA" : "TIDAK";
+      const posyanduHadir = b?.isPetugasPosyanduHadir !== false ? "YA" : "TIDAK";
+      const stakeholders = Array.isArray(b?.stakeholdersHadir) && b.stakeholdersHadir.length > 0
+        ? b.stakeholdersHadir.join(", ")
+        : "Petugas Desa, Kader Posyandu, Puskesmas";
+
       mbgValues.push([
         b?.id || "-",
         b?.name || "-",
@@ -258,7 +267,13 @@ export async function syncToGoogleSheets(
         b?.location?.kelurahan || "-",
         b?.location?.dusun || "-",
         b?.location?.posyandu || "-",
+        attendance,
+        needsVisit,
         b?.isReceivedMBG ? "YA" : "TIDAK",
+        pmt,
+        desaHadir,
+        posyanduHadir,
+        stakeholders,
         b?.notes || "-"
       ]);
     });

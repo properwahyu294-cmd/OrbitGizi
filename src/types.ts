@@ -26,6 +26,22 @@ export interface MBGBeneficiary {
   category: "Balita" | "Ibu Hamil" | "Ibu Menyusui";
   location: LocationHierarchy;
   isReceivedMBG: boolean;
+  isReceivedPMT?: boolean;
+  attendanceStatus?: "Mengunjungi Posyandu" | "Mengunjungi Puskesmas" | "Tidak Mengunjungi";
+  isPetugasDesaHadir?: boolean;
+  isPetugasPosyanduHadir?: boolean;
+  isPetugasDinkesHadir?: boolean;
+  isAhliGiziHadir?: boolean;
+  isDokterAnakHadir?: boolean;
+  officerDinkesName?: string;
+  officerAhliGiziName?: string;
+  officerDokterAnakName?: string;
+  officerKaderName?: string;
+  posyanduSchedule?: string; // e.g. "Setiap Tanggal 15 Bulanan"
+  posyanduAgeLimit?: string; // e.g. "Hingga Usia 5 Tahun (60 Bulan)"
+  isSpecialInterventionNeeded?: boolean;
+  specialInterventionNote?: string;
+  stakeholdersHadir?: string[];
   weightRecords: WeightRecord[];
   notes?: string;
 }
