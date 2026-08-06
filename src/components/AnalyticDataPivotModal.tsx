@@ -373,8 +373,10 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5">
-      <div className="bg-white rounded-3xl max-w-6xl w-full max-h-[95vh] flex flex-col border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <>
+      {/* SCREEN INTERACTIVE MODAL (HIDDEN IN PRINT) */}
+      <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 print:hidden">
+        <div className="bg-white rounded-3xl max-w-6xl w-full max-h-[95vh] flex flex-col border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* HEADER BAR */}
         <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 border-b border-indigo-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
@@ -1237,33 +1239,84 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
         </div>
 
       </div>
+    </div>
 
-      {/* PRINT STYLES & EXPLICIT PORTFOLIO PRINTABLE REPORT CONTAINER (GAMBAR 3) */}
+      {/* PRINT STYLES & EXPLICIT PORTFOLIO PRINTABLE REPORT CONTAINER */}
       <style>{`
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 12mm 12mm;
+          }
+
+          html, body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            font-size: 10pt !important;
+          }
+
           body * {
             visibility: hidden !important;
           }
+
           #printable-portfolio-report, #printable-portfolio-report * {
             visibility: visible !important;
           }
+
           #printable-portfolio-report {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
+            display: block !important;
+            position: static !important;
             width: 100% !important;
             margin: 0 !important;
-            padding: 24px !important;
-            background: white !important;
-            color: black !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            box-shadow: none !important;
+            border: none !important;
+            overflow: visible !important;
+          }
+
+          .print-avoid-break {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            page-break-inside: auto !important;
+          }
+
+          thead {
+            display: table-header-group !important;
+          }
+
+          tbody {
+            display: table-row-group !important;
+          }
+
+          tr {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+
+          th, td {
+            word-break: break-word !important;
           }
         }
       `}</style>
 
-      <div id="printable-portfolio-report" className="hidden print:block text-slate-900 font-sans space-y-6 text-xs">
+      {/* PRINT-ONLY OFFICIAL PORTFOLIO REPORT CONTAINER */}
+      <div id="printable-portfolio-report" className="hidden print:block text-slate-900 font-sans space-y-6 text-xs bg-white p-0">
         
         {/* PRINT HEADER / EMBLEM */}
-        <div className="border-b-2 border-slate-900 pb-4 flex items-center justify-between">
+        <div className="border-b-2 border-slate-900 pb-4 flex items-center justify-between print-avoid-break">
           <div>
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">
               PEMERINTAH KABUPATEN NAGEKEO • DINAS KESEHATAN
@@ -1283,8 +1336,8 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
           </div>
         </div>
 
-        {/* SECTION 1: INDEKS TRANSFORMASI & STATUS WILAYAH (GAMBAR 1 PRINT) */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* SECTION 1: INDEKS TRANSFORMASI & STATUS WILAYAH */}
+        <div className="grid grid-cols-2 gap-4 print-avoid-break">
           <div className="border border-slate-300 rounded-2xl p-4 text-center space-y-2">
             <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
               INDEKS TRANSFORMASI ORBIT GIZI
@@ -1308,7 +1361,7 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
         </div>
 
         {/* SECTION 2: SUMMARY KPI CARDS */}
-        <div className="grid grid-cols-5 gap-2 border border-slate-300 rounded-xl p-3 text-center bg-slate-50">
+        <div className="grid grid-cols-5 gap-2 border border-slate-300 rounded-xl p-3 text-center bg-slate-50 print-avoid-break">
           <div>
             <span className="text-[9px] font-bold text-slate-500 uppercase block">Total Sasaran</span>
             <span className="text-sm font-black text-slate-900">{grandTotal.totalCount} Jiwa</span>
@@ -1332,7 +1385,7 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
         </div>
 
         {/* SECTION 3: PIVOT MATRIX TABLE */}
-        <div className="space-y-2">
+        <div className="space-y-2 print-avoid-break">
           <h3 className="font-black text-xs uppercase tracking-wider text-slate-800">
             1. REKAPITULASI MATRIKS PIVOT (PER POSYANDU)
           </h3>
@@ -1382,7 +1435,7 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
         </div>
 
         {/* SECTION 4: DAFTAR SASARAN LENGKAP */}
-        <div className="space-y-2">
+        <div className="space-y-2 mt-4">
           <h3 className="font-black text-xs uppercase tracking-wider text-slate-800">
             2. DAFTAR INDIVIDUAL SASARAN TERDAFTAR
           </h3>
@@ -1423,7 +1476,7 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
         </div>
 
         {/* SECTION 5: SIGNATURE BLOCK */}
-        <div className="pt-8 grid grid-cols-2 gap-8 text-center text-xs">
+        <div className="pt-8 grid grid-cols-2 gap-8 text-center text-xs print-avoid-break">
           <div>
             <p className="font-medium text-slate-600">Mengetahui,</p>
             <p className="font-bold text-slate-900 mt-1">Kepala Puskesmas / Dinas Kesehatan</p>
@@ -1442,7 +1495,6 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
         </div>
 
       </div>
-
-    </div>
+    </>
   );
 };
