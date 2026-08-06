@@ -117,17 +117,26 @@ export function PosyanduOfflineFormTemplateModal({
                   background: #ffffff !important;
                   color: #000000 !important;
                 }
+                body * {
+                  visibility: hidden !important;
+                }
+                #printable-offline-form, #printable-offline-form * {
+                  visibility: visible !important;
+                }
                 #printable-offline-form {
                   display: block !important;
+                  position: absolute !important;
+                  left: 0 !important;
+                  top: 0 !important;
                   width: 100% !important;
                   margin: 0 !important;
                   padding: 0 !important;
-                }
-                .no-print {
-                  display: none !important;
+                  box-shadow: none !important;
+                  border: none !important;
                 }
               }
-            `}</style>
+            `}
+            </style>
 
             {/* Header Surat */}
             <div className="border-b-2 border-slate-900 pb-4 flex items-center justify-between">
