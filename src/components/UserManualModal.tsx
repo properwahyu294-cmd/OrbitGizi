@@ -75,7 +75,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
             @media print {
               @page {
                 size: A4 ${printOrientation};
-                margin: 8mm;
+                margin: 0mm;
               }
               * {
                 -webkit-print-color-adjust: exact !important;
@@ -87,28 +87,36 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 margin: 0 !important;
                 padding: 0 !important;
                 width: 100% !important;
+                height: 100% !important;
+                overflow: visible !important;
               }
               body > * {
                 display: none !important;
               }
               #printable-manual-book, #printable-manual-book * {
                 visibility: visible !important;
-                display: block !important;
               }
               #printable-manual-book {
-                position: static !important;
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
                 width: 100% !important;
+                max-width: none !important;
+                box-shadow: none !important;
+                border: none !important;
+                background: #ffffff !important;
                 margin: 0 !important;
                 padding: 0 !important;
-                background: #ffffff !important;
               }
               .manual-page {
                 box-shadow: none !important;
                 border: none !important;
                 margin: 0 !important;
-                padding: 10mm !important;
-                width: 100% !important;
-                ${printOrientation === 'landscape' ? 'min-height: 190mm !important; max-height: 195mm !important;' : 'min-height: 275mm !important; max-height: 285mm !important;'}
+                padding: ${printOrientation === 'landscape' ? '12mm 16mm' : '15mm 16mm'} !important;
+                width: ${printOrientation === 'landscape' ? '297mm' : '210mm'} !important;
+                height: ${printOrientation === 'landscape' ? '210mm' : '297mm'} !important;
+                max-height: ${printOrientation === 'landscape' ? '210mm' : '297mm'} !important;
                 page-break-after: always !important;
                 break-after: page !important;
                 page-break-inside: avoid !important;
@@ -116,8 +124,9 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 display: flex !important;
                 flex-direction: column !important;
                 justify-content: space-between !important;
+                box-sizing: border-box !important;
                 position: relative !important;
-                clear: both !important;
+                page-break-before: auto !important;
               }
             }
 
@@ -125,6 +134,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
               width: ${printOrientation === 'landscape' ? '297mm' : '210mm'};
               max-width: 100%;
               min-height: ${printOrientation === 'landscape' ? '210mm' : '297mm'};
+              height: ${printOrientation === 'landscape' ? '210mm' : '297mm'};
               padding: 16mm;
               background: #ffffff;
               box-shadow: 0 12px 35px rgba(0,0,0,0.1);
@@ -136,7 +146,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
               display: flex;
               flex-direction: column;
               justify-content: space-between;
-              transition: width 0.3s ease, min-height 0.3s ease;
+              transition: width 0.3s ease, height 0.3s ease;
             }
           `}</style>
 
