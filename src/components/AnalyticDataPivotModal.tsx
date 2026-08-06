@@ -1311,7 +1311,8 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
-            background: #022c22 !important;
+            background: linear-gradient(to bottom right, #f8fafc, #eff6ff, #e0e7ff) !important;
+            color: #0f172a !important;
           }
 
           .print-avoid-break {
