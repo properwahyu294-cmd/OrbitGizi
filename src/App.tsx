@@ -31,7 +31,8 @@ import {
   Menu,
   X,
   Building2,
-  Heart
+  Heart,
+  FileText
 } from "lucide-react";
 
 // Types
@@ -64,6 +65,7 @@ import BannerCarousel from "./components/BannerCarousel";
 import { LauncherLanding } from "./components/LauncherLanding";
 import DashboardExecutiveRecap from "./components/DashboardExecutiveRecap";
 import { AnalyticDataPivotModal } from "./components/AnalyticDataPivotModal";
+import { PosyanduOfflineFormTemplateModal } from "./components/PosyanduOfflineFormTemplateModal";
 
 const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
   {
@@ -590,6 +592,7 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [showLauncher, setShowLauncher] = useState<boolean>(true);
   const [showPivotModal, setShowPivotModal] = useState<boolean>(false);
+  const [showOfflineFormModal, setShowOfflineFormModal] = useState<boolean>(false);
 
   // Firebase & Google Sheets integration state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -1004,6 +1007,14 @@ export default function App() {
           </div>
           
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            <button
+              onClick={() => setShowOfflineFormModal(true)}
+              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-xl hover:bg-indigo-100 transition-colors shadow-2xs cursor-pointer"
+            >
+              <FileText className="h-4 w-4 text-indigo-600" />
+              <span>Cetak Form Offline</span>
+            </button>
+
             <button
               onClick={() => setShowConfigModal(true)}
               className="flex items-center justify-center space-x-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
@@ -1653,6 +1664,12 @@ export default function App() {
         beneficiaries={beneficiaries}
         selectedKelurahan="SEMUA"
         collaborationMetrics={collaborationMetrics}
+      />
+
+      {/* Posyandu Offline Form Template Modal */}
+      <PosyanduOfflineFormTemplateModal
+        isOpen={showOfflineFormModal}
+        onClose={() => setShowOfflineFormModal(false)}
       />
 
     </div>
