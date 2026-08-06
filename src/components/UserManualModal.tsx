@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Printer, X, BookOpen, ShieldCheck, Download, CheckCircle2 } from "lucide-react";
+import coverImage from "../assets/images/orbit_gizi_manual_cover_1785996155418.jpg";
 
 interface UserManualModalProps {
   isOpen: boolean;
@@ -142,70 +143,58 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
           <div id="printable-manual-book" className="flex flex-col items-center space-y-8 w-full max-w-[210mm]">
 
             {/* ==================== COVER PAGE (HALAMAN 1) ==================== */}
-            <div className="manual-page bg-white overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-              <div className="absolute bottom-0 left-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="manual-page bg-white overflow-hidden relative p-0 flex flex-col justify-between">
+              <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
+                <img 
+                  src={coverImage} 
+                  alt="Buku Panduan Cover" 
+                  className="w-full h-full object-cover object-center"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
 
-              <div className="space-y-6 relative z-10">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-6">
+              {/* Overlay content to ensure exact title & subtitle placement matching reference */}
+              <div className="absolute inset-0 z-10 flex flex-col justify-between p-10 bg-gradient-to-b from-white/95 via-white/50 to-white/90">
+                <div className="flex items-center justify-between border-b border-slate-200/80 pb-6">
                   <div className="flex items-center space-x-3">
-                    <div className="h-14 w-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg">
+                    <div className="h-12 w-12 bg-blue-600 text-white rounded-xl flex items-center justify-center font-black text-xl shadow-lg">
                       OG
                     </div>
                     <div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-blue-700 block">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-blue-800 block">
                         PEMERINTAH KABUPATEN NAGEKEO • DINAS KESEHATAN
                       </span>
-                      <span className="text-xs font-bold text-slate-800 tracking-wide">ORBIT GIZI SYSTEM ENTERPRISE v2.5</span>
+                      <span className="text-xs font-bold text-slate-900 tracking-wide">ORBIT GIZI SYSTEM ENTERPRISE v2.5</span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="px-3 py-1 bg-amber-500 text-slate-950 text-[10px] font-black rounded-xl uppercase tracking-wider block shadow">
+                    <span className="px-3 py-1 bg-amber-500 text-slate-950 text-[10px] font-black rounded-lg uppercase tracking-wider block shadow-xs">
                       BUKU PANDUAN RESMI
                     </span>
-                    <span className="text-[10px] text-slate-500 mt-1 block font-mono">EDISI 2026 • 20 HALAMAN</span>
+                    <span className="text-[10px] text-slate-700 mt-1 block font-mono font-bold">EDISI 2026 • 20 HALAMAN</span>
                   </div>
                 </div>
 
-                <div className="py-10 space-y-6 text-left max-w-xl">
-                  <div className="inline-block px-4 py-1.5 bg-blue-100 text-blue-800 rounded-full text-xs font-black uppercase tracking-widest">
+                <div className="py-12 space-y-4 text-left max-w-lg">
+                  <div className="inline-block px-3 py-1 bg-blue-600 text-white rounded-md text-[10px] font-black uppercase tracking-widest shadow-xs">
                     MODUL OPERASIONAL & MANAJEMEN E-PPGBM
                   </div>
-                  <h1 className="text-3xl font-black text-slate-900 leading-tight uppercase tracking-tight">
+                  <h1 className="text-3xl sm:text-4xl font-black text-blue-950 leading-tight uppercase tracking-tight drop-shadow-xs">
                     BUKU PANDUAN PENGGUNAAN & OPERASIONAL SISTEM ORBIT GIZI
                   </h1>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    Panduan lengkap tata cara pengoperasian aplikasi, manajemen data balita & ibu hamil, pencatatan offline posyandu (blank spot), distribusi Makanan Bergizi Gratis (MBG), hingga analisis eksekutif 5 pilar percepatan penurunan stunting.
+                  <p className="text-xs sm:text-sm text-slate-800 font-medium leading-relaxed bg-white/80 p-3 rounded-xl backdrop-blur-xs border border-slate-200">
+                    Panduan komprehensif 5 bab dan 20 halaman untuk pengoperasian aplikasi, manajemen data balita & ibu hamil, pencatatan offline posyandu (blank spot), distribusi Makanan Bergizi Gratis (MBG), hingga analisis percepatan penurunan stunting Nagekeo.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-4 gap-3 py-4">
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-center">
-                    <span className="text-blue-700 font-black text-base block">Bab 1-5</span>
-                    <span className="text-[9px] text-slate-600 font-bold uppercase">Materi</span>
+                <div className="pt-6 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-800 font-semibold bg-white/90 p-4 rounded-2xl backdrop-blur-xs">
+                  <div>
+                    <span className="font-extrabold text-blue-950 block text-xs">Disusun Oleh: Tim Pengembang SPBE & Dinas Kesehatan Nagekeo</span>
+                    <span className="text-[10px] text-slate-600">Tahun Ajaran / Edisi Pelayanan 2026/2027</span>
                   </div>
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                    <span className="text-amber-700 font-black text-base block">20 Hal</span>
-                    <span className="text-[9px] text-slate-600 font-bold uppercase">Struktur</span>
+                  <div className="text-right font-mono font-black text-blue-700 text-xs px-3 py-1 bg-blue-50 rounded-lg border border-blue-200">
+                    Halaman 1 / 20
                   </div>
-                  <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-center">
-                    <span className="text-indigo-700 font-black text-base block">100%</span>
-                    <span className="text-[9px] text-slate-600 font-bold uppercase">e-PPGBM</span>
-                  </div>
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
-                    <span className="text-emerald-700 font-black text-base block">Resmi</span>
-                    <span className="text-[9px] text-slate-600 font-bold uppercase">Nagekeo</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600 relative z-10">
-                <div>
-                  <span className="font-bold text-slate-800 block text-[11px]">Disusun Oleh: Tim Pengembang SPBE & Dinas Kesehatan Nagekeo</span>
-                  <span className="text-[10px] text-slate-500">Diterbitkan untuk Puskesmas, Posyandu, dan Kader Seluruh Wilayah Nagekeo</span>
-                </div>
-                <div className="text-right font-mono font-bold text-blue-700 text-xs">
-                  Halaman 1 / 20
                 </div>
               </div>
             </div>
