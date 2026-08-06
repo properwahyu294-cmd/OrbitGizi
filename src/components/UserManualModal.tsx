@@ -200,7 +200,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 <div className="pt-6 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-800 font-semibold bg-white/90 p-4 rounded-2xl backdrop-blur-xs">
                   <div>
                     <span className="font-extrabold text-blue-950 block text-xs">Disusun Oleh: Tim Pengembang SPBE & Dinas Kesehatan Nagekeo</span>
-                    <span className="text-[10px] text-slate-600">Tahun Ajaran / Edisi Pelayanan 2026/2027</span>
+                    <span className="text-[10px] text-slate-600">Tahun 2026</span>
                   </div>
                   <div className="text-right font-mono font-black text-blue-700 text-xs px-3 py-1 bg-blue-50 rounded-lg border border-blue-200">
                     Halaman 1 / 20
