@@ -48,9 +48,12 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     const saved = localStorage.getItem("orbit_gizi_dashboard_banner_images") || localStorage.getItem("orbit_gizi_banner_images");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
       } catch {
-        return DEFAULT_NUTRITION_IMAGES;
+        // fallback
       }
     }
     return DEFAULT_NUTRITION_IMAGES;

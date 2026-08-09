@@ -17,7 +17,26 @@ interface NutritionBannerGalleryProps {
   readOnly?: boolean;
 }
 
-export const DEFAULT_NUTRITION_IMAGES: BannerImage[] = [];
+export const DEFAULT_NUTRITION_IMAGES: BannerImage[] = [
+  {
+    id: "img_1",
+    title: "Edukasi Gizi Seimbang",
+    subtitle: "Penyuluhan pentingnya 4 Sehat 5 Sempurna di Posyandu Melati.",
+    url: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1600"
+  },
+  {
+    id: "img_2",
+    title: "Distribusi PMT Balita",
+    subtitle: "Pembagian makanan tambahan bergizi untuk balita wilayah Nagekeo.",
+    url: "https://images.unsplash.com/photo-1490818387583-1b5ba41f9d45?auto=format&fit=crop&q=80&w=1600"
+  },
+  {
+    id: "img_3",
+    title: "Pemeriksaan Ibu Hamil",
+    subtitle: "Pemantauan berkala kesehatan ibu hamil untuk cegah bayi risiko stunting.",
+    url: "https://images.unsplash.com/photo-1555243896-771a80052717?auto=format&fit=crop&q=80&w=1600"
+  }
+];
 
 export const NutritionBannerGallery: React.FC<NutritionBannerGalleryProps> = ({
   images,
