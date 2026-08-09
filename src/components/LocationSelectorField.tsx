@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { List, Plus } from "lucide-react";
+import { List, Plus, Save, CheckCircle2 } from "lucide-react";
 
 interface LocationSelectorFieldProps {
   label: string;
@@ -8,6 +8,7 @@ interface LocationSelectorFieldProps {
   options: string[];
   placeholder?: string;
   isDark?: boolean;
+  onSaveOption?: (savedVal: string) => void;
 }
 
 export function LocationSelectorField({
@@ -16,15 +17,16 @@ export function LocationSelectorField({
   onChange,
   options,
   placeholder = "Ketik nama baru...",
-  isDark = true
+  isDark = true,
+  onSaveOption
 }: LocationSelectorFieldProps) {
   const cleanOptions = useMemo(() => {
-    const list = Array.from(new Set(options.filter(Boolean)));
-    return list;
+    return Array.from(new Set(options.filter(Boolean)));
   }, [options]);
 
   const isOptionExist = cleanOptions.includes(value);
   const [isCustomMode, setIsCustomMode] = useState<boolean>(!isOptionExist && value !== "" && cleanOptions.length > 0);
+  const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
@@ -35,6 +37,22 @@ export function LocationSelectorField({
       setIsCustomMode(false);
       onChange(val);
     }
+  };
+
+  const handleSaveDataDasar = () => {
+    const valToSave = value.trim();
+    if (!valToSave) {
+      alert(`Silakan ketik nama ${label} terlebih dahulu.`);
+      return;
+    }
+
+    if (onSaveOption) {
+      onSaveOption(valToSave);
+    }
+    onChange(valToSave);
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 2500);
+    setIsCustomMode(false);
   };
 
   return (
@@ -75,35 +93,62 @@ export function LocationSelectorField({
       </div>
 
       {isCustomMode || cleanOptions.length === 0 ? (
-        <div className="relative">
-          <input
-            type="text"
-            value={value}
-            placeholder={placeholder}
-            onChange={(e) => onChange(e.target.value)}
-            className={`w-full rounded-xl text-xs sm:text-sm font-bold px-3 py-2 border focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all ${
-              isDark 
-                ? "bg-slate-950 border-indigo-500/80 text-white placeholder-slate-500 shadow-inner" 
-                : "bg-white border-indigo-400 text-slate-900 placeholder-slate-400"
-            }`}
-          />
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <input
+              type="text"
+              value={value}
+              placeholder={placeholder}
+              onChange={(e) => onChange(e.target.value)}
+              className={`flex-1 min-w-0 rounded-xl text-xs sm:text-sm font-bold px-3 py-2 border focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all ${
+                isDark 
+                  ? "bg-slate-950 border-indigo-500/80 text-white placeholder-slate-500 shadow-inner" 
+                  : "bg-white border-indigo-400 text-slate-900 placeholder-slate-400"
+              }`}
+            />
+            <button
+              type="button"
+              onClick={handleSaveDataDasar}
+              className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black rounded-xl shadow-md cursor-pointer transition-all flex items-center space-x-1 shrink-0"
+              title="Simpan sebagai Data Dasar"
+            >
+              <Save className="h-3.5 w-3.5" />
+              <span>Simpan</span>
+            </button>
+          </div>
+          {savedSuccess && (
+            <div className="flex items-center space-x-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-1 rounded-lg animate-in fade-in">
+              <CheckCircle2 className="h-3 w-3 text-emerald-400 shrink-0" />
+              <span>Tersimpan sebagai Data Dasar!</span>
+            </div>
+          )}
         </div>
       ) : (
-        <select
-          value={cleanOptions.includes(value) ? value : (value || "")}
-          onChange={handleSelectChange}
-          className={`w-full rounded-xl text-xs sm:text-sm font-bold px-3 py-2 border focus:ring-2 focus:ring-indigo-500/30 focus:outline-none cursor-pointer transition-all ${
-            isDark ? "bg-slate-950 border-slate-700/80 text-white hover:border-slate-600" : "bg-white border-slate-300 text-slate-800"
-          }`}
-        >
-          {!value && <option value="">-- Pilih {label} --</option>}
-          {cleanOptions.map((opt) => (
-            <option key={opt} value={opt} className="bg-slate-900 text-white">
-              {opt}
+        <div className="space-y-1">
+          <select
+            value={cleanOptions.includes(value) ? value : (value || "")}
+            onChange={handleSelectChange}
+            className={`w-full rounded-xl text-xs sm:text-sm font-bold px-3 py-2 border focus:ring-2 focus:ring-indigo-500/30 focus:outline-none cursor-pointer transition-all ${
+              isDark ? "bg-slate-950 border-slate-700/80 text-white hover:border-slate-600" : "bg-white border-slate-300 text-slate-800"
+            }`}
+          >
+            {!value && <option value="">-- Pilih {label} --</option>}
+            {cleanOptions.map((opt) => (
+              <option key={opt} value={opt} className={isDark ? "bg-slate-900 text-white" : "bg-white text-slate-900"}>
+                {opt}
+              </option>
+            ))}
+            <option value="__CUSTOM_NAME__" className={isDark ? "bg-slate-900 text-indigo-300 font-bold" : "bg-white text-indigo-600 font-bold"}>
+              ✏️ + Ketik & Simpan Manual...
             </option>
-          ))}
-          <option value="__CUSTOM_NAME__" className="bg-slate-900 text-indigo-300 font-bold">✏️ + Ketik Manual...</option>
-        </select>
+          </select>
+          {savedSuccess && (
+            <div className="flex items-center space-x-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-lg animate-in fade-in">
+              <CheckCircle2 className="h-3 w-3 text-emerald-400 shrink-0" />
+              <span>Tersimpan di daftar!</span>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

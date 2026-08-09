@@ -358,7 +358,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                       <th className="p-4">Wilayah / Desa</th>
                       <th className="p-4">Status Gizi Terkini</th>
                       <th className="p-4">Status Intervensi PMT</th>
-                      <th className="p-4">Aksi</th>
+                      <th className="p-4">Informasi Detail</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs font-medium">
@@ -413,10 +413,11 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
           <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in duration-300">
             <NutritionBannerGallery
               images={bannerImages}
-              onAddImage={() => alert("Fitur tambah gambar memerlukan login Admin/Nakes dengan email properwahyu294@gmail.com.")}
-              onDeleteImage={() => alert("Fitur hapus gambar memerlukan login Admin/Nakes dengan email properwahyu294@gmail.com.")}
+              onAddImage={() => {}}
+              onDeleteImage={() => {}}
               title="Galeri Lengkap Dokumentasi Gizi Nagekeo"
               subtitle="Kumpulan foto dan banner kegiatan intervensi gizi, Posyandu, dan MBG."
+              readOnly={true}
             />
           </div>
         )}

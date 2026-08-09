@@ -14,6 +14,7 @@ interface NutritionBannerGalleryProps {
   onDeleteImage: (id: string) => void;
   title?: string;
   subtitle?: string;
+  readOnly?: boolean;
 }
 
 export const DEFAULT_NUTRITION_IMAGES: BannerImage[] = [];
@@ -23,7 +24,8 @@ export const NutritionBannerGallery: React.FC<NutritionBannerGalleryProps> = ({
   onAddImage,
   onDeleteImage,
   title = "Galeri Banner & Aktivitas Gizi",
-  subtitle = "Dokumentasi visual kegiatan Posyandu, MBG, dan penanganan gizi masyarakat."
+  subtitle = "Dokumentasi visual kegiatan Posyandu, MBG, dan penanganan gizi masyarakat.",
+  readOnly = false
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -67,7 +69,7 @@ export const NutritionBannerGallery: React.FC<NutritionBannerGalleryProps> = ({
             {images.length} / 10 Gambar
           </span>
 
-          {images.length < 10 && (
+          {!readOnly && images.length < 10 && (
             <button
               onClick={() => setShowAddModal(true)}
               className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl flex items-center space-x-1.5 shadow-lg cursor-pointer transition-all"
@@ -147,7 +149,7 @@ export const NutritionBannerGallery: React.FC<NutritionBannerGalleryProps> = ({
                 {img.title}
               </span>
             </div>
-            {images.length > 1 && (
+            {!readOnly && images.length > 1 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();

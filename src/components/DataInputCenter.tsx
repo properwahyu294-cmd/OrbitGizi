@@ -114,38 +114,112 @@ export default function DataInputCenter({
   const [selectedDusun, setSelectedDusun] = useState<string>("Dusun Nangateke");
   const [selectedPosyandu, setSelectedPosyandu] = useState<string>("Posyandu Nangateke");
 
-  // Dynamic Options derived from data
+  // Custom persistent location master data
+  const [customPuskesmasList, setCustomPuskesmasList] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("orbit_custom_puskesmas");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [customKelurahanList, setCustomKelurahanList] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("orbit_custom_kelurahan");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [customDusunList, setCustomDusunList] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("orbit_custom_dusun");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [customPosyanduList, setCustomPosyanduList] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("orbit_custom_posyandu");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  const handleSaveCustomPuskesmas = (val: string) => {
+    if (!val) return;
+    setCustomPuskesmasList(prev => {
+      if (prev.includes(val)) return prev;
+      const updated = [...prev, val];
+      localStorage.setItem("orbit_custom_puskesmas", JSON.stringify(updated));
+      return updated;
+    });
+    setSelectedPuskesmas(val);
+  };
+
+  const handleSaveCustomKelurahan = (val: string) => {
+    if (!val) return;
+    setCustomKelurahanList(prev => {
+      if (prev.includes(val)) return prev;
+      const updated = [...prev, val];
+      localStorage.setItem("orbit_custom_kelurahan", JSON.stringify(updated));
+      return updated;
+    });
+    setSelectedKelurahan(val);
+  };
+
+  const handleSaveCustomDusun = (val: string) => {
+    if (!val) return;
+    setCustomDusunList(prev => {
+      if (prev.includes(val)) return prev;
+      const updated = [...prev, val];
+      localStorage.setItem("orbit_custom_dusun", JSON.stringify(updated));
+      return updated;
+    });
+    setSelectedDusun(val);
+  };
+
+  const handleSaveCustomPosyandu = (val: string) => {
+    if (!val) return;
+    setCustomPosyanduList(prev => {
+      if (prev.includes(val)) return prev;
+      const updated = [...prev, val];
+      localStorage.setItem("orbit_custom_posyandu", JSON.stringify(updated));
+      return updated;
+    });
+    setSelectedPosyandu(val);
+  };
+
+  // Dynamic Options derived from data & saved master data
   const puskesmasOptions = useMemo(() => {
     const set = new Set<string>();
     if (selectedPuskesmas) set.add(selectedPuskesmas);
+    customPuskesmasList.forEach(p => set.add(p));
     villages.forEach(v => v.locationHierarchy?.puskesmas && set.add(v.locationHierarchy.puskesmas));
     beneficiaries.forEach(b => b.location?.puskesmas && set.add(b.location.puskesmas));
     return Array.from(set).filter(Boolean);
-  }, [villages, beneficiaries, selectedPuskesmas]);
+  }, [villages, beneficiaries, selectedPuskesmas, customPuskesmasList]);
 
   const villageOptions = useMemo(() => {
     const set = new Set<string>();
     if (selectedKelurahan) set.add(selectedKelurahan);
+    customKelurahanList.forEach(k => set.add(k));
     villages.forEach(v => v.name && set.add(v.name));
     beneficiaries.forEach(b => b.location?.kelurahan && set.add(b.location.kelurahan));
     return Array.from(set).filter(Boolean);
-  }, [villages, beneficiaries, selectedKelurahan]);
+  }, [villages, beneficiaries, selectedKelurahan, customKelurahanList]);
 
   const dusunOptions = useMemo(() => {
     const set = new Set<string>();
     if (selectedDusun) set.add(selectedDusun);
+    customDusunList.forEach(d => set.add(d));
     villages.forEach(v => v.locationHierarchy?.dusun && set.add(v.locationHierarchy.dusun));
     beneficiaries.forEach(b => b.location?.dusun && set.add(b.location.dusun));
     return Array.from(set).filter(Boolean);
-  }, [villages, beneficiaries, selectedDusun]);
+  }, [villages, beneficiaries, selectedDusun, customDusunList]);
 
   const posyanduOptions = useMemo(() => {
     const set = new Set<string>();
     if (selectedPosyandu) set.add(selectedPosyandu);
+    customPosyanduList.forEach(p => set.add(p));
     villages.forEach(v => v.locationHierarchy?.posyandu && set.add(v.locationHierarchy.posyandu));
     beneficiaries.forEach(b => b.location?.posyandu && set.add(b.location.posyandu));
     return Array.from(set).filter(Boolean);
-  }, [villages, beneficiaries, selectedPosyandu]);
+  }, [villages, beneficiaries, selectedPosyandu, customPosyanduList]);
 
   // Beneficiary Search & Filters
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -207,7 +281,7 @@ export default function DataInputCenter({
     setBenParentName("");
     setBenNik("");
     setBenGender("Laki-laki");
-    setBenAge("3 Tahun");
+    setBenAge("");
     setBenBirthDate("");
     setBenCategory("Balita");
     setBenReceivedMBG(true);
@@ -218,17 +292,17 @@ export default function DataInputCenter({
     setBenPetugasDinkesHadir(true);
     setBenAhliGiziHadir(true);
     setBenDokterAnakHadir(false);
-    setBenOfficerDinkesName("Drs. Ahmad Dahlan, M.Kes (Dinkes Ende)");
-    setBenOfficerAhliGiziName("Siti Rahma, S.Gz (Nutrisionis Puskesmas)");
-    setBenOfficerDokterAnakName("dr. H. Prasetyo, Sp.A (Spesialis Anak)");
-    setBenOfficerKaderName("Ibu Maria & Ibu Yuliana (Kader Posyandu)");
+    setBenOfficerDinkesName("");
+    setBenOfficerAhliGiziName("");
+    setBenOfficerDokterAnakName("");
+    setBenOfficerKaderName("");
     setBenPosyanduSchedule("Setiap Tanggal 15 Bulanan");
     setBenPosyanduAgeLimit("Hingga Usia 5 Tahun (60 Bulan)");
     setBenIsSpecialInterventionNeeded(false);
     setBenSpecialInterventionNote("");
     setBenStakeholdersHadir(["Petugas Desa / Pemdes", "Kader Posyandu", "Petugas Puskesmas", "Petugas Dinkes / Dinas Kesehatan", "Ahli Gizi Puskesmas/Desa"]);
-    setBenInitialWeight("14");
-    setBenInitialHeight("95");
+    setBenInitialWeight("");
+    setBenInitialHeight("");
     setBenNotes("");
     setBenKelurahan(selectedKelurahan);
     setBenDusun(selectedDusun);
@@ -837,6 +911,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               options={puskesmasOptions}
               placeholder="Puskesmas..."
               isDark={true}
+              onSaveOption={handleSaveCustomPuskesmas}
             />
 
             {/* Kelurahan */}
@@ -847,6 +922,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               options={villageOptions}
               placeholder="Kelurahan..."
               isDark={true}
+              onSaveOption={handleSaveCustomKelurahan}
             />
 
             {/* Dusun */}
@@ -857,6 +933,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               options={dusunOptions}
               placeholder="Dusun..."
               isDark={true}
+              onSaveOption={handleSaveCustomDusun}
             />
 
             {/* Posyandu */}
@@ -867,6 +944,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               options={posyanduOptions}
               placeholder="Posyandu..."
               isDark={true}
+              onSaveOption={handleSaveCustomPosyandu}
             />
           </div>
         </div>
@@ -2403,6 +2481,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     options={villageOptions}
                     placeholder="Nama Desa..."
                     isDark={false}
+                    onSaveOption={handleSaveCustomKelurahan}
                   />
                   <LocationSelectorField
                     label="POSYANDU"
@@ -2411,6 +2490,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     options={posyanduOptions}
                     placeholder="Nama Posyandu..."
                     isDark={false}
+                    onSaveOption={handleSaveCustomPosyandu}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -2421,6 +2501,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     options={dusunOptions}
                     placeholder="Nama Dusun..."
                     isDark={false}
+                    onSaveOption={handleSaveCustomDusun}
                   />
                   <LocationSelectorField
                     label="PUSKESMAS"
@@ -2429,6 +2510,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     options={puskesmasOptions}
                     placeholder="Puskesmas..."
                     isDark={false}
+                    onSaveOption={handleSaveCustomPuskesmas}
                   />
                 </div>
               </div>
