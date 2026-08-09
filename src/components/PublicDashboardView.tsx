@@ -57,16 +57,72 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   });
 
   const [beneficiaries] = useState<MBGBeneficiary[]>(() => {
-    const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
-    if (stored) {
+    let allBeneficiaries: MBGBeneficiary[] = [];
+
+    const storedMBG = localStorage.getItem("orbit_gizi_local_beneficiaries");
+    if (storedMBG) {
       try {
-        const parsed: MBGBeneficiary[] = JSON.parse(stored);
-        return parsed.filter(b => b.id && !b.id.startsWith("ben_ngt_") && !b.id.startsWith("b1") && b.id !== "b1" && b.id !== "b2" && b.id !== "b3" && b.id !== "b4" && b.id !== "b5");
+        const parsed: MBGBeneficiary[] = JSON.parse(storedMBG);
+        const validMBG = parsed.filter(b => b.id && !b.id.startsWith("ben_ngt_") && !b.id.startsWith("b1") && b.id !== "b1" && b.id !== "b2" && b.id !== "b3" && b.id !== "b4" && b.id !== "b5");
+        allBeneficiaries = [...allBeneficiaries, ...validMBG];
       } catch {
-        return [];
+        // ignore
       }
     }
-    return [];
+
+    const storedHamil = localStorage.getItem("orbit_gizi_ibu_hamil");
+    if (storedHamil) {
+      try {
+        const parsedHamil: any[] = JSON.parse(storedHamil);
+        const mappedHamil = parsedHamil.map(b => ({
+          id: b.id,
+          name: b.namaIbu,
+          category: "Ibu Hamil",
+          location: {
+            propinsi: "Nusa Tenggara Timur",
+            kabupaten: "Nagekeo",
+            puskesmas: b.puskesmas || "",
+            kelurahan: b.kelurahan || "",
+            dusun: b.dusun || "",
+            posyandu: b.posyandu || ""
+          },
+          isReceivedMBG: false,
+          isReceivedPMT: true,
+          weightRecords: b.weightRecords || []
+        } as unknown as MBGBeneficiary));
+        allBeneficiaries = [...allBeneficiaries, ...mappedHamil];
+      } catch {
+        // ignore
+      }
+    }
+
+    const storedMenyusui = localStorage.getItem("orbit_gizi_ibu_menyusui");
+    if (storedMenyusui) {
+      try {
+        const parsedMenyusui: any[] = JSON.parse(storedMenyusui);
+        const mappedMenyusui = parsedMenyusui.map(b => ({
+          id: b.id,
+          name: b.namaIbu,
+          category: "Ibu Menyusui",
+          location: {
+            propinsi: "Nusa Tenggara Timur",
+            kabupaten: "Nagekeo",
+            puskesmas: b.puskesmas || "",
+            kelurahan: b.kelurahan || "",
+            dusun: b.dusun || "",
+            posyandu: b.posyandu || ""
+          },
+          isReceivedMBG: false,
+          isReceivedPMT: true,
+          weightRecords: b.weightRecords || []
+        } as unknown as MBGBeneficiary));
+        allBeneficiaries = [...allBeneficiaries, ...mappedMenyusui];
+      } catch {
+        // ignore
+      }
+    }
+
+    return allBeneficiaries;
   });
 
   const [villages] = useState<any[]>(() => {
@@ -265,7 +321,11 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                     <Heart className="h-5 w-5" />
                   </div>
                 </div>
-                <div className="text-3xl font-black text-slate-900">94.8%</div>
+                <div className="text-3xl font-black text-slate-900">
+                  {beneficiaries.length > 0 
+                    ? Math.round((beneficiaries.filter(b => b.isReceivedMBG || b.isReceivedPMT).length / beneficiaries.length) * 100)
+                    : 0}%
+                </div>
                 <div className="text-xs text-cyan-600 font-bold">Intervensi tepat sasaran</div>
               </div>
 
@@ -276,8 +336,12 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                     <Activity className="h-5 w-5" />
                   </div>
                 </div>
-                <div className="text-3xl font-black text-slate-900">6.4%</div>
-                <div className="text-xs text-amber-600 font-bold">Target nasional tercapai</div>
+                <div className="text-3xl font-black text-slate-900">
+                  {beneficiaries.length > 0 
+                    ? Math.round((beneficiaries.filter(b => b.weightRecords && b.weightRecords.length > 0 && b.weightRecords[b.weightRecords.length-1].statusGizi === "Stunting").length / beneficiaries.length) * 100) 
+                    : 0}%
+                </div>
+                <div className="text-xs text-amber-600 font-bold">Terhadap seluruh sasaran</div>
               </div>
 
               <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 shadow-sm space-y-2">
@@ -287,7 +351,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                     <Building2 className="h-5 w-5" />
                   </div>
                 </div>
-                <div className="text-3xl font-black text-slate-900">142 Pos</div>
+                <div className="text-3xl font-black text-slate-900">{villages.length} Pos</div>
                 <div className="text-xs text-teal-600 font-bold">Seluruh Kecamatan Nagekeo</div>
               </div>
             </div>

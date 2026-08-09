@@ -291,6 +291,27 @@ export default function App() {
     };
   }, [beneficiaries]);
 
+  // Calculate totals for Launcher
+  const combinedCounts = useMemo(() => {
+    let mbgCount = beneficiaries.filter(b => b.isReceivedMBG !== false).length;
+    let pmtCount = beneficiaries.filter(b => b.isReceivedPMT !== false).length;
+    let totalCount = beneficiaries.length;
+
+    try {
+      const hamil = JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
+      totalCount += hamil.length;
+      pmtCount += hamil.length;
+    } catch {}
+
+    try {
+      const menyusui = JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
+      totalCount += menyusui.length;
+      pmtCount += menyusui.length;
+    } catch {}
+
+    return { totalCount, mbgCount, pmtCount };
+  }, [beneficiaries, activeTab]);
+
   const requireOperatorProfileAndExecute = (
     actionType: string,
     description: string,
@@ -743,9 +764,9 @@ export default function App() {
           setShowLauncher(false);
           setShowPublicDashboard(true);
         }}
-        totalBeneficiariesCount={beneficiaries.length}
-        totalMbgCount={beneficiaries.filter(b => b.isReceivedMBG !== false).length}
-        totalPmtCount={beneficiaries.filter(b => b.isReceivedPMT !== false).length}
+        totalBeneficiariesCount={combinedCounts.totalCount}
+        totalMbgCount={combinedCounts.mbgCount}
+        totalPmtCount={combinedCounts.pmtCount}
         selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
       />
     );
