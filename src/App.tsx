@@ -45,6 +45,7 @@ import {
   addVillageApi,
   deleteVillageApi,
   updateVillageApi,
+  syncBeneficiariesApi,
   resetDataApi,
   clearDataApi,
   isUsingLocalFallback
@@ -350,19 +351,16 @@ export default function App() {
     const isEdit = beneficiaries.some(b => b.id === ben.id);
     const actionType = isEdit ? "EDIT_SASARAN" : "TAMBAH_SASARAN";
     const desc = isEdit ? `Mengubah data sasaran MBG/PMT` : `Menambah data sasaran baru MBG/PMT (${ben.category})`;
-
     requireOperatorProfileAndExecute(actionType, desc, ben.name, () => {
-      setBeneficiaries(prev => {
-        const exists = prev.some(b => b.id === ben.id);
-        let updated: MBGBeneficiary[];
-        if (exists) {
-          updated = prev.map(b => (b.id === ben.id ? ben : b));
-        } else {
-          updated = [ben, ...prev];
-        }
-        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-        return updated;
-      });
+      let updated: MBGBeneficiary[] = [];
+      if (isEdit) {
+        updated = beneficiaries.map(b => (b.id === ben.id ? ben : b));
+      } else {
+        updated = [ben, ...beneficiaries];
+      }
+      setBeneficiaries(updated);
+      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+      syncBeneficiariesApi(updated).catch(console.error);
       setRefreshTrigger(prev => prev + 1);
     });
   };
@@ -370,13 +368,11 @@ export default function App() {
   const handleDeleteBeneficiary = (id: string) => {
     const target = beneficiaries.find(b => b.id === id);
     const targetName = target ? target.name : id;
-
     requireOperatorProfileAndExecute("HAPUS_SASARAN", "Menghapus data sasaran", targetName, () => {
-      setBeneficiaries(prev => {
-        const updated = prev.filter(b => b.id !== id);
-        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-        return updated;
-      });
+      const updated = beneficiaries.filter(b => b.id !== id);
+      setBeneficiaries(updated);
+      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+      syncBeneficiariesApi(updated).catch(console.error);
       setRefreshTrigger(prev => prev + 1);
     });
   };
@@ -384,26 +380,24 @@ export default function App() {
   const handleAddWeightRecord = (beneficiaryId: string, record: WeightRecord) => {
     const target = beneficiaries.find(b => b.id === beneficiaryId);
     const targetName = target ? target.name : beneficiaryId;
-
     requireOperatorProfileAndExecute(
       "CATAT_PENIMBANGAN",
       `Mencatat/memperbarui pengukuran BB/TB (${record.weightKg}kg, ${record.heightCm}cm, Periode: ${record.period})`,
       targetName,
       () => {
-        setBeneficiaries(prev => {
-          const updated = prev.map(b => {
-            if (b.id === beneficiaryId) {
-              const filtered = b.weightRecords.filter(r => r.period !== record.period);
-              return {
-                ...b,
-                weightRecords: [...filtered, record]
-              };
-            }
-            return b;
-          });
-          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-          return updated;
+        const updated = beneficiaries.map(b => {
+          if (b.id === beneficiaryId) {
+            const filtered = b.weightRecords.filter(r => r.period !== record.period);
+            return {
+              ...b,
+              weightRecords: [...filtered, record]
+            };
+          }
+          return b;
         });
+        setBeneficiaries(updated);
+        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+        syncBeneficiariesApi(updated).catch(console.error);
         setRefreshTrigger(prev => prev + 1);
       }
     );
@@ -412,26 +406,24 @@ export default function App() {
   const handleDeleteWeightRecord = (beneficiaryId: string, period: string) => {
     const target = beneficiaries.find(b => b.id === beneficiaryId);
     const targetName = target ? target.name : beneficiaryId;
-
     requireOperatorProfileAndExecute(
       "HAPUS_PENIMBANGAN",
       `Menghapus riwayat penimbangan periode ${period}`,
       targetName,
       () => {
-        setBeneficiaries(prev => {
-          const updated = prev.map(b => {
-            if (b.id === beneficiaryId) {
-              const filtered = b.weightRecords.filter(r => r.period !== period);
-              return {
-                ...b,
-                weightRecords: filtered
-              };
-            }
-            return b;
-          });
-          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-          return updated;
+        const updated = beneficiaries.map(b => {
+          if (b.id === beneficiaryId) {
+            const filtered = b.weightRecords.filter(r => r.period !== period);
+            return {
+              ...b,
+              weightRecords: filtered
+            };
+          }
+          return b;
         });
+        setBeneficiaries(updated);
+        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+        syncBeneficiariesApi(updated).catch(console.error);
         setRefreshTrigger(prev => prev + 1);
       }
     );
@@ -441,6 +433,10 @@ export default function App() {
     try {
       const json = await getAppData();
       setData(json);
+      if (json.beneficiaries && json.beneficiaries.length > 0) {
+        setBeneficiaries(json.beneficiaries);
+        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(json.beneficiaries));
+      }
       setWeightP1(json.weights.pilar1 * 100);
       setWeightP2(json.weights.pilar2 * 100);
       setWeightP3(json.weights.pilar3 * 100);

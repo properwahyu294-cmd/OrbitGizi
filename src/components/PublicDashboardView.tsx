@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { 
   Activity, 
   ShieldCheck, 
@@ -61,20 +61,22 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     return DEFAULT_NUTRITION_IMAGES;
   });
 
-  const [beneficiaries] = useState<MBGBeneficiary[]>(() => {
+  const beneficiaries = useMemo(() => {
     let allBeneficiaries: MBGBeneficiary[] = [];
-
-    const storedMBG = localStorage.getItem("orbit_gizi_local_beneficiaries");
-    if (storedMBG) {
-      try {
-        const parsed: MBGBeneficiary[] = JSON.parse(storedMBG);
-        const validMBG = parsed.filter(b => b.id && !b.id.startsWith("ben_ngt_") && !b.id.startsWith("b1") && b.id !== "b1" && b.id !== "b2" && b.id !== "b3" && b.id !== "b4" && b.id !== "b5");
-        allBeneficiaries = [...allBeneficiaries, ...validMBG];
-      } catch {
-        // ignore
+    if (data?.beneficiaries && data.beneficiaries.length > 0) {
+      allBeneficiaries = data.beneficiaries;
+    } else {
+      const storedMBG = localStorage.getItem("orbit_gizi_local_beneficiaries");
+      if (storedMBG) {
+        try {
+          const parsed: MBGBeneficiary[] = JSON.parse(storedMBG);
+          const validMBG = parsed.filter(b => b.id && !b.id.startsWith("ben_ngt_") && !b.id.startsWith("b1") && b.id !== "b1" && b.id !== "b2" && b.id !== "b3" && b.id !== "b4" && b.id !== "b5");
+          allBeneficiaries = [...allBeneficiaries, ...validMBG];
+        } catch {
+          // ignore
+        }
       }
     }
-
     const storedHamil = localStorage.getItem("orbit_gizi_ibu_hamil");
     if (storedHamil) {
       try {
@@ -100,7 +102,6 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
         // ignore
       }
     }
-
     const storedMenyusui = localStorage.getItem("orbit_gizi_ibu_menyusui");
     if (storedMenyusui) {
       try {
@@ -126,9 +127,8 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
         // ignore
       }
     }
-
     return allBeneficiaries;
-  });
+  }, [data]);
 
   const [villages] = useState<any[]>(() => {
     const stored = localStorage.getItem("orbit_gizi_local_villages");

@@ -53,6 +53,7 @@ interface Village {
 const SEED_VILLAGES: Village[] = [];
 
 let villages: Village[] = [...SEED_VILLAGES];
+let beneficiaries: any[] = [];
 
 let weights = {
   pilar1: 0.10, // Integrasi Data
@@ -351,7 +352,8 @@ function buildAppData() {
       label: categoryLabel,
       color: categoryColor,
       desc: categoryDesc
-    }
+    },
+    beneficiaries
   };
 }
 
@@ -545,6 +547,20 @@ app.post("/api/villages/update", (req, res) => {
   res.json({
     success: true,
     message: `Data desa ${v.name} berhasil diperbarui.`,
+    ...buildAppData()
+  });
+});
+
+// API: Sync Beneficiaries
+app.post("/api/beneficiaries/sync", (req, res) => {
+  const { beneficiaries: syncedBeneficiaries } = req.body;
+  if (Array.isArray(syncedBeneficiaries)) {
+    beneficiaries = syncedBeneficiaries;
+    lastUpdated = new Date().toISOString();
+  }
+  res.json({
+    success: true,
+    message: "Data sasaran berhasil disinkronisasi",
     ...buildAppData()
   });
 });
