@@ -4,6 +4,11 @@ export interface OperatorProfile {
   instansi: string;
   email: string;
   phone?: string;
+  sessionId?: string;
+  sessionStartTime?: string; // ISO timestamp
+  sessionDurationMinutes?: number; // 15 to 120 minutes (max 2 hours)
+  sessionExpiryTime?: string; // ISO timestamp
+  inputCount?: number; // Number of inputs during this session
 }
 
 export interface VisitorLog {
@@ -18,11 +23,14 @@ export interface VisitorLog {
 export interface AuditLog {
   id: string;
   timestamp: string;
+  sessionId?: string;
+  sessionDurationMinutes?: number;
+  sessionInputCount?: number;
   operatorName: string;
   operatorRole: string;
   operatorInstansi: string;
   operatorEmail: string;
-  actionType: "TAMBAH_SASARAN" | "EDIT_SASARAN" | "HAPUS_SASARAN" | "SINKRONISASI_SHEETS" | "UPDATE_WILAYAH" | "TAMBAH_BANNER" | "HAPUS_BANNER";
+  actionType: "TAMBAH_SASARAN" | "EDIT_SASARAN" | "HAPUS_SASARAN" | "SINKRONISASI_SHEETS" | "UPDATE_WILAYAH" | "TAMBAH_BANNER" | "HAPUS_BANNER" | "RESET_LOGS";
   description: string;
   targetName?: string;
 }

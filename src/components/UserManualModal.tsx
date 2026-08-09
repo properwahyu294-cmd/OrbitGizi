@@ -95,7 +95,8 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
               }
               #printable-manual-book, #printable-manual-book *,
               #printable-portfolio-report, #printable-portfolio-report *,
-              #printable-offline-form, #printable-offline-form * {
+              #printable-offline-form, #printable-offline-form *,
+              #printable-audit-report, #printable-audit-report * {
                 visibility: visible !important;
               }
               #printable-manual-book {

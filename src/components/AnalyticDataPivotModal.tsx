@@ -1289,7 +1289,8 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
 
           #printable-portfolio-report, #printable-portfolio-report *,
           #printable-manual-book, #printable-manual-book *,
-          #printable-offline-form, #printable-offline-form * {
+          #printable-offline-form, #printable-offline-form *,
+          #printable-audit-report, #printable-audit-report * {
             visibility: visible !important;
           }
 
