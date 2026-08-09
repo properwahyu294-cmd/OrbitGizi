@@ -3,8 +3,22 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const admin = require('firebase-admin');
+const appModule = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
 
 dotenv.config();
+
+// Initialize Firebase Admin
+if (admin.getApps().length === 0) {
+  admin.initializeApp({
+    credential: appModule.applicationDefault(),
+  });
+}
+console.log("Firebase Admin initialized");
+const db = getFirestore();
 
 const app = express();
 const PORT = 3000;
@@ -139,6 +153,19 @@ function calculateVillageScore(v: Village): number {
                 p5 * weights.pilar5;
 
   return Math.round(total);
+}
+
+// Load data from Firestore on startup
+async function loadInitialData() {
+  console.log("Starting to load data from Firestore...");
+  try {
+    const snapshot = await db.collection("beneficiaries").get();
+    console.log(`Snapshot size: ${snapshot.size}`);
+    beneficiaries = snapshot.docs.map((doc) => doc.data());
+    console.log(`Loaded ${beneficiaries.length} beneficiaries from Firestore.`);
+  } catch (error) {
+    console.error("Error loading initial data from Firestore:", error);
+  }
 }
 
 // Function to calculate and construct full data model based on live villages
@@ -358,7 +385,13 @@ function buildAppData() {
 }
 
 // API: Get App State
-app.get("/api/data", (req, res) => {
+app.get("/api/data", async (req, res) => {
+  try {
+    const snapshot = await db.collection("beneficiaries").get();
+    beneficiaries = snapshot.docs.map((doc) => doc.data());
+  } catch (error) {
+    console.error("Error fetching beneficiaries from Firestore:", error);
+  }
   const aggregatedData = buildAppData();
   res.json(aggregatedData);
 });
@@ -552,11 +585,23 @@ app.post("/api/villages/update", (req, res) => {
 });
 
 // API: Sync Beneficiaries
-app.post("/api/beneficiaries/sync", (req, res) => {
+app.post("/api/beneficiaries/sync", async (req, res) => {
   const { beneficiaries: syncedBeneficiaries } = req.body;
   if (Array.isArray(syncedBeneficiaries)) {
-    beneficiaries = syncedBeneficiaries;
-    lastUpdated = new Date().toISOString();
+    try {
+      // Save all beneficiaries to Firestore
+      const batch = db.batch();
+      for (const ben of syncedBeneficiaries) {
+        const ref = db.collection("beneficiaries").doc(ben.id);
+        batch.set(ref, ben, { merge: true });
+      }
+      await batch.commit();
+      beneficiaries = syncedBeneficiaries;
+      lastUpdated = new Date().toISOString();
+    } catch (error) {
+      console.error("Error saving beneficiaries to Firestore:", error);
+      return res.status(500).json({ error: "Failed to sync to Firestore" });
+    }
   }
   res.json({
     success: true,
