@@ -33,7 +33,8 @@ import {
   Building2,
   Heart,
   FileText,
-  BookOpen
+  BookOpen,
+  Trash2
 } from "lucide-react";
 
 // Types
@@ -68,6 +69,8 @@ import DashboardExecutiveRecap from "./components/DashboardExecutiveRecap";
 import { AnalyticDataPivotModal } from "./components/AnalyticDataPivotModal";
 import { PosyanduOfflineFormTemplateModal } from "./components/PosyanduOfflineFormTemplateModal";
 import { UserManualModal } from "./components/UserManualModal";
+import { NutritionBannerGallery, BannerImage, DEFAULT_NUTRITION_IMAGES } from "./components/NutritionBannerGallery";
+import { DataManagementModal } from "./components/DataManagementModal";
 
 const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
   {
@@ -596,6 +599,33 @@ export default function App() {
   const [showPivotModal, setShowPivotModal] = useState<boolean>(false);
   const [showOfflineFormModal, setShowOfflineFormModal] = useState<boolean>(false);
   const [showManualModal, setShowManualModal] = useState<boolean>(false);
+  const [showDataManagementModal, setShowDataManagementModal] = useState<boolean>(false);
+
+  const handleResetAllData = () => {
+    localStorage.removeItem("orbit_gizi_local_beneficiaries");
+    localStorage.removeItem("orbit_gizi_local_villages");
+    localStorage.removeItem("orbit_gizi_banner_images");
+    localStorage.removeItem("orbit_gizi_dashboard_banner_images");
+    setBeneficiaries(DEFAULT_BENEFICIARIES);
+    setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
+    setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleDeleteSelectedData = (options: { beneficiaries: boolean; villages: boolean; banners: boolean }) => {
+    if (options.beneficiaries) {
+      localStorage.removeItem("orbit_gizi_local_beneficiaries");
+      setBeneficiaries([]);
+    }
+    if (options.villages) {
+      localStorage.removeItem("orbit_gizi_local_villages");
+    }
+    if (options.banners) {
+      localStorage.removeItem("orbit_gizi_dashboard_banner_images");
+      localStorage.removeItem("orbit_gizi_banner_images");
+      setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
+    }
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   // Firebase & Google Sheets integration state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -612,6 +642,37 @@ export default function App() {
   const [weightP4, setWeightP4] = useState<number>(25);
   const [weightP5, setWeightP5] = useState<number>(25);
   const [weightError, setWeightError] = useState<string | null>(null);
+
+  const [dashboardBannerImages, setDashboardBannerImages] = useState<BannerImage[]>(() => {
+    const saved = localStorage.getItem("orbit_gizi_dashboard_banner_images");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return DEFAULT_NUTRITION_IMAGES;
+      }
+    }
+    return DEFAULT_NUTRITION_IMAGES;
+  });
+
+  const handleAddDashboardBannerImage = (img: { title: string; subtitle: string; url: string }) => {
+    if (dashboardBannerImages.length >= 10) {
+      alert("Maksimal 10 gambar tersimpan.");
+      return;
+    }
+    const updated = [
+      ...dashboardBannerImages,
+      { id: "dash_img_" + Date.now(), ...img }
+    ];
+    setDashboardBannerImages(updated);
+    localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
+  };
+
+  const handleDeleteDashboardBannerImage = (id: string) => {
+    const updated = dashboardBannerImages.filter(img => img.id !== id);
+    setDashboardBannerImages(updated);
+    localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
+  };
 
   // Beneficiary Management State
   const [beneficiaries, setBeneficiaries] = useState<MBGBeneficiary[]>(() => {
@@ -1033,6 +1094,14 @@ export default function App() {
               <Settings className="h-4 w-4 text-slate-500" />
               <span>Atur Bobot Pilar</span>
             </button>
+
+            <button
+              onClick={() => setShowDataManagementModal(true)}
+              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3.5 py-2 rounded-xl hover:bg-rose-100 transition-colors shadow-2xs cursor-pointer"
+            >
+              <Trash2 className="h-4 w-4 text-rose-600" />
+              <span>Manajemen / Reset Data</span>
+            </button>
             
             <button
               onClick={() => setRefreshTrigger(prev => prev + 1)}
@@ -1071,6 +1140,17 @@ export default function App() {
             )}
           </div>
         )}
+
+        {/* NUTRITION BANNER & IMAGE GALLERY (5 default, up to 10 user additions) */}
+        <div className="bg-slate-900 border border-emerald-500/20 rounded-3xl p-6 shadow-xl text-white">
+          <NutritionBannerGallery
+            images={dashboardBannerImages}
+            onAddImage={handleAddDashboardBannerImage}
+            onDeleteImage={handleDeleteDashboardBannerImage}
+            title="Galeri Aktivitas Gizi & Posyandu"
+            subtitle="Dokumentasi real-time kegiatan intervensi gizi Kabupaten Nagekeo (dapat ditambah hingga 10 gambar)."
+          />
+        </div>
 
         {/* Workspace with Left Vertical Navigation Tab Menu */}
         <div className="flex flex-col lg:flex-row gap-6">
@@ -1687,6 +1767,17 @@ export default function App() {
       <UserManualModal
         isOpen={showManualModal}
         onClose={() => setShowManualModal(false)}
+      />
+
+      {/* Data Management & Secure PIN Reset Modal */}
+      <DataManagementModal
+        isOpen={showDataManagementModal}
+        onClose={() => setShowDataManagementModal(false)}
+        onResetAllData={handleResetAllData}
+        onDeleteSelectedData={handleDeleteSelectedData}
+        beneficiariesCount={beneficiaries.length}
+        villagesCount={data?.villages?.length || 0}
+        bannerCount={dashboardBannerImages.length}
       />
 
     </div>

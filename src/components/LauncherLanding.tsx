@@ -27,6 +27,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import BannerCarousel from "./BannerCarousel";
+import { NutritionBannerGallery, BannerImage, DEFAULT_NUTRITION_IMAGES } from "./NutritionBannerGallery";
 
 interface LauncherLandingProps {
   onLaunchDashboard: () => void;
@@ -44,7 +45,89 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
   selectedKabupaten = "Kabupaten Nagekeo"
 }) => {
   const [activeTab, setActiveTab] = useState<"ABOUT" | "GUIDE" | "SPBE">("ABOUT");
-  const [showModal, setShowModal] = useState<"NONE" | "ABOUT" | "GUIDE" | "SPBE">("NONE");
+  const [showModal, setShowModal] = useState<"NONE" | "ABOUT" | "GUIDE" | "SPBE" | "LOGIN" | "CHANGE_PASSWORD">("NONE");
+  
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordChangeMsg, setPasswordChangeMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const [bannerImages, setBannerImages] = useState<BannerImage[]>(() => {
+    const saved = localStorage.getItem("orbit_gizi_banner_images");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return DEFAULT_NUTRITION_IMAGES;
+      }
+    }
+    return DEFAULT_NUTRITION_IMAGES;
+  });
+
+  const handleAddBannerImage = (img: { title: string; subtitle: string; url: string }) => {
+    if (bannerImages.length >= 10) {
+      alert("Maksimal 10 gambar tersimpan.");
+      return;
+    }
+    const updated = [
+      ...bannerImages,
+      { id: "img_" + Date.now(), ...img }
+    ];
+    setBannerImages(updated);
+    localStorage.setItem("orbit_gizi_banner_images", JSON.stringify(updated));
+  };
+
+  const handleDeleteBannerImage = (id: string) => {
+    const updated = bannerImages.filter(img => img.id !== id);
+    setBannerImages(updated);
+    localStorage.setItem("orbit_gizi_banner_images", JSON.stringify(updated));
+  };
+
+  const handleOpenLogin = () => {
+    setShowModal("LOGIN");
+    setLoginPassword("");
+    setLoginError(null);
+  };
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const stored = localStorage.getItem("orbit_gizi_dash_password") || "orbitgizi2026";
+    if (loginPassword === stored) {
+      setLoginError(null);
+      onLaunchDashboard();
+    } else {
+      setLoginError("Password salah! Password default: orbitgizi2026");
+    }
+  };
+
+  const handleChangePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const stored = localStorage.getItem("orbit_gizi_dash_password") || "orbitgizi2026";
+    if (oldPassword !== stored) {
+      setPasswordChangeMsg({ type: "error", text: "Password lama tidak sesuai." });
+      return;
+    }
+    if (!newPassword || newPassword.length < 4) {
+      setPasswordChangeMsg({ type: "error", text: "Password baru minimal 4 karakter." });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordChangeMsg({ type: "error", text: "Konfirmasi password baru tidak cocok." });
+      return;
+    }
+    localStorage.setItem("orbit_gizi_dash_password", newPassword);
+    setPasswordChangeMsg({ type: "success", text: "Password berhasil diubah! Silakan login dengan password baru." });
+    setTimeout(() => {
+      setShowModal("LOGIN");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordChangeMsg(null);
+    }, 1500);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-teal-950 to-slate-950 text-white flex flex-col justify-between selection:bg-emerald-500 selection:text-white relative overflow-hidden font-sans">
@@ -98,7 +181,7 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
           </div>
 
           <button
-            onClick={onLaunchDashboard}
+            onClick={handleOpenLogin}
             className="px-5 py-2.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 font-black text-xs rounded-xl flex items-center space-x-2 transition-all shadow-lg shadow-emerald-500/20 hover:scale-[1.02] cursor-pointer active:scale-95"
           >
             <span>Buka Dashboard</span>
@@ -128,7 +211,7 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
           {/* MAIN LAUNCH ACTION BUTTON */}
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
-              onClick={onLaunchDashboard}
+              onClick={handleOpenLogin}
               className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 hover:from-emerald-300 hover:to-cyan-200 text-slate-950 font-black text-sm rounded-2xl flex items-center justify-center space-x-3 transition-all shadow-xl shadow-emerald-500/25 hover:scale-105 cursor-pointer active:scale-95 group"
             >
               <Activity className="h-5 w-5 text-slate-950 group-hover:rotate-12 transition-transform" />
@@ -226,6 +309,17 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
             </div>
           </div>
 
+        </div>
+
+        {/* NUTRITION BANNER & IMAGE GALLERY (5 default, up to 10 user additions) */}
+        <div className="max-w-6xl mx-auto w-full bg-slate-900/80 border border-emerald-500/20 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
+          <NutritionBannerGallery
+            images={bannerImages}
+            onAddImage={handleAddBannerImage}
+            onDeleteImage={handleDeleteBannerImage}
+            title="Galeri Visual & Banner Gizi Nagekeo"
+            subtitle="Dokumentasi interaktif kegiatan Posyandu, MBG, dan penanganan gizi masyarakat (dapat ditambah hingga 10 gambar)."
+          />
         </div>
 
         {/* SECTION: TENTANG APLIKASI & PANDUAN PENGGUNA (INLINE TABBED CARD) */}
@@ -570,7 +664,7 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
                   <span className="text-xs text-slate-300">Data Anda tersimpan secara aman dengan proteksi Firebase ABAC & Cyber Guard.</span>
                 </div>
                 <button
-                  onClick={onLaunchDashboard}
+                  onClick={handleOpenLogin}
                   className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black text-xs rounded-xl flex items-center justify-center space-x-2 hover:scale-[1.02] transition-transform cursor-pointer shadow-lg shrink-0"
                 >
                   <span>Mulai Penggunaan Aplikasi</span>
@@ -634,7 +728,133 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
               <X className="h-5 w-5" />
             </button>
 
-            {showModal === "ABOUT" ? (
+            {showModal === "LOGIN" ? (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
+                  <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-2xl">
+                    <Lock className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-white">Autentikasi Akses Dashboard</h3>
+                    <p className="text-xs text-emerald-400 font-medium">Masukkan Password Akses Utama Orbit Gizi</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleLoginSubmit} className="space-y-4 pt-2">
+                  {loginError && (
+                    <div className="p-3 bg-rose-500/20 border border-rose-500/40 text-rose-300 rounded-xl text-xs font-bold">
+                      {loginError}
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Password Akses</label>
+                    <input
+                      type="password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="Masukkan password akses"
+                      className="w-full px-4 py-3 bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl text-white text-sm outline-none"
+                      autoFocus
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowModal("CHANGE_PASSWORD");
+                        setOldPassword("");
+                        setNewPassword("");
+                        setConfirmPassword("");
+                        setPasswordChangeMsg(null);
+                      }}
+                      className="text-xs text-cyan-400 hover:text-cyan-300 underline font-bold cursor-pointer"
+                    >
+                      Ubah Password Akses?
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl transition-all shadow-lg cursor-pointer flex items-center space-x-2"
+                    >
+                      <span>Masuk ke Dashboard</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : showModal === "CHANGE_PASSWORD" ? (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3 border-b border-slate-800 pb-4">
+                  <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-2xl">
+                    <Lock className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-white">Ubah Password Akses Dashboard</h3>
+                    <p className="text-xs text-cyan-400 font-medium">Sesuaikan password akses sesuai kebutuhan operasional</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleChangePasswordSubmit} className="space-y-4 pt-2">
+                  {passwordChangeMsg && (
+                    <div className={`p-3 rounded-xl text-xs font-bold border ${passwordChangeMsg.type === "success" ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300" : "bg-rose-500/20 border-rose-500/40 text-rose-300"}`}>
+                      {passwordChangeMsg.text}
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Password Lama</label>
+                    <input
+                      type="password"
+                      value={oldPassword}
+                      onChange={(e) => setOldPassword(e.target.value)}
+                      placeholder="Masukkan password lama"
+                      className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 focus:border-cyan-500 rounded-xl text-white text-sm outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Password Baru</label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Masukkan password baru (min. 4 karakter)"
+                      className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 focus:border-cyan-500 rounded-xl text-white text-sm outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Konfirmasi Password Baru</label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Ulangi password baru"
+                      className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 focus:border-cyan-500 rounded-xl text-white text-sm outline-none"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setShowModal("LOGIN")}
+                      className="text-xs text-slate-400 hover:text-white font-bold cursor-pointer"
+                    >
+                      ← Kembali ke Login
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs rounded-xl transition-all shadow-lg cursor-pointer"
+                    >
+                      Simpan Password Baru
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : showModal === "ABOUT" ? (
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-2xl">
