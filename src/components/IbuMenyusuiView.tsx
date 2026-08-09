@@ -2,73 +2,7 @@ import React, { useState, useMemo } from "react";
 import { IbuMenyusuiBeneficiary } from "../types";
 import { Users, Plus, Edit3, Trash2, Search, Heart, MapPin, CheckCircle2, X, Save, Calendar, Filter } from "lucide-react";
 
-const DEFAULT_IBU_MENYUSUI: IbuMenyusuiBeneficiary[] = [
-  {
-    id: "ibu_1",
-    namaIbu: "Mersiana Ere",
-    umur: "27 Tahun",
-    nik: "5316014502990001",
-    alamat: "Nangateke",
-    puskesmas: "Puskesmas Boawae",
-    kelurahan: "Desa Nangateke",
-    dusun: "Dusun Nangateke",
-    posyandu: "Posyandu Nangateke",
-    bayiNama: "Adrian Sa",
-    catatan: "Menyusui aktif, pemberian ASI Eksklusif & PMT Ibu Menyusui"
-  },
-  {
-    id: "ibu_2",
-    namaIbu: "Emirensiana",
-    umur: "31 Tahun",
-    nik: "5316015003950002",
-    alamat: "Nangateke",
-    puskesmas: "Puskesmas Boawae",
-    kelurahan: "Desa Nangateke",
-    dusun: "Dusun Nangateke",
-    posyandu: "Posyandu Nangateke",
-    bayiNama: "Febriani Oti",
-    catatan: "Pemantauan gizi rutin posyandu"
-  },
-  {
-    id: "ibu_3",
-    namaIbu: "Yohana Mboy",
-    umur: "29 Tahun",
-    nik: "5316016208970003",
-    alamat: "Nangateke",
-    puskesmas: "Puskesmas Boawae",
-    kelurahan: "Desa Nangateke",
-    dusun: "Dusun Nangateke",
-    posyandu: "Posyandu Nangateke",
-    bayiNama: "Guberta Suriati",
-    catatan: "Pendampingan kader posyandu & edukasi gizi seimbang"
-  },
-  {
-    id: "ibu_4",
-    namaIbu: "Arkuslaus Lena",
-    umur: "34 Tahun",
-    nik: "5316014811920004",
-    alamat: "Nangateke",
-    puskesmas: "Puskesmas Boawae",
-    kelurahan: "Desa Nangateke",
-    dusun: "Dusun Nangateke",
-    posyandu: "Posyandu Nangateke",
-    bayiNama: "Hendrikus P. Kako",
-    catatan: "Menerima paket tambahan gizi ibu menyusui"
-  },
-  {
-    id: "ibu_5",
-    namaIbu: "Hefer Katnesi",
-    umur: "26 Tahun",
-    nik: "3173055504000005",
-    alamat: "Nangateke",
-    puskesmas: "Puskesmas Boawae",
-    kelurahan: "Desa Nangateke",
-    dusun: "Dusun Nangateke",
-    posyandu: "Posyandu Nangateke",
-    bayiNama: "Jefanya R. R. Katnesi",
-    catatan: "ASI Eksklusif lancar"
-  }
-];
+const DEFAULT_IBU_MENYUSUI: IbuMenyusuiBeneficiary[] = [];
 
 const PERIOD_OPTIONS = [
   "Maret 2026",
@@ -92,14 +26,17 @@ export default function IbuMenyusuiView() {
     const stored = localStorage.getItem("orbit_gizi_ibu_menyusui");
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed: IbuMenyusuiBeneficiary[] = JSON.parse(stored);
+        const clean = parsed.filter(b => b.id && !b.id.startsWith("ibu_"));
+        localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(clean));
+        return clean;
       } catch {
-        localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(DEFAULT_IBU_MENYUSUI));
-        return DEFAULT_IBU_MENYUSUI;
+        localStorage.setItem("orbit_gizi_ibu_menyusui", "[]");
+        return [];
       }
     }
-    localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(DEFAULT_IBU_MENYUSUI));
-    return DEFAULT_IBU_MENYUSUI;
+    localStorage.setItem("orbit_gizi_ibu_menyusui", "[]");
+    return [];
   });
 
   const [searchTerm, setSearchTerm] = useState<string>("");

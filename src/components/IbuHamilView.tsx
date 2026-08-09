@@ -2,47 +2,7 @@ import React, { useState, useMemo } from "react";
 import { IbuHamilBeneficiary } from "../types";
 import { Users, Plus, Edit3, Trash2, Search, Heart, MapPin, CheckCircle2, X, Save, Calendar, Filter } from "lucide-react";
 
-const DEFAULT_IBU_HAMIL: IbuHamilBeneficiary[] = [
-  {
-    id: "hamil_1",
-    namaIbu: "Fransiska Boli",
-    umur: "29 Tahun",
-    nik: "5316014402950006",
-    alamat: "Nangateke",
-    puskesmas: "Puskesmas Boawae",
-    kelurahan: "Desa Nangateke",
-    dusun: "Dusun Nangateke",
-    posyandu: "Posyandu Nangateke",
-    usiaKehamilan: "Trimester 2 (24 Minggu)",
-    catatan: "Program PMT Ibu Hamil KEK & Tablet Tambah Darah"
-  },
-  {
-    id: "hamil_2",
-    namaIbu: "Maria Goreti",
-    umur: "32 Tahun",
-    nik: "5316015504940007",
-    alamat: "Nangateke",
-    puskesmas: "Puskesmas Boawae",
-    kelurahan: "Desa Nangateke",
-    dusun: "Dusun Nangateke",
-    posyandu: "Posyandu Nangateke",
-    usiaKehamilan: "Trimester 3 (32 Minggu)",
-    catatan: "Pemeriksaan kehamilan rutin & pemantauan gizi"
-  },
-  {
-    id: "hamil_3",
-    namaIbu: "Katarina Nage",
-    umur: "25 Tahun",
-    nik: "5316016001010008",
-    alamat: "Nangateke",
-    puskesmas: "Puskesmas Boawae",
-    kelurahan: "Desa Nangateke",
-    dusun: "Dusun Nangateke",
-    posyandu: "Posyandu Nangateke",
-    usiaKehamilan: "Trimester 1 (12 Minggu)",
-    catatan: "Pemberian PMT Pemulihan & edukasi gizi"
-  }
-];
+const DEFAULT_IBU_HAMIL: IbuHamilBeneficiary[] = [];
 
 const PERIOD_OPTIONS = [
   "Maret 2026",
@@ -66,14 +26,17 @@ export default function IbuHamilView() {
     const stored = localStorage.getItem("orbit_gizi_ibu_hamil");
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed: IbuHamilBeneficiary[] = JSON.parse(stored);
+        const clean = parsed.filter(b => b.id && !b.id.startsWith("hamil_"));
+        localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(clean));
+        return clean;
       } catch {
-        localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(DEFAULT_IBU_HAMIL));
-        return DEFAULT_IBU_HAMIL;
+        localStorage.setItem("orbit_gizi_ibu_hamil", "[]");
+        return [];
       }
     }
-    localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(DEFAULT_IBU_HAMIL));
-    return DEFAULT_IBU_HAMIL;
+    localStorage.setItem("orbit_gizi_ibu_hamil", "[]");
+    return [];
   });
 
   const [searchTerm, setSearchTerm] = useState<string>("");

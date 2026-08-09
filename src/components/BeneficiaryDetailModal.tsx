@@ -130,19 +130,19 @@ export const BeneficiaryDetailModal: React.FC<BeneficiaryDetailModalProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="p-2 bg-slate-900 rounded-xl border border-slate-800">
               <span className="text-[10px] text-slate-400 block">Kader Posyandu</span>
-              <span className="font-bold text-slate-200">{beneficiary.officerKaderName || "Ibu Siti Aminah"}</span>
+              <span className="font-bold text-slate-200">{beneficiary.officerKaderName || "-"}</span>
             </div>
             <div className="p-2 bg-slate-900 rounded-xl border border-slate-800">
               <span className="text-[10px] text-slate-400 block">Ahli Gizi</span>
-              <span className="font-bold text-slate-200">{beneficiary.officerAhliGiziName || "Maria Goreti, S.Gz"}</span>
+              <span className="font-bold text-slate-200">{beneficiary.officerAhliGiziName || "-"}</span>
             </div>
             <div className="p-2 bg-slate-900 rounded-xl border border-slate-800">
               <span className="text-[10px] text-slate-400 block">Dokter Anak</span>
-              <span className="font-bold text-slate-200">{beneficiary.officerDokterAnakName || "dr. Antonius, Sp.A"}</span>
+              <span className="font-bold text-slate-200">{beneficiary.officerDokterAnakName || "-"}</span>
             </div>
             <div className="p-2 bg-slate-900 rounded-xl border border-slate-800">
               <span className="text-[10px] text-slate-400 block">Dinas Kesehatan</span>
-              <span className="font-bold text-slate-200">{beneficiary.officerDinkesName || "Tim e-PPGBM"}</span>
+              <span className="font-bold text-slate-200">{beneficiary.officerDinkesName || "-"}</span>
             </div>
           </div>
           {beneficiary.notes && (

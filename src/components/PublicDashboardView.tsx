@@ -60,18 +60,13 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed: MBGBeneficiary[] = JSON.parse(stored);
+        return parsed.filter(b => b.id && !b.id.startsWith("ben_ngt_") && !b.id.startsWith("b1") && b.id !== "b1" && b.id !== "b2" && b.id !== "b3" && b.id !== "b4" && b.id !== "b5");
       } catch {
         return [];
       }
     }
-    return [
-      { id: "b1", name: "Maria Goreti", category: "Ibu Hamil", location: { propinsi: "NTT", kabupaten: "Nagekeo", puskesmas: "Mbay", kelurahan: "Mbay I", dusun: "Dusun 1", posyandu: "Posyandu Melati" }, isReceivedMBG: true, isReceivedPMT: true, weightRecords: [{ period: "Juli 2026", weightKg: 58, heightCm: 155, statusGizi: "Normal" }] },
-      { id: "b2", name: "Yohanes Dapa", category: "Balita", location: { propinsi: "NTT", kabupaten: "Nagekeo", puskesmas: "Aesesa", kelurahan: "Aesesa", dusun: "Dusun 2", posyandu: "Posyandu Kenanga" }, isReceivedMBG: true, isReceivedPMT: true, weightRecords: [{ period: "Juli 2026", weightKg: 11.2, heightCm: 85, statusGizi: "Stunting" }] },
-      { id: "b3", name: "Theresia Woda", category: "Ibu Menyusui", location: { propinsi: "NTT", kabupaten: "Nagekeo", puskesmas: "Boawae", kelurahan: "Boawae", dusun: "Dusun 1", posyandu: "Posyandu Anggrek" }, isReceivedMBG: true, isReceivedPMT: true, weightRecords: [{ period: "Juli 2026", weightKg: 52, heightCm: 150, statusGizi: "Normal" }] },
-      { id: "b4", name: "Fransiskus Nage", category: "Balita", location: { propinsi: "NTT", kabupaten: "Nagekeo", puskesmas: "Mauponggo", kelurahan: "Mauponggo", dusun: "Dusun 3", posyandu: "Posyandu Mawar" }, isReceivedMBG: true, isReceivedPMT: true, weightRecords: [{ period: "Juli 2026", weightKg: 9.8, heightCm: 79, statusGizi: "Gizi Kurang" }] },
-      { id: "b5", name: "Agnes Keli", category: "Ibu Hamil", location: { propinsi: "NTT", kabupaten: "Nagekeo", puskesmas: "Nangaroro", kelurahan: "Nangaroro", dusun: "Dusun 1", posyandu: "Posyandu Dahlia" }, isReceivedMBG: true, isReceivedPMT: true, weightRecords: [{ period: "Juli 2026", weightKg: 54, heightCm: 148, statusGizi: "Normal" }] }
-    ];
+    return [];
   });
 
   const filteredBeneficiaries = beneficiaries.filter(b => {
