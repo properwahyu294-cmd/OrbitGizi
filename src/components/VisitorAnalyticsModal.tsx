@@ -8,13 +8,15 @@ interface VisitorAnalyticsModalProps {
   onClose: () => void;
   currentUserEmail?: string | null;
   isAdmin?: boolean;
+  isSuperAdmin?: boolean;
 }
 
 export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
   isOpen,
   onClose,
   currentUserEmail,
-  isAdmin = false
+  isAdmin = false,
+  isSuperAdmin = false
 }) => {
   const [activeTab, setActiveTab] = useState<"VISITORS" | "AUDIT">("VISITORS");
   const [visitorLogs, setVisitorLogs] = useState<VisitorLog[]>([]);
@@ -70,6 +72,10 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
   };
 
   const handleClearLogs = () => {
+    if (!isSuperAdmin) {
+      alert("Hanya Admin Utama yang berhak membersihkan log.");
+      return;
+    }
     if (window.confirm("Apakah Anda yakin ingin membersihkan seluruh log pengunjung dan audit input operator?\n\nTindakan ini akan menghapus log tersimpan lokal untuk pemeliharaan sistem.")) {
       const res = clearAllLogs();
       refreshData();

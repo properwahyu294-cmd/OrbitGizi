@@ -155,7 +155,9 @@ export default function App() {
 
   // Firebase & Google Sheets integration state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const isAdmin = currentUser?.email?.toLowerCase().trim() === "properwahyu294@gmail.com";
+  // Allow any email to act as admin since the local password already protects the dashboard
+  const isAdmin = !!currentUser;
+  const isSuperAdmin = currentUser?.email?.toLowerCase().trim() === "properwahyu294@gmail.com";
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [syncingSheets, setSyncingSheets] = useState<boolean>(false);
   const [sheetsSyncUrl, setSheetsSyncUrl] = useState<string | null>(null);
@@ -243,7 +245,7 @@ export default function App() {
     }
 
     const email = currentUser?.email || "pengunjung@public.go.id";
-    const role = (isAdmin || currentUser?.email === "properwahyu294@gmail.com") ? "ADMIN" : "PENGUNJUNG";
+    const role = isAdmin ? "ADMIN" : "PENGUNJUNG";
 
     recordVisitorAccess(email, role, viewName);
   }, [showLauncher, showPublicDashboard, activeTab, currentUser, isAdmin]);
@@ -321,6 +323,10 @@ export default function App() {
     targetName: string | undefined,
     callback: () => void
   ) => {
+    if (!isSuperAdmin) {
+      alert("Hanya Admin Utama (properwahyu294@gmail.com) yang berhak mengedit, menyimpan, atau menyinkronkan data.");
+      return;
+    }
     const existing = getOperatorProfile();
     if (existing) {
       callback();
@@ -731,11 +737,9 @@ export default function App() {
         onOpenLogin={() => {
           if (!currentUser) {
             handleGoogleLogin();
-          } else if (isAdmin) {
+          } else {
             setShowPublicDashboard(false);
             setShowLauncher(false);
-          } else {
-            alert(`Email Anda (${currentUser.email}) masuk sebagai Pengunjung. Akses Admin khusus untuk properwahyu294@gmail.com.`);
           }
         }}
         selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
@@ -747,18 +751,9 @@ export default function App() {
     return (
       <LauncherLanding
         onLaunchDashboard={() => {
-          if (isAdmin) {
+          if (currentUser) {
             setShowLauncher(false);
             setShowPublicDashboard(false);
-          } else if (currentUser) {
-            // Give option to switch to admin Google account or proceed to public dashboard
-            const wantLoginAdmin = window.confirm(`Email Anda (${currentUser.email}) terdaftar sebagai Pengunjung. Apakah Anda ingin login / ganti ke akun Google Admin (properwahyu294@gmail.com)?\n\nKlik OK untuk Ganti Akun Admin, atau Cancel untuk lanjut ke Dashboard Publik.`);
-            if (wantLoginAdmin) {
-              handleGoogleLogin();
-            } else {
-              setShowLauncher(false);
-              setShowPublicDashboard(true);
-            }
           } else {
             handleGoogleLogin();
           }
@@ -834,8 +829,8 @@ export default function App() {
           
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
             <button
-              onClick={() => setShowDataInputModal(true)}
-              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-indigo-900 bg-indigo-100/80 border border-indigo-300 px-3.5 py-2 rounded-xl hover:bg-indigo-200 transition-colors shadow-2xs cursor-pointer"
+              onClick={() => isSuperAdmin ? setShowDataInputModal(true) : alert("Hanya Admin Utama yang berhak melakukan sinkronisasi & input data.")}
+              className={`flex items-center justify-center space-x-1.5 text-xs font-bold text-indigo-900 bg-indigo-100/80 border border-indigo-300 px-3.5 py-2 rounded-xl transition-colors shadow-2xs ${isSuperAdmin ? 'hover:bg-indigo-200 cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
             >
               <Building2 className="h-4 w-4 text-indigo-700" />
               <span>Modal Input & Sinkronisasi MBG</span>
@@ -866,16 +861,16 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setShowConfigModal(true)}
-              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+              onClick={() => isSuperAdmin ? setShowConfigModal(true) : alert("Hanya Admin Utama yang berhak mengubah bobot pilar.")}
+              className={`flex items-center justify-center space-x-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl transition-colors shadow-2xs ${isSuperAdmin ? 'hover:bg-slate-50 cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
             >
               <Settings className="h-4 w-4 text-slate-500" />
               <span>Atur Bobot Pilar</span>
             </button>
 
             <button
-              onClick={() => setShowDataManagementModal(true)}
-              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3.5 py-2 rounded-xl hover:bg-rose-100 transition-colors shadow-2xs cursor-pointer"
+              onClick={() => isSuperAdmin ? setShowDataManagementModal(true) : alert("Hanya Admin Utama yang berhak mengelola master data.")}
+              className={`flex items-center justify-center space-x-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3.5 py-2 rounded-xl transition-colors shadow-2xs ${isSuperAdmin ? 'hover:bg-rose-100 cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
             >
               <Trash2 className="h-4 w-4 text-rose-600" />
               <span>Manajemen / Reset Data</span>
@@ -1224,8 +1219,8 @@ export default function App() {
                     <p className="text-[11px] text-slate-500">Sinkronisasikan data bulanan MBG, PMT, Posyandu, & e-PPGBM untuk Desa, Kelurahan, Posyandu, Puskesmas, atau Kabupaten.</p>
                   </div>
                   <button
-                    onClick={() => setShowInputWizard(true)}
-                    className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white text-xs font-black rounded-xl hover:bg-indigo-700 transition-all shadow-xs cursor-pointer"
+                    onClick={() => isSuperAdmin ? setShowInputWizard(true) : alert("Hanya Admin Utama yang berhak melakukan sinkronisasi & input data.")}
+                    className={`w-full md:w-auto px-4 py-2 text-white text-xs font-black rounded-xl transition-all shadow-xs ${isSuperAdmin ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer' : 'bg-indigo-400 opacity-70 cursor-not-allowed'}`}
                   >
                     Buka Wizard Input Data
                   </button>
@@ -1247,8 +1242,8 @@ export default function App() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setShowDataInputModal(true)}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer shrink-0 flex items-center space-x-1.5 border border-indigo-400/40"
+                    onClick={() => isSuperAdmin ? setShowDataInputModal(true) : alert("Hanya Admin Utama yang berhak melakukan sinkronisasi & input data.")}
+                    className={`px-4 py-2 font-black text-xs rounded-xl shadow-xs transition-all flex items-center space-x-1.5 border ${isSuperAdmin ? 'bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer border-indigo-400/40' : 'bg-slate-700 text-slate-300 opacity-60 cursor-not-allowed border-slate-600'}`}
                   >
                     <Sparkles className="h-4 w-4 text-amber-300" />
                     <span>Buka Tampilan Modal</span>
@@ -1604,6 +1599,7 @@ export default function App() {
         onClose={() => setShowAnalyticsModal(false)}
         currentUserEmail={currentUser?.email || null}
         isAdmin={isAdmin}
+        isSuperAdmin={isSuperAdmin}
       />
 
       {/* Full-Screen Interactive Modal for Data Input Center */}

@@ -31,11 +31,11 @@ export const OperatorIdentityModal: React.FC<OperatorIdentityModalProps> = ({
         setName(existing.name || "");
         setRole(existing.role || "Petugas Ahli Gizi / Nakes");
         setInstansi(existing.instansi || "Puskesmas Boawae / Dinkes Nagekeo");
-        setEmail(existing.email || currentUserEmail || "properwahyu294@gmail.com");
+        setEmail(existing.email || currentUserEmail || "admin@orbitgizi.com");
         setPhone(existing.phone || "");
         setSessionDurationMinutes(existing.sessionDurationMinutes || 60);
       } else {
-        setEmail(currentUserEmail || "properwahyu294@gmail.com");
+        setEmail(currentUserEmail || "admin@orbitgizi.com");
       }
     }
   }, [isOpen, currentUserEmail]);

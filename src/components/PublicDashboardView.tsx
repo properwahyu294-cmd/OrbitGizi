@@ -39,7 +39,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   const [filterCategory, setFilterCategory] = useState<string>("ALL");
 
   const currentEmail = currentUserEmail || "pengunjung@public.go.id";
-  const isAdminEmail = currentUserEmail?.toLowerCase().trim() === "properwahyu294@gmail.com";
+  const isUserAdmin = isAdmin;
 
   // Beneficiary detail modal state
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<MBGBeneficiary | null>(null);
@@ -185,8 +185,8 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
           <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl border border-slate-300 text-xs font-mono">
             <Mail className="h-3.5 w-3.5 text-emerald-600" />
             <span className="max-w-[180px] truncate">{currentEmail}</span>
-            <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${isAdminEmail ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-amber-100 text-amber-800 border border-amber-300"}`}>
-              {isAdminEmail ? "ADMIN" : "PENGUNJUNG"}
+            <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${isUserAdmin ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-amber-100 text-amber-800 border border-amber-300"}`}>
+              {isUserAdmin ? "ADMIN" : "PENGUNJUNG"}
             </span>
           </div>
 
@@ -202,10 +202,10 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
           <button
             onClick={onOpenLogin}
             className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs rounded-xl transition-all shadow-md flex items-center space-x-1.5 cursor-pointer animate-in fade-in"
-            title={isAdminEmail ? "Akses Admin Terverifikasi" : "Login sebagai Admin / Nakes"}
+            title={isUserAdmin ? "Akses Admin Terverifikasi" : "Login sebagai Admin / Nakes"}
           >
             <ShieldCheck className="h-4 w-4" />
-            <span>{isAdminEmail ? "Masuk Dashboard Utama" : "Masuk Dashboard Utama (Login)"}</span>
+            <span>{isUserAdmin ? "Masuk Dashboard Utama" : "Masuk Dashboard Utama (Login)"}</span>
           </button>
         </div>
       </header>
@@ -298,7 +298,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Status Hak Akses</span>
                   <span className="font-black text-xs flex items-center justify-center space-x-1.5 mt-1 text-emerald-400">
                     <CheckCircle2 className="h-4 w-4" />
-                    <span>{isAdminEmail ? "Akses Admin Terverifikasi" : "Akses Tamu Publik"}</span>
+                    <span>{isUserAdmin ? "Akses Admin Terverifikasi" : "Akses Tamu Publik"}</span>
                   </span>
                 </div>
               </div>
@@ -366,8 +366,8 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
             <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
               <NutritionBannerGallery
                 images={bannerImages}
-                onAddImage={() => alert("Fitur tambah gambar memerlukan login Admin/Nakes dengan email properwahyu294@gmail.com.")}
-                onDeleteImage={() => alert("Fitur hapus gambar memerlukan login Admin/Nakes dengan email properwahyu294@gmail.com.")}
+                onAddImage={() => alert("Fitur tambah gambar memerlukan login Admin/Nakes dengan email Google.")}
+                onDeleteImage={() => alert("Fitur hapus gambar memerlukan login Admin/Nakes dengan email Google.")}
                 title="Galeri Visual & Dokumentasi Gizi Publik"
                 subtitle="Dokumentasi kegiatan intervensi gizi, Posyandu, dan Makanan Bergizi Gratis (MBG) di Nagekeo."
               />
