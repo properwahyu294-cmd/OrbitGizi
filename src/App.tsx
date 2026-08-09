@@ -103,6 +103,7 @@ export default function App() {
   const [showManualModal, setShowManualModal] = useState<boolean>(false);
   const [showDataManagementModal, setShowDataManagementModal] = useState<boolean>(false);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState<boolean>(false);
+  const [showDataInputModal, setShowDataInputModal] = useState<boolean>(false);
   const [showOperatorModal, setShowOperatorModal] = useState<boolean>(false);
   const [pendingOperatorAction, setPendingOperatorAction] = useState<((profile: OperatorProfile) => void) | null>(null);
 
@@ -668,6 +669,14 @@ export default function App() {
           
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
             <button
+              onClick={() => setShowDataInputModal(true)}
+              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-indigo-900 bg-indigo-100/80 border border-indigo-300 px-3.5 py-2 rounded-xl hover:bg-indigo-200 transition-colors shadow-2xs cursor-pointer"
+            >
+              <Building2 className="h-4 w-4 text-indigo-700" />
+              <span>Modal Input & Sinkronisasi MBG</span>
+            </button>
+
+            <button
               onClick={() => setShowAnalyticsModal(true)}
               className="flex items-center justify-center space-x-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-3.5 py-2 rounded-xl hover:bg-emerald-100 transition-colors shadow-2xs cursor-pointer"
             >
@@ -1061,7 +1070,26 @@ export default function App() {
             )}
 
             {activeTab === "input_center" && (
-              <div className="animate-in fade-in duration-200">
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 rounded-2xl border border-indigo-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2.5 bg-indigo-500/20 rounded-xl text-indigo-300 border border-indigo-400/30">
+                      <Building2 className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-white">Mode Modal Layar Penuh Siap Digunakan</h4>
+                      <p className="text-xs text-indigo-200/80">Tampilkan Pusat Input & Sinkronisasi MBG dalam jendela Modal terfokus untuk kenyamanan maksimal.</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowDataInputModal(true)}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer shrink-0 flex items-center space-x-1.5 border border-indigo-400/40"
+                  >
+                    <Sparkles className="h-4 w-4 text-amber-300" />
+                    <span>Buka Tampilan Modal</span>
+                  </button>
+                </div>
+
                 <DataInputCenter
                   villages={data.villages}
                   beneficiaries={beneficiaries}
@@ -1411,6 +1439,21 @@ export default function App() {
         currentUserEmail={currentUser?.email || null}
         isAdmin={isAdmin}
       />
+
+      {/* Full-Screen Interactive Modal for Data Input Center */}
+      {showDataInputModal && (
+        <DataInputCenter
+          villages={data.villages}
+          beneficiaries={beneficiaries}
+          onSaveBeneficiary={handleSaveBeneficiary}
+          onDeleteBeneficiary={handleDeleteBeneficiary}
+          onAddWeightRecord={handleAddWeightRecord}
+          onDeleteWeightRecord={handleDeleteWeightRecord}
+          onUpdateVillageMetrics={handleVillageUpdate}
+          isModal={true}
+          onCloseModal={() => setShowDataInputModal(false)}
+        />
+      )}
 
     </div>
   );

@@ -57,6 +57,8 @@ interface DataInputCenterProps {
   onAddWeightRecord: (beneficiaryId: string, record: WeightRecord) => void;
   onDeleteWeightRecord: (beneficiaryId: string, period: string) => void;
   onUpdateVillageMetrics: (updatedVillage: Partial<Village>) => Promise<void>;
+  isModal?: boolean;
+  onCloseModal?: () => void;
 }
 
 const PERIOD_OPTIONS = [
@@ -97,7 +99,9 @@ export default function DataInputCenter({
   onDeleteBeneficiary,
   onAddWeightRecord,
   onDeleteWeightRecord,
-  onUpdateVillageMetrics
+  onUpdateVillageMetrics,
+  isModal = false,
+  onCloseModal
 }: DataInputCenterProps) {
   // Navigation Sub-Tabs
   const [activeSubTab, setActiveSubTab] = useState<"location_sync" | "beneficiaries" | "weight_records" | "collaboration">("beneficiaries");
@@ -746,7 +750,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
 `;
   };
 
-  return (
+  const mainContent = (
     <div className="space-y-6">
       
       {/* HEADER BAR & REGIONAL LOCATION SELECTOR */}
@@ -786,6 +790,16 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               <Plus className="h-4 w-4" />
               <span>Tambah Penerima</span>
             </button>
+
+            {isModal && onCloseModal && (
+              <button
+                onClick={onCloseModal}
+                className="bg-slate-800 hover:bg-rose-600/20 hover:text-rose-300 text-slate-300 font-bold px-3.5 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer shadow-md transition-all border border-slate-700"
+              >
+                <X className="h-4 w-4 text-rose-400" />
+                <span>Tutup Modal</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -3064,4 +3078,49 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
 
     </div>
   );
+
+  if (isModal) {
+    return (
+      <div className="fixed inset-0 z-[90] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto animate-in fade-in duration-200">
+        <div className="bg-slate-950 border border-slate-800 rounded-3xl w-full max-w-7xl max-h-[94vh] flex flex-col shadow-2xl overflow-hidden relative text-white">
+          {/* Top Modal Header */}
+          <div className="px-5 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between sticky top-0 z-40 shrink-0">
+            <div className="flex items-center space-x-3">
+              <div className="p-2.5 bg-indigo-600/20 text-indigo-400 rounded-2xl border border-indigo-500/30">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    MODE MODAL INTERAKTIF
+                  </span>
+                  <span className="text-xs font-mono text-slate-400">• Orbit Gizi System</span>
+                </div>
+                <h3 className="text-base font-black text-white mt-0.5">
+                  Pusat Sinkronisasi & Input Data Penerima MBG
+                </h3>
+              </div>
+            </div>
+
+            {onCloseModal && (
+              <button
+                onClick={onCloseModal}
+                className="p-2.5 bg-slate-800 hover:bg-rose-600/20 hover:text-rose-400 text-slate-300 rounded-xl transition-all cursor-pointer flex items-center space-x-1.5 text-xs font-bold border border-slate-700"
+              >
+                <X className="h-4.5 w-4.5" />
+                <span className="hidden sm:inline">Tutup</span>
+              </button>
+            )}
+          </div>
+
+          {/* Modal Scrollable Body */}
+          <div className="p-4 sm:p-6 flex-1 overflow-y-auto space-y-6">
+            {mainContent}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return mainContent;
 }
