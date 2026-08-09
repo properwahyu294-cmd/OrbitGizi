@@ -118,7 +118,9 @@ export function PosyanduOfflineFormTemplateModal({
                 body * {
                   visibility: hidden !important;
                 }
-                #printable-offline-form, #printable-offline-form * {
+                #printable-offline-form, #printable-offline-form *,
+                #printable-portfolio-report, #printable-portfolio-report *,
+                #printable-manual-book, #printable-manual-book * {
                   visibility: visible !important;
                 }
                 #printable-offline-form {

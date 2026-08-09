@@ -139,17 +139,15 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
             <span>Kembali</span>
           </button>
 
-          {/* TOMBOL ADMIN HANYA MUNCUL JIKA EMAIL ADALAH properwahyu294@gmail.com */}
-          {isAdminEmail && (
-            <button
-              onClick={onOpenLogin}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl transition-all shadow-md flex items-center space-x-1.5 cursor-pointer animate-in fade-in"
-              title="Akses Admin Terverifikasi"
-            >
-              <ShieldCheck className="h-4 w-4" />
-              <span>Masuk Dashboard Admin</span>
-            </button>
-          )}
+          {/* TOMBOL MASUK DASHBOARD UTAMA / LOGIN ADMIN */}
+          <button
+            onClick={onOpenLogin}
+            className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs rounded-xl transition-all shadow-md flex items-center space-x-1.5 cursor-pointer animate-in fade-in"
+            title={isAdminEmail ? "Akses Admin Terverifikasi" : "Login sebagai Admin / Nakes"}
+          >
+            <ShieldCheck className="h-4 w-4" />
+            <span>{isAdminEmail ? "Masuk Dashboard Utama" : "Masuk Dashboard Utama (Login)"}</span>
+          </button>
         </div>
       </header>
 

@@ -93,7 +93,9 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
               body * {
                 visibility: hidden !important;
               }
-              #printable-manual-book, #printable-manual-book * {
+              #printable-manual-book, #printable-manual-book *,
+              #printable-portfolio-report, #printable-portfolio-report *,
+              #printable-offline-form, #printable-offline-form * {
                 visibility: visible !important;
               }
               #printable-manual-book {
@@ -114,9 +116,9 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 margin: 0 !important;
                 padding: ${printOrientation === 'landscape' ? '12mm 16mm' : '14mm 16mm'} !important;
                 width: ${printOrientation === 'landscape' ? '297mm' : '210mm'} !important;
-                height: ${printOrientation === 'landscape' ? '210mm' : '297mm'} !important;
                 min-height: ${printOrientation === 'landscape' ? '210mm' : '297mm'} !important;
-                max-height: ${printOrientation === 'landscape' ? '210mm' : '297mm'} !important;
+                height: auto !important;
+                max-height: none !important;
                 page-break-after: always !important;
                 break-after: page !important;
                 page-break-inside: avoid !important;
@@ -126,7 +128,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 justify-content: space-between !important;
                 box-sizing: border-box !important;
                 position: relative !important;
-                overflow: hidden !important;
+                overflow: visible !important;
               }
             }
 

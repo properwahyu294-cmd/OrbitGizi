@@ -616,9 +616,14 @@ export default function App() {
             setShowLauncher(false);
             setShowPublicDashboard(false);
           } else if (currentUser) {
-            alert(`Email Anda (${currentUser.email}) terdaftar sebagai Pengunjung. Dialihkan ke Dashboard Publik.`);
-            setShowLauncher(false);
-            setShowPublicDashboard(true);
+            // Give option to switch to admin Google account or proceed to public dashboard
+            const wantLoginAdmin = window.confirm(`Email Anda (${currentUser.email}) terdaftar sebagai Pengunjung. Apakah Anda ingin login / ganti ke akun Google Admin (properwahyu294@gmail.com)?\n\nKlik OK untuk Ganti Akun Admin, atau Cancel untuk lanjut ke Dashboard Publik.`);
+            if (wantLoginAdmin) {
+              handleGoogleLogin();
+            } else {
+              setShowLauncher(false);
+              setShowPublicDashboard(true);
+            }
           } else {
             handleGoogleLogin();
           }

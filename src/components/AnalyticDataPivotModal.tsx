@@ -1287,7 +1287,9 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
             visibility: hidden !important;
           }
 
-          #printable-portfolio-report, #printable-portfolio-report * {
+          #printable-portfolio-report, #printable-portfolio-report *,
+          #printable-manual-book, #printable-manual-book *,
+          #printable-offline-form, #printable-offline-form * {
             visibility: visible !important;
           }
 
@@ -1550,7 +1552,7 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
         </div>
 
         {/* SECTION 3: PIVOT MATRIX TABLE */}
-        <div className="space-y-2 print-avoid-break">
+        <div className="space-y-2">
           <h3 className="font-black text-xs uppercase tracking-wider text-slate-800">
             1. REKAPITULASI MATRIKS PIVOT (PER POSYANDU)
           </h3>
@@ -1600,7 +1602,7 @@ export const AnalyticDataPivotModal: React.FC<AnalyticDataPivotModalProps> = ({
         </div>
 
         {/* SECTION 4: DAFTAR SASARAN LENGKAP */}
-        <div className="space-y-2 mt-4 print-avoid-break">
+        <div className="space-y-2 mt-4">
           <h3 className="font-black text-xs uppercase tracking-wider text-slate-800">
             2. DAFTAR INDIVIDUAL SASARAN TERDAFTAR
           </h3>
