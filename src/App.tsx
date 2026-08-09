@@ -314,8 +314,14 @@ export default function App() {
       pmtCount += menyusui.length;
     } catch {}
 
+    if (totalCount === 0 && data) {
+      totalCount = data.villages.reduce((acc, v) => acc + (v as any).pilar1_mbg_total + (v as any).pilar1_pmt_total, 0);
+      mbgCount = data.villages.reduce((acc, v) => acc + (v as any).pilar4_mbg_realized, 0);
+      pmtCount = data.villages.reduce((acc, v) => acc + (v as any).pilar4_pmt_realized, 0);
+    }
+
     return { totalCount, mbgCount, pmtCount };
-  }, [beneficiaries, activeTab]);
+  }, [beneficiaries, activeTab, data]);
 
   const requireOperatorProfileAndExecute = (
     actionType: string,
@@ -730,6 +736,7 @@ export default function App() {
       <PublicDashboardView
         currentUserEmail={currentUser?.email || null}
         isAdmin={isAdmin}
+        data={data}
         onBackToLauncher={() => {
           setShowPublicDashboard(false);
           setShowLauncher(true);
@@ -776,6 +783,7 @@ export default function App() {
       <PublicDashboardView
         currentUserEmail={currentUser?.email || null}
         isAdmin={false}
+        data={data}
         onBackToLauncher={() => {
           setShowPublicDashboard(false);
           setShowLauncher(true);

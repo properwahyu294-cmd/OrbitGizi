@@ -17,7 +17,7 @@ import {
 import { NutritionBannerGallery, BannerImage, DEFAULT_NUTRITION_IMAGES } from "./NutritionBannerGallery";
 import { BeneficiaryDetailModal } from "./BeneficiaryDetailModal";
 import { AdminNutritionCharts } from "./AdminNutritionCharts";
-import { MBGBeneficiary } from "../types";
+import { MBGBeneficiary, OrbitGiziData } from "../types";
 
 interface PublicDashboardViewProps {
   onBackToLauncher: () => void;
@@ -25,6 +25,7 @@ interface PublicDashboardViewProps {
   selectedKabupaten: string;
   currentUserEmail?: string | null;
   isAdmin?: boolean;
+  data: OrbitGiziData | null;
 }
 
 export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
@@ -32,7 +33,8 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   onOpenLogin,
   selectedKabupaten,
   currentUserEmail,
-  isAdmin = false
+  isAdmin = false,
+  data
 }) => {
   const [activeTab, setActiveTab] = useState<"SUMMARY" | "BENEFICIARIES" | "GALLERY" | "VILLAGES">("SUMMARY");
   const [searchTerm, setSearchTerm] = useState("");
@@ -147,6 +149,23 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     const matchesCategory = filterCategory === "ALL" || b.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const totalSasaran = beneficiaries.length > 0 ? beneficiaries.length : 
+    (data ? data.villages.reduce((acc, v) => acc + (v as any).pilar1_mbg_total + (v as any).pilar1_pmt_total, 0) : 0);
+
+  const mbgRealized = beneficiaries.length > 0 
+    ? beneficiaries.filter(b => b.isReceivedMBG || b.isReceivedPMT).length
+    : (data ? data.villages.reduce((acc, v) => acc + (v as any).pilar4_mbg_realized + (v as any).pilar4_pmt_realized, 0) : 0);
+
+  const mbgCoverage = totalSasaran > 0 ? Math.round((mbgRealized / totalSasaran) * 100) : 0;
+
+  const stuntingCount = beneficiaries.length > 0
+    ? beneficiaries.filter(b => b.weightRecords && b.weightRecords.length > 0 && b.weightRecords[b.weightRecords.length-1].statusGizi === "Stunting").length
+    : (data ? data.villages.reduce((acc, v) => acc + (v as any).pilar5_stunting_curr, 0) : 0);
+
+  const stuntingPrevalence = totalSasaran > 0 ? Math.round((stuntingCount / totalSasaran) * 100) : 0;
+
+  const posyanduCount = data ? data.villages.length : villages.length;
 
   return (
     <div className="min-h-screen text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden"
@@ -313,7 +332,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                     <Users className="h-5 w-5" />
                   </div>
                 </div>
-                <div className="text-3xl font-black text-slate-900">{beneficiaries.length} Jiwa</div>
+                <div className="text-3xl font-black text-slate-900">{totalSasaran} Jiwa</div>
                 <div className="text-xs text-emerald-600 font-bold">Balita, Ibu Hamil & Menyusui</div>
               </div>
 
@@ -325,9 +344,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                   </div>
                 </div>
                 <div className="text-3xl font-black text-slate-900">
-                  {beneficiaries.length > 0 
-                    ? Math.round((beneficiaries.filter(b => b.isReceivedMBG || b.isReceivedPMT).length / beneficiaries.length) * 100)
-                    : 0}%
+                  {mbgCoverage}%
                 </div>
                 <div className="text-xs text-cyan-600 font-bold">Intervensi tepat sasaran</div>
               </div>
@@ -340,9 +357,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                   </div>
                 </div>
                 <div className="text-3xl font-black text-slate-900">
-                  {beneficiaries.length > 0 
-                    ? Math.round((beneficiaries.filter(b => b.weightRecords && b.weightRecords.length > 0 && b.weightRecords[b.weightRecords.length-1].statusGizi === "Stunting").length / beneficiaries.length) * 100) 
-                    : 0}%
+                  {stuntingPrevalence}%
                 </div>
                 <div className="text-xs text-amber-600 font-bold">Terhadap seluruh sasaran</div>
               </div>
@@ -354,13 +369,13 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                     <Building2 className="h-5 w-5" />
                   </div>
                 </div>
-                <div className="text-3xl font-black text-slate-900">{villages.length} Pos</div>
+                <div className="text-3xl font-black text-slate-900">{posyanduCount} Pos</div>
                 <div className="text-xs text-teal-600 font-bold">Seluruh Kecamatan Nagekeo</div>
               </div>
             </div>
 
             {/* NUTRITION CHARTS (RECHARTS) */}
-            <AdminNutritionCharts beneficiariesCount={beneficiaries.length} />
+            <AdminNutritionCharts beneficiariesCount={totalSasaran} />
 
             {/* EMBEDDED BANNER GALLERY IN SUMMARY */}
             <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
