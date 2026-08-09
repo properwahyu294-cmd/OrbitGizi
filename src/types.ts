@@ -1,3 +1,32 @@
+export interface OperatorProfile {
+  name: string;
+  role: string;
+  instansi: string;
+  email: string;
+  phone?: string;
+}
+
+export interface VisitorLog {
+  id: string;
+  timestamp: string; // ISO string or format
+  email: string;
+  role: "ADMIN" | "PENGUNJUNG";
+  viewName: string;
+  deviceInfo?: string;
+}
+
+export interface AuditLog {
+  id: string;
+  timestamp: string;
+  operatorName: string;
+  operatorRole: string;
+  operatorInstansi: string;
+  operatorEmail: string;
+  actionType: "TAMBAH_SASARAN" | "EDIT_SASARAN" | "HAPUS_SASARAN" | "SINKRONISASI_SHEETS" | "UPDATE_WILAYAH" | "TAMBAH_BANNER" | "HAPUS_BANNER";
+  description: string;
+  targetName?: string;
+}
+
 export interface LocationHierarchy {
   propinsi: string;
   kabupaten: string;

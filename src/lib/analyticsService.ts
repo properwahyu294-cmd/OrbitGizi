@@ -1,0 +1,118 @@
+import { VisitorLog, AuditLog, OperatorProfile } from "../types";
+
+const VISITOR_LOGS_KEY = "orbit_gizi_visitor_logs";
+const AUDIT_LOGS_KEY = "orbit_gizi_audit_logs";
+const OPERATOR_PROFILE_KEY = "orbit_gizi_active_operator";
+
+const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
+
+function isWithinThreeMonths(timestampStr: string): boolean {
+  try {
+    const time = new Date(timestampStr).getTime();
+    if (isNaN(time)) return true; // keep if invalid parse
+    return Date.now() - time <= THREE_MONTHS_MS;
+  } catch {
+    return true;
+  }
+}
+
+export function getVisitorLogs(): VisitorLog[] {
+  try {
+    const stored = localStorage.getItem(VISITOR_LOGS_KEY);
+    if (!stored) return [];
+    const parsed: VisitorLog[] = JSON.parse(stored);
+    const cleaned = parsed.filter(log => isWithinThreeMonths(log.timestamp));
+    if (cleaned.length !== parsed.length) {
+      localStorage.setItem(VISITOR_LOGS_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
+  } catch {
+    return [];
+  }
+}
+
+export function recordVisitorAccess(email: string, role: "ADMIN" | "PENGUNJUNG", viewName: string): VisitorLog {
+  const currentLogs = getVisitorLogs();
+  const userAgent = typeof navigator !== "undefined" ? navigator.userAgent : "Web Browser";
+  
+  const newLog: VisitorLog = {
+    id: "v_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+    timestamp: new Date().toISOString(),
+    email: email || "pengunjung@public.go.id",
+    role,
+    viewName,
+    deviceInfo: userAgent.includes("Mobile") ? "Perangkat Seluler" : "Komputer / Desktop"
+  };
+
+  const updated = [newLog, ...currentLogs].filter(log => isWithinThreeMonths(log.timestamp));
+  localStorage.setItem(VISITOR_LOGS_KEY, JSON.stringify(updated));
+  return newLog;
+}
+
+export function getAuditLogs(): AuditLog[] {
+  try {
+    const stored = localStorage.getItem(AUDIT_LOGS_KEY);
+    if (!stored) return [];
+    const parsed: AuditLog[] = JSON.parse(stored);
+    const cleaned = parsed.filter(log => isWithinThreeMonths(log.timestamp));
+    if (cleaned.length !== parsed.length) {
+      localStorage.setItem(AUDIT_LOGS_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
+  } catch {
+    return [];
+  }
+}
+
+export function recordAuditAction(
+  operator: OperatorProfile,
+  actionType: AuditLog["actionType"],
+  description: string,
+  targetName?: string
+): AuditLog {
+  const currentLogs = getAuditLogs();
+  
+  const newLog: AuditLog = {
+    id: "a_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+    timestamp: new Date().toISOString(),
+    operatorName: operator.name || "Petugas Anonim",
+    operatorRole: operator.role || "Petugas Nakes",
+    operatorInstansi: operator.instansi || "Dinas Kesehatan / Puskesmas",
+    operatorEmail: operator.email || "admin@nagekeo.go.id",
+    actionType,
+    description,
+    targetName
+  };
+
+  const updated = [newLog, ...currentLogs].filter(log => isWithinThreeMonths(log.timestamp));
+  localStorage.setItem(AUDIT_LOGS_KEY, JSON.stringify(updated));
+  return newLog;
+}
+
+export function getOperatorProfile(): OperatorProfile | null {
+  try {
+    const stored = sessionStorage.getItem(OPERATOR_PROFILE_KEY) || localStorage.getItem(OPERATOR_PROFILE_KEY);
+    if (!stored) return null;
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+export function saveOperatorProfile(profile: OperatorProfile): void {
+  try {
+    sessionStorage.setItem(OPERATOR_PROFILE_KEY, JSON.stringify(profile));
+    localStorage.setItem(OPERATOR_PROFILE_KEY, JSON.stringify(profile));
+  } catch (e) {
+    console.error("Gagal menyimpan profil operator", e);
+  }
+}
+
+export function clearOldAnalytics(): { removedVisitors: number; removedAudits: number } {
+  const visitors = getVisitorLogs();
+  const audits = getAuditLogs();
+  return {
+    removedVisitors: visitors.length,
+    removedAudits: audits.length
+  };
+}

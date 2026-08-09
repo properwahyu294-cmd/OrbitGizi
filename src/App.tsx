@@ -73,6 +73,10 @@ import { NutritionBannerGallery, BannerImage, DEFAULT_NUTRITION_IMAGES } from ".
 import { DataManagementModal } from "./components/DataManagementModal";
 import { PublicDashboardView } from "./components/PublicDashboardView";
 import { AdminNutritionCharts } from "./components/AdminNutritionCharts";
+import { OperatorIdentityModal } from "./components/OperatorIdentityModal";
+import { VisitorAnalyticsModal } from "./components/VisitorAnalyticsModal";
+import { recordVisitorAccess, recordAuditAction, getOperatorProfile } from "./lib/analyticsService";
+import { OperatorProfile } from "./types";
 
 const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [];
 
@@ -98,6 +102,9 @@ export default function App() {
   const [showOfflineFormModal, setShowOfflineFormModal] = useState<boolean>(false);
   const [showManualModal, setShowManualModal] = useState<boolean>(false);
   const [showDataManagementModal, setShowDataManagementModal] = useState<boolean>(false);
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState<boolean>(false);
+  const [showOperatorModal, setShowOperatorModal] = useState<boolean>(false);
+  const [pendingOperatorAction, setPendingOperatorAction] = useState<((profile: OperatorProfile) => void) | null>(null);
 
   const handleResetAllData = () => {
     localStorage.removeItem("orbit_gizi_local_beneficiaries");
@@ -220,28 +227,58 @@ export default function App() {
     };
   }, [beneficiaries]);
 
+  const requireOperatorProfileAndExecute = (
+    actionType: "TAMBAH_SASARAN" | "EDIT_SASARAN" | "HAPUS_SASARAN" | "SINKRONISASI_SHEETS" | "UPDATE_WILAYAH" | "TAMBAH_BANNER" | "HAPUS_BANNER",
+    description: string,
+    targetName: string | undefined,
+    callback: () => void
+  ) => {
+    const existing = getOperatorProfile();
+    if (existing) {
+      callback();
+      recordAuditAction(existing, actionType, description, targetName);
+    } else {
+      setPendingOperatorAction(() => (profile: OperatorProfile) => {
+        callback();
+        recordAuditAction(profile, actionType, description, targetName);
+      });
+      setShowOperatorModal(true);
+    }
+  };
+
   const handleSaveBeneficiary = (ben: MBGBeneficiary) => {
-    setBeneficiaries(prev => {
-      const exists = prev.some(b => b.id === ben.id);
-      let updated: MBGBeneficiary[];
-      if (exists) {
-        updated = prev.map(b => (b.id === ben.id ? ben : b));
-      } else {
-        updated = [ben, ...prev];
-      }
-      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-      return updated;
+    const isEdit = beneficiaries.some(b => b.id === ben.id);
+    const actionType = isEdit ? "EDIT_SASARAN" : "TAMBAH_SASARAN";
+    const desc = isEdit ? `Mengubah data sasaran MBG/PMT` : `Menambah data sasaran baru MBG/PMT (${ben.category})`;
+
+    requireOperatorProfileAndExecute(actionType, desc, ben.name, () => {
+      setBeneficiaries(prev => {
+        const exists = prev.some(b => b.id === ben.id);
+        let updated: MBGBeneficiary[];
+        if (exists) {
+          updated = prev.map(b => (b.id === ben.id ? ben : b));
+        } else {
+          updated = [ben, ...prev];
+        }
+        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+        return updated;
+      });
+      setRefreshTrigger(prev => prev + 1);
     });
-    setRefreshTrigger(prev => prev + 1);
   };
 
   const handleDeleteBeneficiary = (id: string) => {
-    setBeneficiaries(prev => {
-      const updated = prev.filter(b => b.id !== id);
-      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-      return updated;
+    const target = beneficiaries.find(b => b.id === id);
+    const targetName = target ? target.name : id;
+
+    requireOperatorProfileAndExecute("HAPUS_SASARAN", "Menghapus data sasaran", targetName, () => {
+      setBeneficiaries(prev => {
+        const updated = prev.filter(b => b.id !== id);
+        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+        return updated;
+      });
+      setRefreshTrigger(prev => prev + 1);
     });
-    setRefreshTrigger(prev => prev + 1);
   };
 
   const handleAddWeightRecord = (beneficiaryId: string, record: WeightRecord) => {
@@ -521,28 +558,24 @@ export default function App() {
 
   const isAdmin = currentUser?.email?.toLowerCase().trim() === "properwahyu294@gmail.com";
 
-  // SAAT LINK DIBUKA DENGAN EMAIL BUKAN ADMIN, HANYA MUNCUL DASHBOARD PUBLIK
-  if (!isAdmin) {
-    return (
-      <PublicDashboardView
-        currentUserEmail={currentUser?.email || null}
-        isAdmin={false}
-        onBackToLauncher={() => {}}
-        onOpenLogin={() => {}}
-        selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
-      />
-    );
-  }
-
   if (showPublicDashboard) {
     return (
       <PublicDashboardView
         currentUserEmail={currentUser?.email || null}
         isAdmin={isAdmin}
-        onBackToLauncher={() => setShowPublicDashboard(false)}
-        onOpenLogin={() => {
+        onBackToLauncher={() => {
           setShowPublicDashboard(false);
           setShowLauncher(true);
+        }}
+        onOpenLogin={() => {
+          if (!currentUser) {
+            handleGoogleLogin();
+          } else if (isAdmin) {
+            setShowPublicDashboard(false);
+            setShowLauncher(false);
+          } else {
+            alert(`Email Anda (${currentUser.email}) masuk sebagai Pengunjung. Akses Admin khusus untuk properwahyu294@gmail.com.`);
+          }
         }}
         selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
       />
@@ -552,12 +585,42 @@ export default function App() {
   if (showLauncher) {
     return (
       <LauncherLanding
-        onLaunchDashboard={() => setShowLauncher(false)}
-        onOpenPublicDashboard={() => setShowPublicDashboard(true)}
+        onLaunchDashboard={() => {
+          if (isAdmin) {
+            setShowLauncher(false);
+            setShowPublicDashboard(false);
+          } else if (currentUser) {
+            alert(`Email Anda (${currentUser.email}) terdaftar sebagai Pengunjung. Dialihkan ke Dashboard Publik.`);
+            setShowLauncher(false);
+            setShowPublicDashboard(true);
+          } else {
+            handleGoogleLogin();
+          }
+        }}
+        onOpenPublicDashboard={() => {
+          setShowLauncher(false);
+          setShowPublicDashboard(true);
+        }}
         totalBeneficiariesCount={beneficiaries.length}
         totalMbgCount={beneficiaries.filter(b => b.isReceivedMBG !== false).length}
         totalPmtCount={beneficiaries.filter(b => b.isReceivedPMT !== false).length}
-        selectedKabupaten={data.kabupatenName || "Kabupaten Nagekeo"}
+        selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
+      />
+    );
+  }
+
+  // Fallback for non-admin users attempting direct access to admin view
+  if (!isAdmin) {
+    return (
+      <PublicDashboardView
+        currentUserEmail={currentUser?.email || null}
+        isAdmin={false}
+        onBackToLauncher={() => {
+          setShowPublicDashboard(false);
+          setShowLauncher(true);
+        }}
+        onOpenLogin={handleGoogleLogin}
+        selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
       />
     );
   }
@@ -573,6 +636,7 @@ export default function App() {
         syncingSheets={syncingSheets}
         sheetsSyncUrl={sheetsSyncUrl}
         onOpenLauncher={() => setShowLauncher(true)}
+        onOpenAnalytics={() => setShowAnalyticsModal(true)}
       />
 
       <main className="flex-1 max-w-[1400px] w-full mx-auto p-4 sm:p-6 space-y-6">
@@ -603,6 +667,14 @@ export default function App() {
           </div>
           
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            <button
+              onClick={() => setShowAnalyticsModal(true)}
+              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-3.5 py-2 rounded-xl hover:bg-emerald-100 transition-colors shadow-2xs cursor-pointer"
+            >
+              <Activity className="h-4 w-4 text-emerald-600" />
+              <span>Analitik & Audit Pengunjung</span>
+            </button>
+
             <button
               onClick={() => setShowOfflineFormModal(true)}
               className="flex items-center justify-center space-x-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-xl hover:bg-indigo-100 transition-colors shadow-2xs cursor-pointer"
@@ -1313,6 +1385,31 @@ export default function App() {
         beneficiariesCount={beneficiaries.length}
         villagesCount={data?.villages?.length || 0}
         bannerCount={dashboardBannerImages.length}
+      />
+
+      {/* Operator Identity Verification Modal */}
+      <OperatorIdentityModal
+        isOpen={showOperatorModal}
+        onClose={() => {
+          setShowOperatorModal(false);
+          setPendingOperatorAction(null);
+        }}
+        onConfirm={(profile) => {
+          setShowOperatorModal(false);
+          if (pendingOperatorAction) {
+            pendingOperatorAction(profile);
+            setPendingOperatorAction(null);
+          }
+        }}
+        currentUserEmail={currentUser?.email || null}
+      />
+
+      {/* Visitor Analytics & Audit Log Modal */}
+      <VisitorAnalyticsModal
+        isOpen={showAnalyticsModal}
+        onClose={() => setShowAnalyticsModal(false)}
+        currentUserEmail={currentUser?.email || null}
+        isAdmin={isAdmin}
       />
 
     </div>

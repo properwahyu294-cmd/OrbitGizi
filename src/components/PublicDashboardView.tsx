@@ -38,8 +38,8 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("ALL");
 
-  const currentEmail = currentUserEmail || "tamu@publik.go.id";
-  const isAdminEmail = isAdmin;
+  const currentEmail = currentUserEmail || "pengunjung@public.go.id";
+  const isAdminEmail = currentUserEmail?.toLowerCase().trim() === "properwahyu294@gmail.com";
 
   // Beneficiary detail modal state
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<MBGBeneficiary | null>(null);
@@ -114,8 +114,8 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
           <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl border border-slate-300 text-xs font-mono">
             <Mail className="h-3.5 w-3.5 text-emerald-600" />
             <span className="max-w-[180px] truncate">{currentEmail}</span>
-            <span className={`px-1.5 py-0.5 rounded text-[9px] font-black ${isAdminEmail ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
-              {isAdminEmail ? "ADMIN" : "PUBLIK"}
+            <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${isAdminEmail ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-amber-100 text-amber-800 border border-amber-300"}`}>
+              {isAdminEmail ? "ADMIN" : "PENGUNJUNG"}
             </span>
           </div>
 
