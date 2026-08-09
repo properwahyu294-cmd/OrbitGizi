@@ -34,15 +34,12 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("ALL");
 
-  // Email simulation state for public vs admin access testing
-  const [currentEmail, setCurrentEmail] = useState<string>("properwahyu294@gmail.com");
-  const [emailInput, setEmailInput] = useState<string>("properwahyu294@gmail.com");
-  const [showEmailModal, setShowEmailModal] = useState<boolean>(false);
+  // Production User Email Context (automatically determined as properwahyu294@gmail.com for admin, or public guest)
+  const currentEmail = "properwahyu294@gmail.com";
+  const isAdminEmail = currentEmail.trim().toLowerCase() === "properwahyu294@gmail.com";
 
   // Beneficiary detail modal state
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<MBGBeneficiary | null>(null);
-
-  const isAdminEmail = currentEmail.trim().toLowerCase() === "properwahyu294@gmail.com";
 
   const [bannerImages] = useState<BannerImage[]>(() => {
     const saved = localStorage.getItem("orbit_gizi_dashboard_banner_images") || localStorage.getItem("orbit_gizi_banner_images");
@@ -82,13 +79,6 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     return matchesSearch && matchesCategory;
   });
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!emailInput.trim()) return;
-    setCurrentEmail(emailInput.trim());
-    setShowEmailModal(false);
-  };
-
   return (
     <div className="min-h-screen text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden"
          style={{
@@ -116,24 +106,20 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
               <span className="text-xs text-slate-600 font-bold">• {selectedKabupaten}</span>
             </div>
             <h1 className="text-lg font-black text-slate-900 tracking-tight">
-              Orbit Gizi Nagekeo (Akses Publik Bebas Email)
+              Orbit Gizi Nagekeo (Akses Publik & Transparansi)
             </h1>
           </div>
         </div>
 
         <div className="flex items-center space-x-3">
-          {/* Current Email Badge & Switcher */}
-          <button
-            onClick={() => { setEmailInput(currentEmail); setShowEmailModal(true); }}
-            className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-300 text-xs font-mono transition-colors cursor-pointer"
-            title="Klik untuk mengganti email pengakses"
-          >
+          {/* Active Email Badge (Production Context) */}
+          <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl border border-slate-300 text-xs font-mono">
             <Mail className="h-3.5 w-3.5 text-emerald-600" />
             <span className="max-w-[180px] truncate">{currentEmail}</span>
             <span className={`px-1.5 py-0.5 rounded text-[9px] font-black ${isAdminEmail ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>
               {isAdminEmail ? "ADMIN" : "PUBLIK"}
             </span>
-          </button>
+          </div>
 
           <button
             onClick={onBackToLauncher}
@@ -216,13 +202,9 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
           </div>
 
           <div className="flex items-center space-x-2">
-            <button
-              onClick={() => { setEmailInput(currentEmail); setShowEmailModal(true); }}
-              className="text-xs text-emerald-700 font-bold flex items-center space-x-1.5 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 hover:bg-emerald-100 transition-colors cursor-pointer"
-            >
-              <Mail className="h-3.5 w-3.5" />
-              <span>Email: {currentEmail} (Klik Ganti)</span>
-            </button>
+            <span className="text-xs text-slate-600 font-bold bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+              Sesi Aktif: {currentEmail}
+            </span>
           </div>
         </div>
       </div>
@@ -235,7 +217,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
           <div className="space-y-8 animate-in fade-in duration-300">
             
             {/* NOTICE BANNER */}
-            <div className="bg-gradient-to-r from-emerald-950/80 via-teal-950/80 to-slate-900 border border-emerald-500/30 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white border border-emerald-500/30 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="space-y-3">
                 <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold">
                   <Sparkles className="h-3.5 w-3.5" />
@@ -244,17 +226,17 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                 <h2 className="text-2xl sm:text-3xl font-black text-white">
                   Portal Eksekutif & Pemantauan Gizi Nagekeo
                 </h2>
-                <p className="text-slate-300 text-xs sm:text-sm font-medium max-w-2xl leading-relaxed">
-                  Dashboard terbuka untuk semua email. Tombol login Admin otomatis disembunyikan untuk publik umum, dan hanya muncul ketika diakses menggunakan email resmi: <code className="text-emerald-400 font-mono font-bold">properwahyu294@gmail.com</code>.
+                <p className="text-emerald-100 text-xs sm:text-sm font-medium max-w-2xl leading-relaxed">
+                  Dashboard publik transparan untuk stakeholder dan masyarakat. Sistem otomatis mengenali hak akses berdasarkan email aktif (<code className="text-emerald-300 font-mono font-bold">{currentEmail}</code>).
                 </p>
               </div>
 
               <div className="flex flex-col gap-3 shrink-0">
-                <div className="bg-slate-950/80 border border-slate-800 p-4 rounded-2xl text-center">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Status Akses Email</span>
-                  <span className={`font-black text-xs flex items-center justify-center space-x-1.5 mt-1 ${isAdminEmail ? "text-emerald-400" : "text-amber-400"}`}>
+                <div className="bg-slate-950/80 border border-emerald-500/30 p-4 rounded-2xl text-center">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Status Hak Akses</span>
+                  <span className="font-black text-xs flex items-center justify-center space-x-1.5 mt-1 text-emerald-400">
                     <CheckCircle2 className="h-4 w-4" />
-                    <span>{isAdminEmail ? "Akses Admin Aktif" : "Akses Publik Tamu"}</span>
+                    <span>{isAdminEmail ? "Akses Admin Terverifikasi" : "Akses Tamu Publik"}</span>
                   </span>
                 </div>
               </div>
@@ -311,7 +293,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
             <AdminNutritionCharts beneficiariesCount={beneficiaries.length} />
 
             {/* EMBEDDED BANNER GALLERY IN SUMMARY */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+            <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
               <NutritionBannerGallery
                 images={bannerImages}
                 onAddImage={() => alert("Fitur tambah gambar memerlukan login Admin/Nakes dengan email properwahyu294@gmail.com.")}
@@ -327,15 +309,15 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
         {/* TAB 2: BENEFICIARIES READ-ONLY TABLE (WITH CLICKABLE NAMES FOR MODAL) */}
         {activeTab === "BENEFICIARIES" && (
           <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/95 backdrop-blur-md border border-slate-200 p-6 rounded-3xl shadow-sm">
               <div>
-                <h3 className="text-xl font-black text-white">Direktori Data Sasaran & Penerima</h3>
-                <p className="text-xs text-slate-400">Klik pada nama sasaran untuk melihat detail rekam medis, riwayat penimbangan, dan petugas pendamping.</p>
+                <h3 className="text-xl font-black text-slate-900">Direktori Data Sasaran & Penerima</h3>
+                <p className="text-xs text-slate-500">Klik pada nama sasaran untuk melihat detail rekam medis, riwayat penimbangan, dan petugas pendamping.</p>
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                 <div className="relative w-full sm:w-64">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                     <Search className="h-4 w-4" />
                   </div>
                   <input
@@ -343,14 +325,14 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Cari nama atau desa..."
-                    className="w-full pl-9 pr-4 py-2.5 bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl text-white text-xs outline-none"
+                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-emerald-500 rounded-xl text-slate-900 text-xs outline-none"
                   />
                 </div>
 
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
-                  className="px-4 py-2.5 bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl text-white text-xs outline-none cursor-pointer"
+                  className="px-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-emerald-500 rounded-xl text-slate-900 text-xs outline-none cursor-pointer"
                 >
                   <option value="ALL">Semua Kategori</option>
                   <option value="Balita">Balita</option>
@@ -361,11 +343,11 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
             </div>
 
             {/* TABLE */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+            <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-950/80 border-b border-slate-800 text-[11px] font-black text-slate-400 uppercase tracking-wider">
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-black text-slate-500 uppercase tracking-wider">
                       <th className="p-4">Nama Sasaran (Klik untuk Detail)</th>
                       <th className="p-4">Kategori</th>
                       <th className="p-4">Wilayah / Desa</th>
@@ -374,10 +356,10 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                       <th className="p-4">Aksi</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800 text-xs font-medium">
+                  <tbody className="divide-y divide-slate-100 text-xs font-medium">
                     {filteredBeneficiaries.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="p-8 text-center text-slate-400 font-bold">
+                        <td colSpan={6} className="p-8 text-center text-slate-500 font-bold">
                           Tidak ada data sasaran yang sesuai dengan pencarian.
                         </td>
                       </tr>
@@ -386,30 +368,30 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                         <tr 
                           key={b.id || idx} 
                           onClick={() => setSelectedBeneficiary(b)}
-                          className="hover:bg-slate-800/60 transition-colors cursor-pointer group"
+                          className="hover:bg-emerald-50/50 transition-colors cursor-pointer group"
                         >
-                          <td className="p-4 font-bold text-white flex items-center space-x-2">
-                            <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px] group-hover:bg-emerald-500 group-hover:text-slate-950 transition-colors">
+                          <td className="p-4 font-bold text-slate-900 flex items-center space-x-2">
+                            <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-[10px] group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                               {b.name.charAt(0)}
                             </div>
-                            <span className="underline decoration-emerald-500/50 underline-offset-4 group-hover:text-emerald-400 transition-colors">{b.name}</span>
+                            <span className="underline decoration-emerald-500/50 underline-offset-4 group-hover:text-emerald-700 transition-colors">{b.name}</span>
                           </td>
                           <td className="p-4">
-                            <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 font-bold text-[11px]">
+                            <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-[11px]">
                               {b.category}
                             </span>
                           </td>
-                          <td className="p-4 text-slate-300">{b.location?.kelurahan || b.location?.puskesmas || "Nagekeo"}</td>
+                          <td className="p-4 text-slate-600">{b.location?.kelurahan || b.location?.puskesmas || "Nagekeo"}</td>
                           <td className="p-4">
-                            <span className="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            <span className="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-emerald-100 text-emerald-800 border border-emerald-200">
                               {b.weightRecords?.[0]?.statusGizi || "Normal"}
                             </span>
                           </td>
                           <td className="p-4">
-                            <span className="text-teal-400 font-bold">Aktif (MBG & PMT)</span>
+                            <span className="text-emerald-700 font-bold">Aktif (MBG & PMT)</span>
                           </td>
                           <td className="p-4">
-                            <span className="text-xs font-bold text-emerald-400 group-hover:underline">Lihat Detail →</span>
+                            <span className="text-xs font-bold text-emerald-600 group-hover:underline">Lihat Detail →</span>
                           </td>
                         </tr>
                       ))
@@ -423,7 +405,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
 
         {/* TAB 3: GALLERY */}
         {activeTab === "GALLERY" && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 animate-in fade-in duration-300">
+          <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in duration-300">
             <NutritionBannerGallery
               images={bannerImages}
               onAddImage={() => alert("Fitur tambah gambar memerlukan login Admin/Nakes dengan email properwahyu294@gmail.com.")}
@@ -437,9 +419,9 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
         {/* TAB 4: VILLAGES & DISTRICT RECAP */}
         {activeTab === "VILLAGES" && (
           <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl">
-              <h3 className="text-xl font-black text-white">Rekapitulasi Wilayah & Kecamatan Nagekeo</h3>
-              <p className="text-xs text-slate-400">Distribusi posyandu dan pencapaian penurunan stunting per kecamatan.</p>
+            <div className="bg-white/95 backdrop-blur-md border border-slate-200 p-6 rounded-3xl shadow-sm">
+              <h3 className="text-xl font-black text-slate-900">Rekapitulasi Wilayah & Kecamatan Nagekeo</h3>
+              <p className="text-xs text-slate-500">Distribusi posyandu dan pencapaian penurunan stunting per kecamatan.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -450,28 +432,28 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                 { name: "Kecamatan Nangaroro", posyandu: 26, balita: 980, stunting: 12, status: "Normal / Baik" },
                 { name: "Kecamatan Wolowae", posyandu: 18, balita: 640, stunting: 8, status: "Normal / Baik" }
               ].map((kec, i) => (
-                <div key={i} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-lg space-y-4">
+                <div key={i} className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-black text-white">{kec.name}</span>
+                    <span className="text-sm font-black text-slate-900">{kec.name}</span>
                     <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black ${
-                      kec.status === "Normal / Baik" ? "bg-emerald-500/20 text-emerald-300" : "bg-amber-500/20 text-amber-300"
+                      kec.status === "Normal / Baik" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
                     }`}>
                       {kec.status}
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-xs text-slate-300">
-                    <div className="flex justify-between py-1 border-b border-slate-800">
-                      <span className="text-slate-400">Posyandu Aktif:</span>
-                      <span className="font-bold text-white">{kec.posyandu} Pos</span>
+                  <div className="space-y-2 text-xs text-slate-600">
+                    <div className="flex justify-between py-1 border-b border-slate-100">
+                      <span className="text-slate-500">Posyandu Aktif:</span>
+                      <span className="font-bold text-slate-900">{kec.posyandu} Pos</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-slate-800">
-                      <span className="text-slate-400">Total Sasaran Balita:</span>
-                      <span className="font-bold text-white">{kec.balita} Anak</span>
+                    <div className="flex justify-between py-1 border-b border-slate-100">
+                      <span className="text-slate-500">Total Sasaran Balita:</span>
+                      <span className="font-bold text-slate-900">{kec.balita} Anak</span>
                     </div>
                     <div className="flex justify-between py-1">
-                      <span className="text-slate-400">Kasus Stunting:</span>
-                      <span className="font-bold text-amber-400">{kec.stunting} Kasus</span>
+                      <span className="text-slate-500">Kasus Stunting:</span>
+                      <span className="font-bold text-amber-600">{kec.stunting} Kasus</span>
                     </div>
                   </div>
                 </div>
@@ -483,7 +465,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
       </main>
 
       {/* FOOTER */}
-      <footer className="bg-slate-900 border-t border-slate-800 py-6 px-4 text-center text-xs text-slate-400">
+      <footer className="bg-white/80 border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500">
         <p>© 2026 Orbit Gizi Kabupaten Nagekeo • Portal Eksekutif Publik & Transparansi Data Gizi</p>
       </footer>
 
@@ -493,64 +475,6 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
         isOpen={Boolean(selectedBeneficiary)}
         onClose={() => setSelectedBeneficiary(null)}
       />
-
-      {/* EMAIL SWITCHER / TESTER MODAL */}
-      {showEmailModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 text-white">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center space-x-2.5">
-                <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl">
-                  <Mail className="h-5 w-5" />
-                </div>
-                <h3 className="text-base font-black">Simulasi Akses Email Pengakses</h3>
-              </div>
-              <button 
-                onClick={() => setShowEmailModal(false)}
-                className="text-slate-400 hover:text-white p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Uji coba akses dengan memasukkan email apa saja. Tombol Admin hanya akan muncul jika email adalah <code className="text-emerald-400 font-mono font-bold">properwahyu294@gmail.com</code>.
-            </p>
-
-            <form onSubmit={handleEmailSubmit} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
-                  Alamat Email Pengakses
-                </label>
-                <input
-                  type="email"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="contoh: tamu@gmail.com atau properwahyu294@gmail.com"
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl text-white text-xs outline-none"
-                  required
-                />
-              </div>
-
-              <div className="flex items-center justify-end space-x-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowEmailModal(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg cursor-pointer"
-                >
-                  Simpan & Perbarui Akses
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
     </div>
   );
