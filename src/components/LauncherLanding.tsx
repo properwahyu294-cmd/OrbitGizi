@@ -31,6 +31,7 @@ import { NutritionBannerGallery, BannerImage, DEFAULT_NUTRITION_IMAGES } from ".
 
 interface LauncherLandingProps {
   onLaunchDashboard: () => void;
+  onOpenPublicDashboard?: () => void;
   totalBeneficiariesCount: number;
   totalMbgCount: number;
   totalPmtCount: number;
@@ -39,6 +40,7 @@ interface LauncherLandingProps {
 
 export const LauncherLanding: React.FC<LauncherLandingProps> = ({
   onLaunchDashboard,
+  onOpenPublicDashboard,
   totalBeneficiariesCount,
   totalMbgCount,
   totalPmtCount,
@@ -218,6 +220,17 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
               <span>MASUK KE DASHBOARD UTAMA</span>
               <ArrowRight className="h-5 w-5 text-slate-950 group-hover:translate-x-1 transition-transform" />
             </button>
+
+            {onOpenPublicDashboard && (
+              <button
+                onClick={onOpenPublicDashboard}
+                className="w-full sm:w-auto px-8 py-4 bg-slate-900 border-2 border-emerald-500/50 hover:border-emerald-400 text-emerald-300 font-black text-sm rounded-2xl flex items-center justify-center space-x-3 transition-all shadow-xl hover:scale-105 cursor-pointer active:scale-95 group"
+              >
+                <Users className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span>DASHBOARD PUBLIK (BUPATI & STAKEHOLDER)</span>
+                <ArrowRight className="h-5 w-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+              </button>
+            )}
           </div>
         </div>
 

@@ -71,6 +71,8 @@ import { PosyanduOfflineFormTemplateModal } from "./components/PosyanduOfflineFo
 import { UserManualModal } from "./components/UserManualModal";
 import { NutritionBannerGallery, BannerImage, DEFAULT_NUTRITION_IMAGES } from "./components/NutritionBannerGallery";
 import { DataManagementModal } from "./components/DataManagementModal";
+import { PublicDashboardView } from "./components/PublicDashboardView";
+import { AdminNutritionCharts } from "./components/AdminNutritionCharts";
 
 const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [
   {
@@ -596,6 +598,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [showLauncher, setShowLauncher] = useState<boolean>(true);
+  const [showPublicDashboard, setShowPublicDashboard] = useState<boolean>(false);
   const [showPivotModal, setShowPivotModal] = useState<boolean>(false);
   const [showOfflineFormModal, setShowOfflineFormModal] = useState<boolean>(false);
   const [showManualModal, setShowManualModal] = useState<boolean>(false);
@@ -1018,10 +1021,24 @@ export default function App() {
   // Extract Pilar 1 (Sinkronisasi Data)
   const pillar1 = data.pillars.find(p => p.id === "pilar1")!;
 
+  if (showPublicDashboard) {
+    return (
+      <PublicDashboardView
+        onBackToLauncher={() => setShowPublicDashboard(false)}
+        onOpenLogin={() => {
+          setShowPublicDashboard(false);
+          setShowLauncher(true);
+        }}
+        selectedKabupaten={data.kabupatenName || "Kabupaten Nagekeo"}
+      />
+    );
+  }
+
   if (showLauncher) {
     return (
       <LauncherLanding
         onLaunchDashboard={() => setShowLauncher(false)}
+        onOpenPublicDashboard={() => setShowPublicDashboard(true)}
         totalBeneficiariesCount={beneficiaries.length}
         totalMbgCount={beneficiaries.filter(b => b.isReceivedMBG !== false).length}
         totalPmtCount={beneficiaries.filter(b => b.isReceivedPMT !== false).length}
@@ -1386,6 +1403,9 @@ export default function App() {
                   onOpenAnalyticPivot={() => setShowPivotModal(true)}
                   onOpenInputWizard={() => setShowInputWizard(true)}
                 />
+
+                {/* Admin Nutrition Analytics & State Charts */}
+                <AdminNutritionCharts beneficiariesCount={beneficiaries.length} />
                 
                 {/* Zona Sebaran Unit & Wilayah Cards */}
                 <div className="space-y-3">
