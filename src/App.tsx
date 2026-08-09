@@ -1021,15 +1021,32 @@ export default function App() {
   // Extract Pilar 1 (Sinkronisasi Data)
   const pillar1 = data.pillars.find(p => p.id === "pilar1")!;
 
+  const isAdmin = currentUser?.email?.toLowerCase().trim() === "properwahyu294@gmail.com";
+
+  // SAAT LINK DIBUKA DENGAN EMAIL BUKAN ADMIN, HANYA MUNCUL DASHBOARD PUBLIK
+  if (!isAdmin) {
+    return (
+      <PublicDashboardView
+        currentUserEmail={currentUser?.email || null}
+        isAdmin={false}
+        onBackToLauncher={() => {}}
+        onOpenLogin={() => {}}
+        selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
+      />
+    );
+  }
+
   if (showPublicDashboard) {
     return (
       <PublicDashboardView
+        currentUserEmail={currentUser?.email || null}
+        isAdmin={isAdmin}
         onBackToLauncher={() => setShowPublicDashboard(false)}
         onOpenLogin={() => {
           setShowPublicDashboard(false);
           setShowLauncher(true);
         }}
-        selectedKabupaten={data.kabupatenName || "Kabupaten Nagekeo"}
+        selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
       />
     );
   }

@@ -23,20 +23,23 @@ interface PublicDashboardViewProps {
   onBackToLauncher: () => void;
   onOpenLogin: () => void;
   selectedKabupaten: string;
+  currentUserEmail?: string | null;
+  isAdmin?: boolean;
 }
 
 export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   onBackToLauncher,
   onOpenLogin,
-  selectedKabupaten
+  selectedKabupaten,
+  currentUserEmail,
+  isAdmin = false
 }) => {
   const [activeTab, setActiveTab] = useState<"SUMMARY" | "BENEFICIARIES" | "GALLERY" | "VILLAGES">("SUMMARY");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("ALL");
 
-  // Production User Email Context (automatically determined as properwahyu294@gmail.com for admin, or public guest)
-  const currentEmail = "properwahyu294@gmail.com";
-  const isAdminEmail = currentEmail.trim().toLowerCase() === "properwahyu294@gmail.com";
+  const currentEmail = currentUserEmail || "tamu@publik.go.id";
+  const isAdminEmail = isAdmin;
 
   // Beneficiary detail modal state
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<MBGBeneficiary | null>(null);
@@ -130,7 +133,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
           </button>
 
           {/* TOMBOL ADMIN HANYA MUNCUL JIKA EMAIL ADALAH properwahyu294@gmail.com */}
-          {isAdminEmail ? (
+          {isAdminEmail && (
             <button
               onClick={onOpenLogin}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl transition-all shadow-md flex items-center space-x-1.5 cursor-pointer animate-in fade-in"
@@ -139,11 +142,6 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
               <ShieldCheck className="h-4 w-4" />
               <span>Masuk Dashboard Admin</span>
             </button>
-          ) : (
-            <div className="hidden md:flex items-center space-x-1.5 px-3 py-2 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-[11px] font-bold">
-              <Lock className="h-3.5 w-3.5" />
-              <span>Tombol Admin Sembunyi (Bukan Email Admin)</span>
-            </div>
           )}
         </div>
       </header>
