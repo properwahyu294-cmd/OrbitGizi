@@ -108,29 +108,49 @@ export default function App() {
   const [pendingOperatorAction, setPendingOperatorAction] = useState<((profile: OperatorProfile) => void) | null>(null);
 
   const handleResetAllData = () => {
-    localStorage.removeItem("orbit_gizi_local_beneficiaries");
-    localStorage.removeItem("orbit_gizi_local_villages");
-    localStorage.removeItem("orbit_gizi_banner_images");
-    localStorage.removeItem("orbit_gizi_dashboard_banner_images");
-    setBeneficiaries(DEFAULT_BENEFICIARIES);
-    setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
-    setRefreshTrigger(prev => prev + 1);
+    requireOperatorProfileAndExecute(
+      "MANAGEMENT_DATA",
+      "Melakukan reset total seluruh basis data sistem",
+      "DATABASE_UTAMA",
+      () => {
+        localStorage.removeItem("orbit_gizi_local_beneficiaries");
+        localStorage.removeItem("orbit_gizi_local_villages");
+        localStorage.removeItem("orbit_gizi_banner_images");
+        localStorage.removeItem("orbit_gizi_dashboard_banner_images");
+        setBeneficiaries(DEFAULT_BENEFICIARIES);
+        setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
+        setRefreshTrigger(prev => prev + 1);
+      }
+    );
   };
 
   const handleDeleteSelectedData = (options: { beneficiaries: boolean; villages: boolean; banners: boolean }) => {
-    if (options.beneficiaries) {
-      localStorage.removeItem("orbit_gizi_local_beneficiaries");
-      setBeneficiaries([]);
-    }
-    if (options.villages) {
-      localStorage.removeItem("orbit_gizi_local_villages");
-    }
-    if (options.banners) {
-      localStorage.removeItem("orbit_gizi_dashboard_banner_images");
-      localStorage.removeItem("orbit_gizi_banner_images");
-      setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
-    }
-    setRefreshTrigger(prev => prev + 1);
+    const selectedText = [
+      options.beneficiaries ? "Sasaran MBG/PMT" : null,
+      options.villages ? "Wilayah & Posyandu" : null,
+      options.banners ? "Banner Gallery" : null
+    ].filter(Boolean).join(", ");
+
+    requireOperatorProfileAndExecute(
+      "MANAGEMENT_DATA",
+      `Menghapus data terpilih: ${selectedText || "Sebagian Data"}`,
+      "DATA_PILIHAN",
+      () => {
+        if (options.beneficiaries) {
+          localStorage.removeItem("orbit_gizi_local_beneficiaries");
+          setBeneficiaries([]);
+        }
+        if (options.villages) {
+          localStorage.removeItem("orbit_gizi_local_villages");
+        }
+        if (options.banners) {
+          localStorage.removeItem("orbit_gizi_dashboard_banner_images");
+          localStorage.removeItem("orbit_gizi_banner_images");
+          setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
+        }
+        setRefreshTrigger(prev => prev + 1);
+      }
+    );
   };
 
   // Firebase & Google Sheets integration state
@@ -167,18 +187,34 @@ export default function App() {
       alert("Maksimal 10 gambar tersimpan.");
       return;
     }
-    const updated = [
-      ...dashboardBannerImages,
-      { id: "dash_img_" + Date.now(), ...img }
-    ];
-    setDashboardBannerImages(updated);
-    localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
+    requireOperatorProfileAndExecute(
+      "TAMBAH_BANNER",
+      `Menambah gambar galeri/banner edukasi gizi: ${img.title}`,
+      img.title,
+      () => {
+        const updated = [
+          ...dashboardBannerImages,
+          { id: "dash_img_" + Date.now(), ...img }
+        ];
+        setDashboardBannerImages(updated);
+        localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
+      }
+    );
   };
 
   const handleDeleteDashboardBannerImage = (id: string) => {
-    const updated = dashboardBannerImages.filter(img => img.id !== id);
-    setDashboardBannerImages(updated);
-    localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
+    const target = dashboardBannerImages.find(img => img.id === id);
+    const targetTitle = target ? target.title : id;
+    requireOperatorProfileAndExecute(
+      "HAPUS_BANNER",
+      `Menghapus gambar galeri/banner edukasi gizi: ${targetTitle}`,
+      targetTitle,
+      () => {
+        const updated = dashboardBannerImages.filter(img => img.id !== id);
+        setDashboardBannerImages(updated);
+        localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
+      }
+    );
   };
 
   // Automatic visitor analytics tracking on mount and view changes
@@ -256,7 +292,7 @@ export default function App() {
   }, [beneficiaries]);
 
   const requireOperatorProfileAndExecute = (
-    actionType: "TAMBAH_SASARAN" | "EDIT_SASARAN" | "HAPUS_SASARAN" | "SINKRONISASI_SHEETS" | "UPDATE_WILAYAH" | "TAMBAH_BANNER" | "HAPUS_BANNER",
+    actionType: string,
     description: string,
     targetName: string | undefined,
     callback: () => void
@@ -310,39 +346,59 @@ export default function App() {
   };
 
   const handleAddWeightRecord = (beneficiaryId: string, record: WeightRecord) => {
-    setBeneficiaries(prev => {
-      const updated = prev.map(b => {
-        if (b.id === beneficiaryId) {
-          const filtered = b.weightRecords.filter(r => r.period !== record.period);
-          return {
-            ...b,
-            weightRecords: [...filtered, record]
-          };
-        }
-        return b;
-      });
-      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-      return updated;
-    });
-    setRefreshTrigger(prev => prev + 1);
+    const target = beneficiaries.find(b => b.id === beneficiaryId);
+    const targetName = target ? target.name : beneficiaryId;
+
+    requireOperatorProfileAndExecute(
+      "CATAT_PENIMBANGAN",
+      `Mencatat/memperbarui pengukuran BB/TB (${record.weightKg}kg, ${record.heightCm}cm, Periode: ${record.period})`,
+      targetName,
+      () => {
+        setBeneficiaries(prev => {
+          const updated = prev.map(b => {
+            if (b.id === beneficiaryId) {
+              const filtered = b.weightRecords.filter(r => r.period !== record.period);
+              return {
+                ...b,
+                weightRecords: [...filtered, record]
+              };
+            }
+            return b;
+          });
+          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+          return updated;
+        });
+        setRefreshTrigger(prev => prev + 1);
+      }
+    );
   };
 
   const handleDeleteWeightRecord = (beneficiaryId: string, period: string) => {
-    setBeneficiaries(prev => {
-      const updated = prev.map(b => {
-        if (b.id === beneficiaryId) {
-          const filtered = b.weightRecords.filter(r => r.period !== period);
-          return {
-            ...b,
-            weightRecords: filtered
-          };
-        }
-        return b;
-      });
-      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-      return updated;
-    });
-    setRefreshTrigger(prev => prev + 1);
+    const target = beneficiaries.find(b => b.id === beneficiaryId);
+    const targetName = target ? target.name : beneficiaryId;
+
+    requireOperatorProfileAndExecute(
+      "HAPUS_PENIMBANGAN",
+      `Menghapus riwayat penimbangan periode ${period}`,
+      targetName,
+      () => {
+        setBeneficiaries(prev => {
+          const updated = prev.map(b => {
+            if (b.id === beneficiaryId) {
+              const filtered = b.weightRecords.filter(r => r.period !== period);
+              return {
+                ...b,
+                weightRecords: filtered
+              };
+            }
+            return b;
+          });
+          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+          return updated;
+        });
+        setRefreshTrigger(prev => prev + 1);
+      }
+    );
   };
 
   const loadData = async () => {
@@ -425,21 +481,29 @@ export default function App() {
 
   const handleSyncSheetsDirect = async (token: string, userObj?: User | null) => {
     if (!data) return;
-    setSyncingSheets(true);
-    setSyncError(null);
-    setSyncSuccess(false);
-    try {
-      const activeUser = userObj !== undefined ? userObj : currentUser;
-      const result = await syncToGoogleSheets(token, data.kabupatenName, data, activeUser?.email || undefined);
-      setSheetsSyncUrl(result.spreadsheetUrl);
-      setSyncSuccess(true);
-      setTimeout(() => setSyncSuccess(false), 5000);
-    } catch (err: any) {
-      console.error(err);
-      setSyncError("Gagal sinkronisasi data: " + err.message);
-    } finally {
-      setSyncingSheets(false);
-    }
+    const activeUser = userObj !== undefined ? userObj : currentUser;
+
+    requireOperatorProfileAndExecute(
+      "SINKRONISASI_SHEETS",
+      `Melakukan sinkronisasi data ke Google Spreadsheet (${activeUser?.email || "Google Account"})`,
+      "GOOGLE_SHEETS",
+      async () => {
+        setSyncingSheets(true);
+        setSyncError(null);
+        setSyncSuccess(false);
+        try {
+          const result = await syncToGoogleSheets(token, data.kabupatenName, data, activeUser?.email || undefined);
+          setSheetsSyncUrl(result.spreadsheetUrl);
+          setSyncSuccess(true);
+          setTimeout(() => setSyncSuccess(false), 5000);
+        } catch (err: any) {
+          console.error(err);
+          setSyncError("Gagal sinkronisasi data: " + err.message);
+        } finally {
+          setSyncingSheets(false);
+        }
+      }
+    );
   };
 
   const handleSyncSheets = async () => {
@@ -459,58 +523,98 @@ export default function App() {
 
   // Handle village metrics changes
   const handleVillageUpdate = async (updatedMetrics: Partial<Village>) => {
-    try {
-      if (!updatedMetrics.id) return;
-      const json = await updateVillageApi(updatedMetrics as any);
-      setData(json);
-      setRefreshTrigger(prev => prev + 1);
-    } catch (e: any) {
-      alert("Error: " + e.message);
-    }
+    if (!updatedMetrics.id) return;
+    const vName = updatedMetrics.name || updatedMetrics.id;
+
+    requireOperatorProfileAndExecute(
+      "UPDATE_WILAYAH",
+      `Memperbarui data indikator & statistik wilayah/posyandu (${vName})`,
+      vName,
+      async () => {
+        try {
+          const json = await updateVillageApi(updatedMetrics as any);
+          setData(json);
+          setRefreshTrigger(prev => prev + 1);
+        } catch (e: any) {
+          alert("Error: " + e.message);
+        }
+      }
+    );
   };
 
   // Handle adding a new village or unit
   const handleVillageAdd = async (name: string, unitType?: UnitType) => {
-    try {
-      const json = await addVillageApi(name, unitType);
-      setData(json);
-      setRefreshTrigger(prev => prev + 1);
-    } catch (e: any) {
-      alert("Error: " + e.message);
-    }
+    requireOperatorProfileAndExecute(
+      "TAMBAH_WILAYAH",
+      `Menambah unit/wilayah/posyandu baru (${unitType || 'Desa'}: ${name})`,
+      name,
+      async () => {
+        try {
+          const json = await addVillageApi(name, unitType);
+          setData(json);
+          setRefreshTrigger(prev => prev + 1);
+        } catch (e: any) {
+          alert("Error: " + e.message);
+        }
+      }
+    );
   };
 
   // Handle deleting a village
   const handleVillageDelete = async (id: string) => {
-    try {
-      const json = await deleteVillageApi(id);
-      setData(json);
-      setRefreshTrigger(prev => prev + 1);
-    } catch (e: any) {
-      alert("Error: " + e.message);
-    }
+    const target = data?.villages?.find(v => v.id === id);
+    const targetName = target ? target.name : id;
+
+    requireOperatorProfileAndExecute(
+      "HAPUS_WILAYAH",
+      `Menghapus unit/wilayah/posyandu (${targetName})`,
+      targetName,
+      async () => {
+        try {
+          const json = await deleteVillageApi(id);
+          setData(json);
+          setRefreshTrigger(prev => prev + 1);
+        } catch (e: any) {
+          alert("Error: " + e.message);
+        }
+      }
+    );
   };
 
   // Handle resetting database
   const handleResetData = async () => {
-    try {
-      const json = await resetDataApi();
-      setData(json);
-      setRefreshTrigger(prev => prev + 1);
-    } catch (e: any) {
-      alert("Error: " + e.message);
-    }
+    requireOperatorProfileAndExecute(
+      "MANAGEMENT_DATA",
+      "Reset data sampel awal sistem",
+      "SAMPEL_WILAYAH",
+      async () => {
+        try {
+          const json = await resetDataApi();
+          setData(json);
+          setRefreshTrigger(prev => prev + 1);
+        } catch (e: any) {
+          alert("Error: " + e.message);
+        }
+      }
+    );
   };
 
   // Handle clearing all database records
   const handleClearData = async () => {
-    try {
-      const json = await clearDataApi();
-      setData(json);
-      setRefreshTrigger(prev => prev + 1);
-    } catch (e: any) {
-      alert("Error: " + e.message);
-    }
+    requireOperatorProfileAndExecute(
+      "MANAGEMENT_DATA",
+      "Pembersihan seluruh catatan wilayah dari server",
+      "WILAYAH_SERVER",
+      async () => {
+        try {
+          const json = await clearDataApi();
+          setData(json);
+          setRefreshTrigger(prev => prev + 1);
+        } catch (e: any) {
+          alert("Error: " + e.message);
+        }
+      }
+    );
   };
 
   // Handle saving weights config
@@ -522,21 +626,28 @@ export default function App() {
     }
 
     setWeightError(null);
-    try {
-      const json = await updateWeightsApi({
-        pilar1: weightP1 / 100,
-        pilar2: weightP2 / 100,
-        pilar3: weightP3 / 100,
-        pilar4: weightP4 / 100,
-        pilar5: weightP5 / 100,
-      });
+    requireOperatorProfileAndExecute(
+      "UPDATE_BOBOT",
+      `Mengubah bobot pilar gizi: P1=${weightP1}%, P2=${weightP2}%, P3=${weightP3}%, P4=${weightP4}%, P5=${weightP5}%`,
+      "KONFIGURASI_BOBOT",
+      async () => {
+        try {
+          const json = await updateWeightsApi({
+            pilar1: weightP1 / 100,
+            pilar2: weightP2 / 100,
+            pilar3: weightP3 / 100,
+            pilar4: weightP4 / 100,
+            pilar5: weightP5 / 100,
+          });
 
-      setData(json);
-      setShowConfigModal(false);
-      setRefreshTrigger(prev => prev + 1);
-    } catch (e: any) {
-      setWeightError(e.message);
-    }
+          setData(json);
+          setShowConfigModal(false);
+          setRefreshTrigger(prev => prev + 1);
+        } catch (e: any) {
+          setWeightError(e.message);
+        }
+      }
+    );
   };
 
   if (loading) {
@@ -1128,19 +1239,20 @@ export default function App() {
                   onAddWeightRecord={handleAddWeightRecord}
                   onDeleteWeightRecord={handleDeleteWeightRecord}
                   onUpdateVillageMetrics={handleVillageUpdate}
+                  onRequestOperatorAction={requireOperatorProfileAndExecute}
                 />
               </div>
             )}
 
             {activeTab === "ibu_hamil" && (
               <div className="animate-in fade-in duration-200">
-                <IbuHamilView />
+                <IbuHamilView onRequestOperatorAction={requireOperatorProfileAndExecute} />
               </div>
             )}
 
             {activeTab === "ibu_menyusui" && (
               <div className="animate-in fade-in duration-200">
-                <IbuMenyusuiView />
+                <IbuMenyusuiView onRequestOperatorAction={requireOperatorProfileAndExecute} />
               </div>
             )}
 
@@ -1482,6 +1594,7 @@ export default function App() {
           onUpdateVillageMetrics={handleVillageUpdate}
           isModal={true}
           onCloseModal={() => setShowDataInputModal(false)}
+          onRequestOperatorAction={requireOperatorProfileAndExecute}
         />
       )}
 
