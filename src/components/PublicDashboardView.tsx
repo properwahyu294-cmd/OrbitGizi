@@ -69,6 +69,18 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     return [];
   });
 
+  const [villages] = useState<any[]>(() => {
+    const stored = localStorage.getItem("orbit_gizi_local_villages");
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
   const filteredBeneficiaries = beneficiaries.filter(b => {
     const villageName = b.location?.kelurahan || b.location?.puskesmas || "";
     const matchesSearch = b.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -413,45 +425,56 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
         {activeTab === "VILLAGES" && (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="bg-white/95 backdrop-blur-md border border-slate-200 p-6 rounded-3xl shadow-sm">
-              <h3 className="text-xl font-black text-slate-900">Rekapitulasi Wilayah & Kecamatan Nagekeo</h3>
-              <p className="text-xs text-slate-500">Distribusi posyandu dan pencapaian penurunan stunting per kecamatan.</p>
+              <h3 className="text-xl font-black text-slate-900">Rekapitulasi Wilayah & Desa Terdaftar</h3>
+              <p className="text-xs text-slate-500">Distribusi posyandu dan pencapaian indikator gizi berdasarkan data terinput.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[
-                { name: "Kecamatan Aesesa", posyandu: 32, balita: 1420, stunting: 18, status: "Normal / Baik" },
-                { name: "Kecamatan Boawae", posyandu: 38, balita: 1650, stunting: 24, status: "Perhatian Khusus" },
-                { name: "Kecamatan Mauponggo", posyandu: 28, balita: 1120, stunting: 15, status: "Normal / Baik" },
-                { name: "Kecamatan Nangaroro", posyandu: 26, balita: 980, stunting: 12, status: "Normal / Baik" },
-                { name: "Kecamatan Wolowae", posyandu: 18, balita: 640, stunting: 8, status: "Normal / Baik" }
-              ].map((kec, i) => (
-                <div key={i} className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-black text-slate-900">{kec.name}</span>
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black ${
-                      kec.status === "Normal / Baik" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                    }`}>
-                      {kec.status}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2 text-xs text-slate-600">
-                    <div className="flex justify-between py-1 border-b border-slate-100">
-                      <span className="text-slate-500">Posyandu Aktif:</span>
-                      <span className="font-bold text-slate-900">{kec.posyandu} Pos</span>
-                    </div>
-                    <div className="flex justify-between py-1 border-b border-slate-100">
-                      <span className="text-slate-500">Total Sasaran Balita:</span>
-                      <span className="font-bold text-slate-900">{kec.balita} Anak</span>
-                    </div>
-                    <div className="flex justify-between py-1">
-                      <span className="text-slate-500">Kasus Stunting:</span>
-                      <span className="font-bold text-amber-600">{kec.stunting} Kasus</span>
-                    </div>
-                  </div>
+            {villages.length === 0 ? (
+              <div className="bg-white/90 backdrop-blur-md border border-slate-200 rounded-3xl p-10 text-center space-y-3">
+                <div className="inline-flex p-4 bg-indigo-50 text-indigo-600 rounded-2xl">
+                  <Building2 className="h-8 w-8" />
                 </div>
-              ))}
-            </div>
+                <h4 className="text-base font-black text-slate-900">Belum Ada Data Wilayah / Desa</h4>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Belum ada data desa atau penerima MBG yang terdaftar dalam sistem. Silakan login sebagai Admin untuk menginput sasaran atau melakukan Sinkronisasi Otomatis Google Sheets.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {villages.map((v) => {
+                  const vBens = beneficiaries.filter(b => b.location?.kelurahan?.toLowerCase().trim() === v.name?.toLowerCase().trim());
+                  const stuntingCount = vBens.filter(b => b.weightRecords && b.weightRecords.length > 0 && (b.weightRecords[b.weightRecords.length - 1].statusGizi === "Stunting" || b.weightRecords[b.weightRecords.length - 1].statusGizi === "Risiko Stunting")).length;
+
+                  return (
+                    <div key={v.id} className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-black text-slate-900">{v.name}</span>
+                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black ${
+                          v.riskLevel === "Hijau" ? "bg-emerald-100 text-emerald-800" : v.riskLevel === "Kuning" ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800"
+                        }`}>
+                          Zona {v.riskLevel} (Skor: {v.score})
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 text-xs text-slate-600">
+                        <div className="flex justify-between py-1 border-b border-slate-100">
+                          <span className="text-slate-500">Posyandu Aktif:</span>
+                          <span className="font-bold text-slate-900">{v.pilar4_posyandu_aktif} Pos</span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-slate-100">
+                          <span className="text-slate-500">Total Sasaran Terdaftar:</span>
+                          <span className="font-bold text-slate-900">{vBens.length} Orang</span>
+                        </div>
+                        <div className="flex justify-between py-1">
+                          <span className="text-slate-500">Kasus Stunting:</span>
+                          <span className="font-bold text-amber-600">{stuntingCount} Kasus</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

@@ -135,6 +135,7 @@ export default function App() {
 
   // Firebase & Google Sheets integration state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const isAdmin = currentUser?.email?.toLowerCase().trim() === "properwahyu294@gmail.com";
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [syncingSheets, setSyncingSheets] = useState<boolean>(false);
   const [sheetsSyncUrl, setSheetsSyncUrl] = useState<string | null>(null);
@@ -180,7 +181,33 @@ export default function App() {
     localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
   };
 
-  // Beneficiary Management State
+  // Automatic visitor analytics tracking on mount and view changes
+  useEffect(() => {
+    let viewName = "Dashboard Utama Admin";
+    if (showLauncher) {
+      viewName = "Halaman Utama / Launcher App";
+    } else if (showPublicDashboard) {
+      viewName = "Dashboard Publik Interaktif (Masyarakat & Stakeholder)";
+    } else {
+      const tabNames: Record<string, string> = {
+        peta: "Peta Interaktif Risiko Wilayah",
+        pilar: "Matriks 5 Pilar Intervensi",
+        penerima: "Database Penerima MBG & PMT",
+        ibu_hamil: "Database Ibu Hamil",
+        ibu_menyusui: "Database Ibu Menyusui",
+        input_center: "Pusat Input & Sinkronisasi MBG",
+        simulasi: "Simulasi Kebijakan & Bobot Pilar",
+        penjelasan: "Manual & Edukasi 5 Pilar",
+        manual_app: "Buku Panduan Petugas Posyandu",
+      };
+      viewName = tabNames[activeTab] || `Halaman Admin (${activeTab})`;
+    }
+
+    const email = currentUser?.email || "pengunjung@public.go.id";
+    const role = (isAdmin || currentUser?.email === "properwahyu294@gmail.com") ? "ADMIN" : "PENGUNJUNG";
+
+    recordVisitorAccess(email, role, viewName);
+  }, [showLauncher, showPublicDashboard, activeTab, currentUser, isAdmin]);
   const [beneficiaries, setBeneficiaries] = useState<MBGBeneficiary[]>(() => {
     const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
     if (stored) {
@@ -556,8 +583,6 @@ export default function App() {
   const pillar2 = data.pillars.find(p => p.id === "pilar2")!;
   // Extract Pilar 1 (Sinkronisasi Data)
   const pillar1 = data.pillars.find(p => p.id === "pilar1")!;
-
-  const isAdmin = currentUser?.email?.toLowerCase().trim() === "properwahyu294@gmail.com";
 
   if (showPublicDashboard) {
     return (

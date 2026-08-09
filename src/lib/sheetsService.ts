@@ -18,36 +18,14 @@ async function createSpreadsheet(accessToken: string, kabupatenName: string): Pr
         title: `Orbit Gizi Nagekeo - ${kabupatenName}`,
       },
       sheets: [
-        {
-          properties: {
-            title: "Ringkasan Indeks",
-          },
-        },
-        {
-          properties: {
-            title: "Data Desa",
-          },
-        },
-        {
-          properties: {
-            title: "Penerima MBG",
-          },
-        },
-        {
-          properties: {
-            title: "Ibu Hamil",
-          },
-        },
-        {
-          properties: {
-            title: "Ibu Menyusui",
-          },
-        },
-        {
-          properties: {
-            title: "Catatan Timbang",
-          },
-        },
+        { properties: { title: "Ringkasan Indeks" } },
+        { properties: { title: "Data Desa" } },
+        { properties: { title: "Penerima MBG" } },
+        { properties: { title: "Ibu Hamil" } },
+        { properties: { title: "Ibu Menyusui" } },
+        { properties: { title: "Catatan Timbang" } },
+        { properties: { title: "Analitik Pengunjung" } },
+        { properties: { title: "Audit Log Operator" } },
       ],
     }),
   });
@@ -65,19 +43,68 @@ async function createSpreadsheet(accessToken: string, kabupatenName: string): Pr
 }
 
 /**
+ * Ensures all required sheet tabs exist in the target spreadsheet
+ */
+async function ensureSheetTabsExist(accessToken: string, spreadsheetId: string): Promise<void> {
+  const requiredTitles = [
+    "Ringkasan Indeks",
+    "Data Desa",
+    "Penerima MBG",
+    "Ibu Hamil",
+    "Ibu Menyusui",
+    "Catatan Timbang",
+    "Analitik Pengunjung",
+    "Audit Log Operator"
+  ];
+  try {
+    const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (!res.ok) return;
+    const json = await res.json();
+    const existing = new Set((json.sheets || []).map((s: any) => s.properties?.title));
+    const toAdd = requiredTitles.filter(t => !existing.has(t));
+    if (toAdd.length > 0) {
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          requests: toAdd.map(title => ({ addSheet: { properties: { title } } }))
+        })
+      });
+    }
+  } catch (e) {
+    console.warn("Gagal memastikan tab sheet ada:", e);
+  }
+}
+
+/**
  * Clears old data in sheets to prepare for fresh write
  */
 async function clearSheets(accessToken: string, spreadsheetId: string): Promise<void> {
-  const ranges = ["'Ringkasan Indeks'!A1:Z100", "'Data Desa'!A1:Z1000", "'Penerima MBG'!A1:Z5000", "'Ibu Hamil'!A1:Z5000", "'Ibu Menyusui'!A1:Z5000", "'Catatan Timbang'!A1:Z10000"];
+  const ranges = [
+    "'Ringkasan Indeks'!A1:Z100",
+    "'Data Desa'!A1:Z1000",
+    "'Penerima MBG'!A1:Z5000",
+    "'Ibu Hamil'!A1:Z5000",
+    "'Ibu Menyusui'!A1:Z5000",
+    "'Catatan Timbang'!A1:Z10000",
+    "'Analitik Pengunjung'!A1:Z5000",
+    "'Audit Log Operator'!A1:Z5000"
+  ];
   for (const range of ranges) {
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:clear`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error(`Gagal menghapus data lama (kemungkinan spreadsheet telah dihapus di Drive): ${response.status}`);
+    try {
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:clear`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+    } catch (e) {
+      console.warn(`Pembersihan range ${range} diabaikan:`, e);
     }
   }
 }
@@ -112,14 +139,18 @@ export async function syncToGoogleSheets(
     await initNewSpreadsheet();
   }
 
+  // Ensure all tabs exist
+  await ensureSheetTabsExist(accessToken, spreadsheetId!);
+
   // Clear existing data first to avoid trailing mismatched rows
   try {
-    await clearSheets(accessToken, spreadsheetId);
+    await clearSheets(accessToken, spreadsheetId!);
   } catch (err) {
     console.warn("Mencoba membuat spreadsheet baru karena spreadsheet lama mungkin telah dihapus di Drive atau tidak dapat diakses.");
     await initNewSpreadsheet();
     try {
-      await clearSheets(accessToken, spreadsheetId);
+      await ensureSheetTabsExist(accessToken, spreadsheetId!);
+      await clearSheets(accessToken, spreadsheetId!);
     } catch (innerErr) {
       console.error("Gagal melakukan pembersihan kedua pada spreadsheet baru:", innerErr);
     }
@@ -374,6 +405,57 @@ export async function syncToGoogleSheets(
     console.error(e);
   }
 
+  // Prepare Analitik Pengunjung values
+  const visitorValues = [
+    ["ID Log", "Waktu Akses (WITA)", "Email Pengunjung", "Role / Hak Akses", "Tampilan Terakhir Dilihat", "Jenis Perangkat"]
+  ];
+  try {
+    let visitorData = JSON.parse(localStorage.getItem("orbit_gizi_visitor_logs") || "[]");
+    if (!Array.isArray(visitorData)) visitorData = [];
+    visitorData.forEach((v: any) => {
+      const formattedDate = v?.timestamp
+        ? new Date(v.timestamp).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }) + " WITA"
+        : "-";
+      visitorValues.push([
+        v?.id || "-",
+        formattedDate,
+        v?.email || "pengunjung@public.go.id",
+        v?.role || "PENGUNJUNG",
+        v?.viewName || "Dashboard Utama",
+        v?.deviceInfo || "Komputer / Desktop"
+      ]);
+    });
+  } catch (e) {
+    console.error("Error reading visitor logs for sheet sync:", e);
+  }
+
+  // Prepare Audit Log Operator values
+  const auditValues = [
+    ["ID Audit", "Waktu Tindakan (WITA)", "Nama Operator", "Jabatan / Peran", "Instansi / Puskesmas", "Email Operator", "Jenis Action", "Deskripsi Kegiatan", "Sasaran / Target"]
+  ];
+  try {
+    let auditData = JSON.parse(localStorage.getItem("orbit_gizi_audit_logs") || "[]");
+    if (!Array.isArray(auditData)) auditData = [];
+    auditData.forEach((a: any) => {
+      const formattedDate = a?.timestamp
+        ? new Date(a.timestamp).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }) + " WITA"
+        : "-";
+      auditValues.push([
+        a?.id || "-",
+        formattedDate,
+        a?.operatorName || "Petugas Anonim",
+        a?.operatorRole || "Petugas Nakes",
+        a?.operatorInstansi || "Dinas Kesehatan / Puskesmas",
+        a?.operatorEmail || "-",
+        a?.actionType || "INPUT_DATA",
+        a?.description || "-",
+        a?.targetName || "-"
+      ]);
+    });
+  } catch (e) {
+    console.error("Error reading audit logs for sheet sync:", e);
+  }
+
   // Batch update spreadsheet values
   const writeResponse = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchUpdate`, {
     method: "POST",
@@ -407,6 +489,14 @@ export async function syncToGoogleSheets(
         {
           range: "'Catatan Timbang'!A1",
           values: catatanTimbangValues,
+        },
+        {
+          range: "'Analitik Pengunjung'!A1",
+          values: visitorValues,
+        },
+        {
+          range: "'Audit Log Operator'!A1",
+          values: auditValues,
         },
       ],
     }),

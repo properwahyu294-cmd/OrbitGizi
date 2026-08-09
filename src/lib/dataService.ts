@@ -90,140 +90,7 @@ const DEFAULT_WEIGHTS = {
   pilar5: 0.25,
 };
 
-const DEFAULT_VILLAGES: Village[] = [
-  {
-    id: "v_boawae",
-    name: "Desa Boawae",
-    riskLevel: "Hijau",
-    score: 84,
-    coordinates: { x: 121.21, y: -8.82 },
-    locationHierarchy: {
-      propinsi: "Nusa Tenggara Timur",
-      kabupaten: "Kabupaten Nagekeo",
-      puskesmas: "Puskesmas Boawae",
-      kelurahan: "Desa Boawae",
-      dusun: "Dusun 1",
-      posyandu: "Posyandu Mekar"
-    },
-    pilar1_mbg_sync: 15,
-    pilar1_mbg_total: 15,
-    pilar1_pmt_sync: 5,
-    pilar1_pmt_total: 5,
-    pilar1_posyandu_sync: 2,
-    pilar1_posyandu_total: 2,
-    pilar1_eppgbm_sync: 15,
-    pilar1_eppgbm_total: 15,
-    pilar2_dinkes_aktif: true,
-    pilar2_bgn_aktif: true,
-    pilar2_pkk_aktif: true,
-    pilar2_pemdes_aktif: true,
-    pilar2_puskesmas_aktif: true,
-    pilar3_dashboard_online: true,
-    pilar3_validasi_data: true,
-    pilar3_real_time_update: true,
-    pilar4_mbg_realized: 15,
-    pilar4_mbg_target: 15,
-    pilar4_pmt_realized: 5,
-    pilar4_pmt_target: 5,
-    pilar4_home_visit: 5,
-    pilar4_home_visit_target: 5,
-    pilar4_posyandu_aktif: 2,
-    pilar4_posyandu_total: 2,
-    pilar5_stunting_prev: 3,
-    pilar5_stunting_curr: 1,
-    pilar5_wasting_prev: 2,
-    pilar5_wasting_curr: 0,
-    pilar5_target_accuracy: 95
-  },
-  {
-    id: "v_riti",
-    name: "Desa Riti",
-    riskLevel: "Kuning",
-    score: 68,
-    coordinates: { x: 121.28, y: -8.86 },
-    locationHierarchy: {
-      propinsi: "Nusa Tenggara Timur",
-      kabupaten: "Kabupaten Nagekeo",
-      puskesmas: "Puskesmas Boawae",
-      kelurahan: "Desa Riti",
-      dusun: "Dusun Riti Tengah",
-      posyandu: "Posyandu Mawar"
-    },
-    pilar1_mbg_sync: 10,
-    pilar1_mbg_total: 12,
-    pilar1_pmt_sync: 4,
-    pilar1_pmt_total: 6,
-    pilar1_posyandu_sync: 1,
-    pilar1_posyandu_total: 2,
-    pilar1_eppgbm_sync: 10,
-    pilar1_eppgbm_total: 12,
-    pilar2_dinkes_aktif: true,
-    pilar2_bgn_aktif: true,
-    pilar2_pkk_aktif: true,
-    pilar2_pemdes_aktif: false,
-    pilar2_puskesmas_aktif: true,
-    pilar3_dashboard_online: true,
-    pilar3_validasi_data: true,
-    pilar3_real_time_update: false,
-    pilar4_mbg_realized: 10,
-    pilar4_mbg_target: 12,
-    pilar4_pmt_realized: 4,
-    pilar4_pmt_target: 6,
-    pilar4_home_visit: 4,
-    pilar4_home_visit_target: 6,
-    pilar4_posyandu_aktif: 1,
-    pilar4_posyandu_total: 2,
-    pilar5_stunting_prev: 4,
-    pilar5_stunting_curr: 2,
-    pilar5_wasting_prev: 2,
-    pilar5_wasting_curr: 1,
-    pilar5_target_accuracy: 85
-  },
-  {
-    id: "v_mulakoli",
-    name: "Desa Mulakoli",
-    riskLevel: "Merah",
-    score: 48,
-    coordinates: { x: 121.18, y: -8.90 },
-    locationHierarchy: {
-      propinsi: "Nusa Tenggara Timur",
-      kabupaten: "Kabupaten Nagekeo",
-      puskesmas: "Puskesmas Nangaroro",
-      kelurahan: "Desa Mulakoli",
-      dusun: "Dusun Mulakoli 2",
-      posyandu: "Posyandu Melati"
-    },
-    pilar1_mbg_sync: 5,
-    pilar1_mbg_total: 10,
-    pilar1_pmt_sync: 2,
-    pilar1_pmt_total: 5,
-    pilar1_posyandu_sync: 1,
-    pilar1_posyandu_total: 2,
-    pilar1_eppgbm_sync: 5,
-    pilar1_eppgbm_total: 10,
-    pilar2_dinkes_aktif: true,
-    pilar2_bgn_aktif: false,
-    pilar2_pkk_aktif: true,
-    pilar2_pemdes_aktif: false,
-    pilar2_puskesmas_aktif: true,
-    pilar3_dashboard_online: false,
-    pilar3_validasi_data: true,
-    pilar3_real_time_update: false,
-    pilar4_mbg_realized: 5,
-    pilar4_mbg_target: 10,
-    pilar4_pmt_realized: 2,
-    pilar4_pmt_target: 5,
-    pilar4_home_visit: 2,
-    pilar4_home_visit_target: 5,
-    pilar4_posyandu_aktif: 1,
-    pilar4_posyandu_total: 2,
-    pilar5_stunting_prev: 5,
-    pilar5_stunting_curr: 4,
-    pilar5_wasting_prev: 3,
-    pilar5_wasting_curr: 2,
-    pilar5_target_accuracy: 65
-  }
-];
+const DEFAULT_VILLAGES: Village[] = [];
 
 // Memory state to support seamless client-side mode
 let localVillages: Village[] = [];
@@ -239,10 +106,10 @@ function initLocalStorage() {
     try {
       localVillages = JSON.parse(vStored);
     } catch {
-      localVillages = [...DEFAULT_VILLAGES];
+      localVillages = [];
     }
   } else {
-    localVillages = [...DEFAULT_VILLAGES];
+    localVillages = [];
     localStorage.setItem("orbit_gizi_local_villages", JSON.stringify(localVillages));
   }
 

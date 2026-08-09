@@ -16,38 +16,7 @@ interface NutritionBannerGalleryProps {
   subtitle?: string;
 }
 
-export const DEFAULT_NUTRITION_IMAGES: BannerImage[] = [
-  {
-    id: "nut_1",
-    title: "Pelayanan Posyandu & Penimbangan Balita",
-    subtitle: "Pemantauan tumbuh kembang anak di Kabupaten Nagekeo secara rutin setiap bulan.",
-    url: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&q=80&w=1200"
-  },
-  {
-    id: "nut_2",
-    title: "Distribusi Makanan Bergizi Gratis (MBG)",
-    subtitle: "Intervensi gizi seimbang untuk balita, ibu hamil, dan menyusui.",
-    url: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=1200"
-  },
-  {
-    id: "nut_3",
-    title: "Pemeriksaan Kesehatan Ibu Hamil",
-    subtitle: "Pencegahan stunting dari hulu melalui edukasi dan pemberian tablet tambah darah.",
-    url: "https://images.unsplash.com/photo-1584516150905-cbf415d1ac7d?auto=format&fit=crop&q=80&w=1200"
-  },
-  {
-    id: "nut_4",
-    title: "Pemberian Makanan Tambahan (PMT) Pemulihan",
-    subtitle: "Penanganan balita gizi kurang dengan formula tinggi protein hewani lokal.",
-    url: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=1200"
-  },
-  {
-    id: "nut_5",
-    title: "Koordinasi Lintas Sektor & Kader Posyandu",
-    subtitle: "Sinergi Puskesmas, Pemdes, TP-PKK, dan BGN dalam percepatan penurunan stunting.",
-    url: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=1200"
-  }
-];
+export const DEFAULT_NUTRITION_IMAGES: BannerImage[] = [];
 
 export const NutritionBannerGallery: React.FC<NutritionBannerGalleryProps> = ({
   images,
