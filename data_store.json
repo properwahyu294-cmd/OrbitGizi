@@ -2,7 +2,7 @@
   "adminSheetUrl": "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115",
   "adminSheetId": "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE",
   "kabupatenName": "Kabupaten Nagekeo",
-  "lastUpdated": "2026-08-10T04:36:50.645Z",
+  "lastUpdated": "2026-08-10T09:30:45.075Z",
   "weights": {
     "pilar1": 0.1,
     "pilar2": 0.3,
@@ -15,8 +15,8 @@
       "id": "v_boawae",
       "name": "Desa Boawae",
       "unitType": "Desa",
-      "riskLevel": "Kuning",
-      "score": 68,
+      "riskLevel": "Hijau",
+      "score": 95,
       "coordinates": {
         "x": 121.21,
         "y": -8.82
@@ -55,8 +55,8 @@
       "id": "v_nangaroro",
       "name": "Kelurahan Nangaroro",
       "unitType": "Kelurahan",
-      "riskLevel": "Kuning",
-      "score": 65,
+      "riskLevel": "Hijau",
+      "score": 94,
       "coordinates": {
         "x": 121.32,
         "y": -8.88
@@ -96,7 +96,7 @@
       "name": "Desa Aesesa",
       "unitType": "Desa",
       "riskLevel": "Hijau",
-      "score": 82,
+      "score": 100,
       "coordinates": {
         "x": 121.3,
         "y": -8.68
@@ -136,7 +136,7 @@
       "name": "Kelurahan Mbay",
       "unitType": "Kelurahan",
       "riskLevel": "Hijau",
-      "score": 78,
+      "score": 99,
       "coordinates": {
         "x": 121.28,
         "y": -8.65
@@ -174,5 +174,242 @@
   ],
   "beneficiaries": [],
   "ibuHamil": [],
-  "ibuMenyusui": []
+  "ibuMenyusui": [],
+  "bannerImages": [],
+  "dashboardBannerImages": [],
+  "visitorLogs": [
+    {
+      "id": "v_1786354246221_9zvx",
+      "timestamp": "2026-08-10T09:30:46.221Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786354245592_dfvz",
+      "timestamp": "2026-08-10T09:30:45.592Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786354245590_vwjr",
+      "timestamp": "2026-08-10T09:30:45.590Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786354019656_f1yv",
+      "timestamp": "2026-08-10T09:26:59.656Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Dashboard Publik Interaktif (Masyarakat & Stakeholder)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786354012500_h7tx",
+      "timestamp": "2026-08-10T09:26:52.500Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786354011871_7bgd",
+      "timestamp": "2026-08-10T09:26:51.871Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786354011867_yzsa",
+      "timestamp": "2026-08-10T09:26:51.867Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786353716477_484u",
+      "timestamp": "2026-08-10T09:21:56.477Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Dashboard Publik Interaktif (Masyarakat & Stakeholder)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786353713937_sbir",
+      "timestamp": "2026-08-10T09:21:53.937Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786353711352_jw3c",
+      "timestamp": "2026-08-10T09:21:51.352Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Pusat Input & Sinkronisasi MBG",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786353704475_o3dh",
+      "timestamp": "2026-08-10T09:21:44.475Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Pusat Input & Sinkronisasi MBG",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786353661540_aj7y",
+      "timestamp": "2026-08-10T09:21:01.540Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Pusat Input & Sinkronisasi MBG",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786353653869_u4v2",
+      "timestamp": "2026-08-10T09:20:53.869Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Admin (overview)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786353597102_t6ez",
+      "timestamp": "2026-08-10T09:19:57.102Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786353596455_u1vw",
+      "timestamp": "2026-08-10T09:19:56.455Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786353596454_h2e0",
+      "timestamp": "2026-08-10T09:19:56.454Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786353518943_q8x4",
+      "timestamp": "2026-08-10T09:18:38.943Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Dashboard Publik Interaktif (Masyarakat & Stakeholder)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786352771682_ffwo",
+      "timestamp": "2026-08-10T09:06:11.682Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786352771006_i1d6",
+      "timestamp": "2026-08-10T09:06:11.006Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786352771007_h18o",
+      "timestamp": "2026-08-10T09:06:11.007Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786352685957_nfxc",
+      "timestamp": "2026-08-10T09:04:45.957Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Admin (overview)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786352309630_ret5",
+      "timestamp": "2026-08-10T08:58:29.630Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Dashboard Publik Interaktif (Masyarakat & Stakeholder)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786352294977_1dt1",
+      "timestamp": "2026-08-10T08:58:14.977Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Dashboard Publik Interaktif (Masyarakat & Stakeholder)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786351908655_3uvr",
+      "timestamp": "2026-08-10T08:51:48.655Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786351908651_b6j9",
+      "timestamp": "2026-08-10T08:51:48.651Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786350628622_bqgx",
+      "timestamp": "2026-08-10T08:30:28.622Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786350628619_4gh4",
+      "timestamp": "2026-08-10T08:30:28.619Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786350403128_8gmw",
+      "timestamp": "2026-08-10T08:26:43.128Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786350403125_x9ol",
+      "timestamp": "2026-08-10T08:26:43.125Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    }
+  ],
+  "auditLogs": []
 }

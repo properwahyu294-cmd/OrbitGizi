@@ -257,17 +257,15 @@ export default function App() {
     if (stored) {
       try {
         const parsed: MBGBeneficiary[] = JSON.parse(stored);
-        const clean = parsed.filter(b => b.id && !b.id.startsWith("ben_ngt_") && !b.id.startsWith("b1") && b.id !== "b1" && b.id !== "b2" && b.id !== "b3");
-        if (clean.length > 0) {
-          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(clean));
-          return clean;
-        }
+        const clean = parsed.filter(b => b.id && !b.id.startsWith("ben_ngk_") && !b.id.startsWith("ben_ngt_") && !b.id.startsWith("b1") && b.id !== "b1" && b.id !== "b2" && b.id !== "b3");
+        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(clean));
+        return clean;
       } catch {
         // fallback
       }
     }
-    localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(DEFAULT_BENEFICIARIES));
-    return DEFAULT_BENEFICIARIES as MBGBeneficiary[];
+    localStorage.setItem("orbit_gizi_local_beneficiaries", "[]");
+    return [];
   });
 
   const collaborationMetrics = useMemo(() => {

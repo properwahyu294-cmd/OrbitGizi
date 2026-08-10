@@ -80,19 +80,19 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
 
   // Calculate live beneficiaries list
   const beneficiaries: MBGBeneficiary[] = React.useMemo(() => {
-    if (propBeneficiaries && propBeneficiaries.length > 0) {
-      return propBeneficiaries;
+    if (propBeneficiaries !== undefined && propBeneficiaries !== null) {
+      return propBeneficiaries.filter(b => b.id && !b.id.startsWith("ben_ngk_") && !b.id.startsWith("ben_ngt_"));
     }
     const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
     if (stored !== null) {
       try {
         const parsed: MBGBeneficiary[] = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed.filter(b => b.id && !b.id.startsWith("ben_ngk_") && !b.id.startsWith("ben_ngt_"));
       } catch {
         // ignore
       }
     }
-    return (DEFAULT_BENEFICIARIES || []) as MBGBeneficiary[];
+    return [];
   }, [propBeneficiaries]);
 
   // Calculate live villages list
