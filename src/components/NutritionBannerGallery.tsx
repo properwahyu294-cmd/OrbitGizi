@@ -127,8 +127,8 @@ export const NutritionBannerGallery: React.FC<NutritionBannerGalleryProps> = ({
       alert("Harap unggah file foto dari laptop/perangkat atau masukkan URL terlebih dahulu.");
       return;
     }
-    if (images.length >= 10) {
-      alert("Maksimal 10 gambar yang dapat disimpan.");
+    if (images.length >= 15) {
+      alert("Maksimal 15 gambar yang dapat disimpan.");
       return;
     }
     onAddImage({
@@ -158,10 +158,10 @@ export const NutritionBannerGallery: React.FC<NutritionBannerGalleryProps> = ({
 
         <div className="flex items-center space-x-3">
           <span className="text-xs font-mono font-bold bg-slate-800 text-emerald-300 px-3 py-1.5 rounded-xl border border-slate-700">
-            {images.length} / 10 Gambar
+            {images.length} / 15 Gambar
           </span>
 
-          {!readOnly && images.length < 10 && (
+          {!readOnly && images.length < 15 && (
             <button
               onClick={() => {
                 setShowAddModal(true);
@@ -176,6 +176,32 @@ export const NutritionBannerGallery: React.FC<NutritionBannerGalleryProps> = ({
           )}
         </div>
       </div>
+
+      {/* EMPTY GALLERY STATE */}
+      {images.length === 0 && (
+        <div className="rounded-3xl border-2 border-dashed border-slate-800 bg-slate-950/60 p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-3">
+          <div className="p-4 bg-emerald-500/10 text-emerald-400 rounded-2xl">
+            <ImageIcon className="h-10 w-10" />
+          </div>
+          <h4 className="text-base font-black text-white">Galeri Banner Masih Kosong</h4>
+          <p className="text-xs text-slate-400 max-w-md">
+            Belum ada foto banner kegiatan. Silakan unggah foto banner dari laptop/perangkat Anda (Maksimal 15 foto).
+          </p>
+          {!readOnly && (
+            <button
+              onClick={() => {
+                setShowAddModal(true);
+                setPreviewImage(null);
+                setUploadMode("file");
+              }}
+              className="mt-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl flex items-center space-x-2 shadow-lg cursor-pointer transition-all"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Unggah Foto Banner Pertama</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* FEATURED BANNER CAROUSEL / SPOTLIGHT */}
       {images.length > 0 && (
@@ -201,8 +227,27 @@ export const NutritionBannerGallery: React.FC<NutritionBannerGalleryProps> = ({
             </p>
           </div>
 
-          {/* Controls */}
+          {/* Controls & Admin Delete Button */}
           <div className="absolute top-4 right-4 flex items-center space-x-2 bg-slate-950/80 backdrop-blur-md p-1.5 rounded-xl border border-white/10">
+            {!readOnly && activeImage && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm(`Hapus gambar banner "${activeImage.title}" dari galeri?`)) {
+                    onDeleteImage(activeImage.id);
+                    if (activeIndex >= images.length - 1) {
+                      setActiveIndex(Math.max(0, images.length - 2));
+                    }
+                  }
+                }}
+                className="px-2.5 py-1 bg-rose-600/90 hover:bg-rose-500 text-white font-bold text-xs rounded-lg flex items-center space-x-1.5 cursor-pointer transition-colors shadow mr-1"
+                title="Hapus gambar banner ini"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Hapus Gambar</span>
+              </button>
+            )}
+
             <button
               onClick={() => setActiveIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
               className="p-1.5 text-white hover:bg-white/10 rounded-lg cursor-pointer transition-colors"
@@ -223,48 +268,50 @@ export const NutritionBannerGallery: React.FC<NutritionBannerGalleryProps> = ({
       )}
 
       {/* THUMBNAILS GRID */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        {images.map((img, idx) => (
-          <div
-            key={img.id}
-            onClick={() => setActiveIndex(idx)}
-            className={`relative rounded-2xl overflow-hidden border cursor-pointer aspect-video group transition-all ${
-              activeIndex === idx
-                ? "border-emerald-400 ring-2 ring-emerald-400/40 shadow-lg scale-[1.02]"
-                : "border-slate-800 hover:border-slate-600 opacity-70 hover:opacity-100"
-            }`}
-          >
-            <img
-              src={img.url}
-              alt={img.title}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent p-2.5 flex flex-col justify-end">
-              <span className="text-[10px] font-black text-white truncate drop-shadow">
-                {img.title}
-              </span>
-            </div>
-            {!readOnly && images.length > 1 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (confirm("Hapus gambar ini dari galeri?")) {
-                    onDeleteImage(img.id);
-                    if (activeIndex >= images.length - 1) {
-                      setActiveIndex(Math.max(0, images.length - 2));
+      {images.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          {images.map((img, idx) => (
+            <div
+              key={img.id}
+              onClick={() => setActiveIndex(idx)}
+              className={`relative rounded-2xl overflow-hidden border cursor-pointer aspect-video group transition-all ${
+                activeIndex === idx
+                  ? "border-emerald-400 ring-2 ring-emerald-400/40 shadow-lg scale-[1.02]"
+                  : "border-slate-800 hover:border-slate-600 opacity-70 hover:opacity-100"
+              }`}
+            >
+              <img
+                src={img.url}
+                alt={img.title}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent p-2.5 flex flex-col justify-end">
+                <span className="text-[10px] font-black text-white truncate drop-shadow">
+                  {img.title}
+                </span>
+              </div>
+              {!readOnly && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm(`Hapus gambar "${img.title}"?`)) {
+                      onDeleteImage(img.id);
+                      if (activeIndex >= images.length - 1) {
+                        setActiveIndex(Math.max(0, images.length - 2));
+                      }
                     }
-                  }
-                }}
-                className="absolute top-2 right-2 p-1 bg-rose-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-500 shadow"
-                title="Hapus gambar"
-              >
-                <Trash2 className="h-3 w-3" />
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+                  }}
+                  className="absolute top-2 right-2 p-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg shadow-md transition-all cursor-pointer opacity-80 sm:opacity-0 group-hover:opacity-100"
+                  title="Hapus gambar ini"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ADD IMAGE MODAL WITH DIRECT FILE UPLOAD */}
       {showAddModal && (
@@ -277,7 +324,7 @@ export const NutritionBannerGallery: React.FC<NutritionBannerGalleryProps> = ({
                 </div>
                 <div>
                   <h4 className="text-base font-black text-white">Tambah Gambar Galeri</h4>
-                  <p className="text-xs text-slate-400">Unggah foto dari Laptop / Browser (Tersimpan: {images.length}/10)</p>
+                  <p className="text-xs text-slate-400">Unggah foto dari Laptop / Browser (Tersimpan: {images.length}/15)</p>
                 </div>
               </div>
               <button

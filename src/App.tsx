@@ -186,8 +186,8 @@ export default function App() {
   });
 
   const handleAddDashboardBannerImage = (img: { title: string; subtitle: string; url: string }) => {
-    if (dashboardBannerImages.length >= 10) {
-      alert("Maksimal 10 gambar tersimpan.");
+    if (dashboardBannerImages.length >= 15) {
+      alert("Maksimal 15 gambar tersimpan.");
       return;
     }
     const updated = [

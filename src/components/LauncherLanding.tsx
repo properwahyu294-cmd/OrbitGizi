@@ -70,8 +70,8 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
   });
 
   const handleAddBannerImage = (img: { title: string; subtitle: string; url: string }) => {
-    if (bannerImages.length >= 10) {
-      alert("Maksimal 10 gambar tersimpan.");
+    if (bannerImages.length >= 15) {
+      alert("Maksimal 15 gambar tersimpan.");
       return;
     }
     const updated = [
