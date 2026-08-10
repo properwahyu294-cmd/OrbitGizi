@@ -12,6 +12,7 @@ import {
   CheckCircle2, 
   Building2,
   Mail,
+  Edit3,
   ExternalLink,
   FileSpreadsheet,
   Maximize2,
@@ -22,6 +23,7 @@ import {
 import { NutritionBannerGallery, BannerImage, DEFAULT_NUTRITION_IMAGES } from "./NutritionBannerGallery";
 import { BeneficiaryDetailModal } from "./BeneficiaryDetailModal";
 import { AdminNutritionCharts } from "./AdminNutritionCharts";
+import { VisitorEmailModal } from "./VisitorEmailModal";
 import { MBGBeneficiary } from "../types";
 import { DEFAULT_BENEFICIARIES } from "../lib/dataService";
 
@@ -30,6 +32,8 @@ interface PublicDashboardViewProps {
   onOpenLogin: () => void;
   selectedKabupaten: string;
   currentUserEmail?: string | null;
+  visitorEmail?: string;
+  onSetVisitorEmail?: (email: string) => void;
   isAdmin?: boolean;
   orbitGiziData?: any;
   beneficiaries?: MBGBeneficiary[];
@@ -42,6 +46,8 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   onOpenLogin,
   selectedKabupaten,
   currentUserEmail,
+  visitorEmail,
+  onSetVisitorEmail,
   isAdmin = false,
   orbitGiziData,
   beneficiaries: propBeneficiaries,
@@ -52,8 +58,9 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("ALL");
   const [iframeKey, setIframeKey] = useState<number>(0);
+  const [showVisitorModal, setShowVisitorModal] = useState<boolean>(false);
 
-  const currentEmail = currentUserEmail || "pengunjung@public.go.id";
+  const currentEmail = currentUserEmail || visitorEmail || "Set Email Pengunjung";
   const isAdminEmail = currentUserEmail?.toLowerCase().trim() === "properwahyu294@gmail.com";
 
   // Beneficiary detail modal state
@@ -239,14 +246,19 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
             <ExternalLink className="h-3 w-3 text-emerald-600" />
           </a>
 
-          {/* Active Email Badge (Production Context) */}
-          <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl border border-slate-300 text-xs font-mono">
+          {/* Active Email Badge (Clickable for visitor identification) */}
+          <button
+            onClick={() => setShowVisitorModal(true)}
+            className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-300 text-xs font-mono transition-colors cursor-pointer"
+            title="Klik untuk mengubah Email Identitas Pengunjung Anda / Login Google"
+          >
             <Mail className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="max-w-[180px] truncate">{currentEmail}</span>
+            <span className="max-w-[180px] truncate font-bold">{currentEmail}</span>
             <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${isAdminEmail ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-amber-100 text-amber-800 border border-amber-300"}`}>
               {isAdminEmail ? "ADMIN" : "PENGUNJUNG"}
             </span>
-          </div>
+            <Edit3 className="h-3 w-3 text-slate-400 ml-1" />
+          </button>
 
           <button
             onClick={onBackToLauncher}
@@ -805,6 +817,17 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
       <footer className="bg-white/80 border-t border-slate-200 py-6 px-4 text-center text-xs text-slate-500">
         <p>© 2026 Orbit Gizi Kabupaten Nagekeo • Portal Eksekutif Publik & Transparansi Data Gizi</p>
       </footer>
+
+      {/* VISITOR EMAIL IDENTIFICATION MODAL */}
+      <VisitorEmailModal
+        isOpen={showVisitorModal}
+        onClose={() => setShowVisitorModal(false)}
+        currentEmail={visitorEmail || ""}
+        onSaveEmail={(email) => {
+          if (onSetVisitorEmail) onSetVisitorEmail(email);
+        }}
+        onGoogleLogin={onOpenLogin}
+      />
 
       {/* BENEFICIARY DETAIL MODAL */}
       <BeneficiaryDetailModal

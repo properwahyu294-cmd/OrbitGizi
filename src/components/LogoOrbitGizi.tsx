@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Heart, LogOut, User as UserIcon, FileSpreadsheet, RefreshCw, Building, Upload, RotateCcw, Info, Camera } from "lucide-react";
+import { Heart, LogOut, User as UserIcon, FileSpreadsheet, RefreshCw, Building, Upload, RotateCcw, Info, Camera, Edit3, Mail } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import logoPemdaFile from "../assets/images/LOGOPEMDA (1).png";
 import { PemdaNagekeoLogo } from "./PemdaNagekeoLogo";
+import { VisitorEmailModal } from "./VisitorEmailModal";
 
 interface LogoOrbitGiziProps {
   currentUser?: FirebaseUser | null;
+  visitorEmail?: string;
+  onSetVisitorEmail?: (email: string) => void;
   onLogout?: () => void;
   onLogin?: () => void;
   onSync?: () => void;
@@ -17,6 +20,8 @@ interface LogoOrbitGiziProps {
 
 export default function LogoOrbitGizi({ 
   currentUser, 
+  visitorEmail,
+  onSetVisitorEmail,
   onLogout,
   onLogin,
   onSync,
@@ -29,6 +34,7 @@ export default function LogoOrbitGizi({
     return localStorage.getItem("orbit_gizi_custom_logo") || null;
   });
   const [showGuideModal, setShowGuideModal] = useState<boolean>(false);
+  const [showVisitorEmailModal, setShowVisitorEmailModal] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,13 +254,20 @@ export default function LogoOrbitGizi({
         ) : (
           /* Connect button when not logged in with Guest Badge */
           <div className="flex items-center space-x-2">
-            <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl border border-slate-200 text-xs font-mono">
-              <UserIcon className="h-3.5 w-3.5 text-slate-500" />
-              <span>pengunjung@public.go.id</span>
+            <button
+              onClick={() => setShowVisitorEmailModal(true)}
+              className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-300 text-xs font-mono transition-colors cursor-pointer"
+              title="Klik untuk mengubah Email Identitas Pengunjung Anda"
+            >
+              <UserIcon className="h-3.5 w-3.5 text-emerald-600" />
+              <span className="font-bold max-w-[170px] truncate">
+                {visitorEmail || "Set Email Pengunjung"}
+              </span>
               <span className="px-1.5 py-0.2 text-[8px] font-black uppercase rounded bg-slate-200 text-slate-700">
                 PENGUNJUNG
               </span>
-            </div>
+              <Edit3 className="h-3 w-3 text-slate-400 ml-1" />
+            </button>
 
             {onLogin && (
               <button
@@ -268,6 +281,17 @@ export default function LogoOrbitGizi({
           </div>
         )}
       </div>
+
+      {/* Visitor Email Identification Modal */}
+      <VisitorEmailModal
+        isOpen={showVisitorEmailModal}
+        onClose={() => setShowVisitorEmailModal(false)}
+        currentEmail={visitorEmail || ""}
+        onSaveEmail={(email) => {
+          if (onSetVisitorEmail) onSetVisitorEmail(email);
+        }}
+        onGoogleLogin={onLogin}
+      />
 
       {/* MODAL PETUNJUK PENEMPATAN LOGO */}
       {showGuideModal && (

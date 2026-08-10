@@ -115,6 +115,15 @@ export default function App() {
   const [showDataInputModal, setShowDataInputModal] = useState<boolean>(false);
   const [showOperatorModal, setShowOperatorModal] = useState<boolean>(false);
   const [pendingOperatorAction, setPendingOperatorAction] = useState<((profile: OperatorProfile) => void) | null>(null);
+  const [visitorEmail, setVisitorEmail] = useState<string>(() => localStorage.getItem("orbit_gizi_visitor_email") || "");
+
+  const handleSetVisitorEmail = (email: string) => {
+    const trimmed = email.trim().toLowerCase();
+    if (trimmed) {
+      localStorage.setItem("orbit_gizi_visitor_email", trimmed);
+      setVisitorEmail(trimmed);
+    }
+  };
 
   const handleResetAllData = async () => {
     localStorage.setItem("orbit_gizi_local_beneficiaries", "[]");
@@ -238,11 +247,11 @@ export default function App() {
       viewName = tabNames[activeTab] || `Halaman Admin (${activeTab})`;
     }
 
-    const email = currentUser?.email || "pengunjung@public.go.id";
+    const email = currentUser?.email || visitorEmail || "pengunjung@public.go.id";
     const role = (isAdmin || currentUser?.email === "properwahyu294@gmail.com") ? "ADMIN" : "PENGUNJUNG";
 
     recordVisitorAccess(email, role, viewName);
-  }, [showLauncher, showPublicDashboard, activeTab, currentUser, isAdmin]);
+  }, [showLauncher, showPublicDashboard, activeTab, currentUser, isAdmin, visitorEmail]);
   const [beneficiaries, setBeneficiaries] = useState<MBGBeneficiary[]>(() => {
     const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
     if (stored) {
@@ -658,6 +667,8 @@ export default function App() {
     return (
       <PublicDashboardView
         currentUserEmail={currentUser?.email || null}
+        visitorEmail={visitorEmail}
+        onSetVisitorEmail={handleSetVisitorEmail}
         isAdmin={isAdmin}
         orbitGiziData={data}
         beneficiaries={beneficiaries}
@@ -719,6 +730,8 @@ export default function App() {
     return (
       <PublicDashboardView
         currentUserEmail={currentUser?.email || null}
+        visitorEmail={visitorEmail}
+        onSetVisitorEmail={handleSetVisitorEmail}
         isAdmin={false}
         orbitGiziData={data}
         beneficiaries={beneficiaries}
@@ -739,6 +752,8 @@ export default function App() {
       {/* 1. Header & Brand Logo */}
       <LogoOrbitGizi 
         currentUser={currentUser} 
+        visitorEmail={visitorEmail}
+        onSetVisitorEmail={handleSetVisitorEmail}
         onLogout={handleGoogleLogout} 
         onLogin={handleGoogleLogin}
         onSync={handleSyncSheets}
