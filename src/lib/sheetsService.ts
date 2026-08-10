@@ -422,7 +422,9 @@ export async function syncToGoogleSheets(
     ["ID Log", "Waktu Akses (WITA)", "Email Pengunjung", "Role / Hak Akses", "Tampilan Terakhir Dilihat", "Jenis Perangkat"]
   ];
   try {
-    let visitorData = JSON.parse(localStorage.getItem("orbit_gizi_visitor_logs") || "[]");
+    let visitorData = (data && Array.isArray(data.visitorLogs))
+      ? data.visitorLogs
+      : JSON.parse(localStorage.getItem("orbit_gizi_visitor_logs") || "[]");
     if (!Array.isArray(visitorData)) visitorData = [];
     visitorData.forEach((v: any) => {
       const formattedDate = v?.timestamp
@@ -446,7 +448,9 @@ export async function syncToGoogleSheets(
     ["ID Audit", "Waktu Tindakan (WITA)", "Nama Operator", "Jabatan / Peran", "Instansi / Puskesmas", "Email Operator", "Jenis Action", "Deskripsi Kegiatan", "Sasaran / Target"]
   ];
   try {
-    let auditData = JSON.parse(localStorage.getItem("orbit_gizi_audit_logs") || "[]");
+    let auditData = (data && Array.isArray(data.auditLogs))
+      ? data.auditLogs
+      : JSON.parse(localStorage.getItem("orbit_gizi_audit_logs") || "[]");
     if (!Array.isArray(auditData)) auditData = [];
     auditData.forEach((a: any) => {
       const formattedDate = a?.timestamp

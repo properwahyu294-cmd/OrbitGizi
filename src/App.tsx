@@ -84,7 +84,7 @@ import { PublicDashboardView } from "./components/PublicDashboardView";
 import { AdminNutritionCharts } from "./components/AdminNutritionCharts";
 import { OperatorIdentityModal } from "./components/OperatorIdentityModal";
 import { VisitorAnalyticsModal } from "./components/VisitorAnalyticsModal";
-import { recordVisitorAccess, recordAuditAction, getOperatorProfile } from "./lib/analyticsService";
+import { recordVisitorAccess, recordAuditAction, getOperatorProfile, fetchVisitorLogsApi, fetchAuditLogsApi } from "./lib/analyticsService";
 import { OperatorProfile } from "./types";
 
 const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [];
@@ -475,12 +475,14 @@ export default function App() {
     try {
       const activeUser = userObj !== undefined ? userObj : currentUser;
 
-      // Ensure fresh beneficiaries, ibu hamil, ibu menyusui & sheet config from API server before syncing
-      const [latestBens, sheetConfig, latestHamil, latestMenyusui] = await Promise.all([
+      // Ensure fresh beneficiaries, ibu hamil, ibu menyusui, visitor logs, audit logs & sheet config from API server before syncing
+      const [latestBens, sheetConfig, latestHamil, latestMenyusui, latestVisitors, latestAudits] = await Promise.all([
         getBeneficiariesApi(),
         getAdminSheetConfigApi(),
         getIbuHamilApi(),
-        getIbuMenyusuiApi()
+        getIbuMenyusuiApi(),
+        fetchVisitorLogsApi(),
+        fetchAuditLogsApi()
       ]);
       const currentBens = (latestBens && Array.isArray(latestBens)) ? latestBens : beneficiaries;
       setBeneficiaries(currentBens);
@@ -490,6 +492,8 @@ export default function App() {
         beneficiaries: currentBens,
         ibuHamil: (latestHamil && Array.isArray(latestHamil)) ? latestHamil : [],
         ibuMenyusui: (latestMenyusui && Array.isArray(latestMenyusui)) ? latestMenyusui : [],
+        visitorLogs: (latestVisitors && Array.isArray(latestVisitors)) ? latestVisitors : [],
+        auditLogs: (latestAudits && Array.isArray(latestAudits)) ? latestAudits : [],
         adminSheetUrl: sheetConfig?.adminSheetUrl || data.adminSheetUrl,
         adminSheetId: sheetConfig?.adminSheetId || data.adminSheetId
       };
