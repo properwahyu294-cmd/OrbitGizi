@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Users, Activity, Eye, UserCheck, ShieldCheck, Calendar, Clock, RefreshCw, FileSpreadsheet, Trash2, CheckCircle, Search, Laptop, Smartphone } from "lucide-react";
+import { Users, Activity, Eye, UserCheck, ShieldCheck, Calendar, Clock, RefreshCw, FileSpreadsheet, Trash2, CheckCircle, Search, Laptop, Smartphone, Printer } from "lucide-react";
 import { VisitorLog, AuditLog } from "../types";
-import { getVisitorLogs, getAuditLogs, recordVisitorAccess, clearOldAnalytics } from "../lib/analyticsService";
+import { getVisitorLogs, getAuditLogs, recordVisitorAccess, clearVisitorLogs, clearAuditLogs, clearAllLogs } from "../lib/analyticsService";
 
 interface VisitorAnalyticsModalProps {
   isOpen: boolean;
@@ -68,9 +68,56 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
     }
   };
 
+  const handleClearCurrentTabLogs = () => {
+    if (activeTab === "VISITORS") {
+      if (window.confirm("Apakah Anda yakin ingin menghapus seluruh Catatan Log Pengunjung?")) {
+        clearVisitorLogs();
+        refreshData();
+      }
+    } else {
+      if (window.confirm("Apakah Anda yakin ingin menghapus seluruh Catatan Audit Input Operator?")) {
+        clearAuditLogs();
+        refreshData();
+      }
+    }
+  };
+
+  const handleClearAllLogsAction = () => {
+    if (window.confirm("PERINGATAN: Apakah Anda yakin ingin menghapus SEMUA data Log (Pengunjung & Audit Operator)?")) {
+      clearAllLogs();
+      refreshData();
+    }
+  };
+
+  const handlePrintLogs = () => {
+    window.print();
+  };
+
   return (
     <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-700/60 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl text-white overflow-hidden">
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #printable-log-container, #printable-log-container * {
+            visibility: visible;
+          }
+          #printable-log-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            color: #000 !important;
+            background: #fff !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      <div id="printable-log-container" className="bg-slate-900 border border-slate-700/60 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl text-white overflow-hidden">
         
         {/* Header */}
         <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
@@ -91,12 +138,23 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
-          >
-            Tutup
-          </button>
+          <div className="flex items-center space-x-2 no-print">
+            <button
+              onClick={handlePrintLogs}
+              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-colors flex items-center space-x-1.5 shadow-md cursor-pointer"
+              title="Cetak Laporan Log / Unduh PDF"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              <span>Cetak Log</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+            >
+              Tutup
+            </button>
+          </div>
         </div>
 
         {/* Top Metric Cards */}
@@ -120,7 +178,7 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
         </div>
 
         {/* Controls & Search */}
-        <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900">
+        <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900 no-print">
           <div className="flex items-center space-x-2 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto">
             <button
               onClick={() => setActiveTab("VISITORS")}
@@ -146,15 +204,36 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
             </button>
           </div>
 
-          <div className="relative w-full sm:w-64">
-            <input
-              type="text"
-              placeholder="Cari email, nama, halaman..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 pl-8 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-500" />
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
+            <div className="relative w-full sm:w-56">
+              <input
+                type="text"
+                placeholder="Cari email, nama, halaman..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 pl-8 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              />
+              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-500" />
+            </div>
+
+            {/* Tombol Hapus Log */}
+            <button
+              onClick={handleClearCurrentTabLogs}
+              className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-all cursor-pointer shrink-0"
+              title={`Hapus Data Log ${activeTab === "VISITORS" ? "Pengunjung" : "Audit Operator"}`}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Hapus {activeTab === "VISITORS" ? "Pengunjung" : "Audit"}</span>
+            </button>
+
+            <button
+              onClick={handleClearAllLogsAction}
+              className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black flex items-center space-x-1.5 transition-all cursor-pointer shrink-0 shadow-xs"
+              title="Hapus Seluruh Data Log (Pengunjung & Audit Operator)"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Hapus Semua Log</span>
+            </button>
           </div>
         </div>
 
@@ -248,16 +327,27 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
             <span>Sistem otomatis menghapus log yang berusia lebih dari 90 hari (3 Bulan).</span>
           </div>
 
-          <button
-            onClick={refreshData}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold flex items-center space-x-1 cursor-pointer"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            <span>Muat Ulang</span>
-          </button>
+          <div className="flex items-center space-x-2 no-print">
+            <button
+              onClick={handlePrintLogs}
+              className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-bold flex items-center space-x-1 cursor-pointer"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              <span>Cetak Log</span>
+            </button>
+
+            <button
+              onClick={refreshData}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold flex items-center space-x-1 cursor-pointer"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Muat Ulang</span>
+            </button>
+          </div>
         </div>
 
       </div>
     </div>
   );
 };
+

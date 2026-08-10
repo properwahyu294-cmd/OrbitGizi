@@ -108,6 +108,31 @@ export function saveOperatorProfile(profile: OperatorProfile): void {
   }
 }
 
+export function clearVisitorLogs(): void {
+  try {
+    localStorage.removeItem(VISITOR_LOGS_KEY);
+  } catch (e) {
+    console.error("Gagal menghapus log pengunjung:", e);
+  }
+}
+
+export function clearAuditLogs(): void {
+  try {
+    localStorage.removeItem(AUDIT_LOGS_KEY);
+  } catch (e) {
+    console.error("Gagal menghapus log audit:", e);
+  }
+}
+
+export function clearAllLogs(): void {
+  try {
+    localStorage.removeItem(VISITOR_LOGS_KEY);
+    localStorage.removeItem(AUDIT_LOGS_KEY);
+  } catch (e) {
+    console.error("Gagal menghapus semua log:", e);
+  }
+}
+
 export function clearOldAnalytics(): { removedVisitors: number; removedAudits: number } {
   const visitors = getVisitorLogs();
   const audits = getAuditLogs();
