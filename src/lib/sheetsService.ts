@@ -122,8 +122,8 @@ export async function syncToGoogleSheets(
   const idKey = `orbit_gizi_spreadsheet_id${emailSuffix}`;
   const urlKey = `orbit_gizi_spreadsheet_url${emailSuffix}`;
 
-  let spreadsheetId = localStorage.getItem(idKey);
-  let spreadsheetUrl = localStorage.getItem(urlKey);
+  let spreadsheetId = localStorage.getItem(idKey) || data?.adminSheetId || null;
+  let spreadsheetUrl = localStorage.getItem(urlKey) || data?.adminSheetUrl || null;
 
   // Helper to create sheet and save to local storage
   const initNewSpreadsheet = async () => {
@@ -392,7 +392,9 @@ export async function syncToGoogleSheets(
       });
     };
 
-    let mbgData = JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
+    let mbgData = (data && Array.isArray(data.beneficiaries))
+      ? data.beneficiaries
+      : JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
     if (!Array.isArray(mbgData)) mbgData = [];
     processRecords(mbgData);
 

@@ -370,7 +370,7 @@ export default function App() {
 
       setData(json);
 
-      if (bensList && Array.isArray(bensList) && bensList.length > 0) {
+      if (bensList && Array.isArray(bensList)) {
         setBeneficiaries(bensList);
       }
 
@@ -462,9 +462,20 @@ export default function App() {
     setSyncSuccess(false);
     try {
       const activeUser = userObj !== undefined ? userObj : currentUser;
+
+      // Ensure fresh beneficiaries & sheet config from API server before syncing
+      const [latestBens, sheetConfig] = await Promise.all([
+        getBeneficiariesApi(),
+        getAdminSheetConfigApi()
+      ]);
+      const currentBens = (latestBens && Array.isArray(latestBens)) ? latestBens : beneficiaries;
+      setBeneficiaries(currentBens);
+
       const fullData = {
         ...data,
-        beneficiaries: beneficiaries
+        beneficiaries: currentBens,
+        adminSheetUrl: sheetConfig?.adminSheetUrl || data.adminSheetUrl,
+        adminSheetId: sheetConfig?.adminSheetId || data.adminSheetId
       };
       const result = await syncToGoogleSheets(token, data.kabupatenName, fullData, activeUser?.email || undefined);
       setSheetsSyncUrl(result.spreadsheetUrl);
