@@ -428,7 +428,7 @@ export default function DataInputCenter({
         const matchPosyandu = benPosyanduStr.toLowerCase().includes(q);
         const matchCategory = ben.category.toLowerCase().includes(q);
 
-        const hasMatchingRec = ben.weightRecords.some(
+        const hasMatchingRec = ben.weightRecords && ben.weightRecords.some(
           r => r.period.toLowerCase().includes(q) || (r.statusGizi || "").toLowerCase().includes(q)
         );
 
@@ -437,9 +437,32 @@ export default function DataInputCenter({
         }
       }
 
-      ben.weightRecords.forEach((rec, idx) => {
-        list.push({ ben, rec, idx });
-      });
+      // Display 1 row per beneficiary showing their latest measurement record (or matching search record)
+      if (ben.weightRecords && ben.weightRecords.length > 0) {
+        let chosenIdx = ben.weightRecords.length - 1; // default to latest measurement record
+        if (q) {
+          const matchIdx = ben.weightRecords.findIndex(
+            r => r.period.toLowerCase().includes(q) || (r.statusGizi || "").toLowerCase().includes(q)
+          );
+          if (matchIdx !== -1) {
+            chosenIdx = matchIdx;
+          }
+        }
+        const rec = ben.weightRecords[chosenIdx];
+        list.push({ ben, rec, idx: chosenIdx });
+      } else {
+        list.push({
+          ben,
+          rec: {
+            period: "Belum Timbang",
+            weightKg: ben.initialWeightKg !== undefined ? ben.initialWeightKg : 0,
+            heightCm: ben.initialHeightCm,
+            statusGizi: (ben.initialStatusGizi as any) || "Normal",
+            measuredAt: new Date().toISOString().split("T")[0]
+          },
+          idx: -1
+        });
+      }
     });
 
     return list;
