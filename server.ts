@@ -228,6 +228,8 @@ let ibuHamil: any[] = [];
 let ibuMenyusui: any[] = [];
 let bannerImages: any[] = [];
 let dashboardBannerImages: any[] = [];
+let visitorLogs: any[] = [];
+let auditLogs: any[] = [];
 
 // Load data store from disk or initialize with seeds
 function loadStoreFromDisk() {
@@ -245,6 +247,8 @@ function loadStoreFromDisk() {
       ibuMenyusui = Array.isArray(parsed.ibuMenyusui) ? parsed.ibuMenyusui : [];
       bannerImages = Array.isArray(parsed.bannerImages) ? parsed.bannerImages : [];
       dashboardBannerImages = Array.isArray(parsed.dashboardBannerImages) ? parsed.dashboardBannerImages : [];
+      visitorLogs = Array.isArray(parsed.visitorLogs) ? parsed.visitorLogs : [];
+      auditLogs = Array.isArray(parsed.auditLogs) ? parsed.auditLogs : [];
       lastUpdated = parsed.lastUpdated || new Date().toISOString();
     } else {
       villages = [...SEED_VILLAGES];
@@ -274,7 +278,9 @@ function saveStoreToDisk() {
       ibuHamil,
       ibuMenyusui,
       bannerImages,
-      dashboardBannerImages
+      dashboardBannerImages,
+      visitorLogs,
+      auditLogs
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(payload, null, 2), "utf-8");
   } catch (e) {
@@ -730,6 +736,71 @@ app.post("/api/banners/save", (req, res) => {
     saveStoreToDisk();
   }
   res.json({ success: true, bannerImages, dashboardBannerImages });
+});
+
+// API: Get Visitor Logs
+app.get("/api/analytics/visitor-logs", (req, res) => {
+  res.json({ success: true, list: visitorLogs });
+});
+
+// API: Record Visitor Log
+app.post("/api/analytics/visitor-logs/record", (req, res) => {
+  const item = req.body;
+  if (item && typeof item === "object") {
+    const log = item.id ? item : {
+      id: "v_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+      timestamp: new Date().toISOString(),
+      email: item.email || "pengunjung@public.go.id",
+      role: item.role || "PENGUNJUNG",
+      viewName: item.viewName || "Halaman Utama",
+      deviceInfo: item.deviceInfo || "Perangkat Web"
+    };
+    visitorLogs.unshift(log);
+    if (visitorLogs.length > 2000) visitorLogs = visitorLogs.slice(0, 2000);
+    saveStoreToDisk();
+  }
+  res.json({ success: true, list: visitorLogs });
+});
+
+// API: Clear Visitor Logs
+app.post("/api/analytics/visitor-logs/clear", (req, res) => {
+  visitorLogs = [];
+  saveStoreToDisk();
+  res.json({ success: true, list: [] });
+});
+
+// API: Get Audit Logs
+app.get("/api/analytics/audit-logs", (req, res) => {
+  res.json({ success: true, list: auditLogs });
+});
+
+// API: Record Audit Log
+app.post("/api/analytics/audit-logs/record", (req, res) => {
+  const item = req.body;
+  if (item && typeof item === "object") {
+    const log = item.id ? item : {
+      id: "a_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+      timestamp: new Date().toISOString(),
+      operatorName: item.operatorName || item.operator?.name || "Petugas Anonim",
+      operatorRole: item.operatorRole || item.operator?.role || "Petugas Nakes",
+      operatorInstansi: item.operatorInstansi || item.operator?.instansi || "Dinas Kesehatan / Puskesmas",
+      operatorEmail: item.operatorEmail || item.operator?.email || "admin@nagekeo.go.id",
+      actionType: item.actionType || "AKSES_SISTEM",
+      description: item.description || "Melakukan tindakan pada sistem",
+      targetName: item.targetName
+    };
+    auditLogs.unshift(log);
+    if (auditLogs.length > 2000) auditLogs = auditLogs.slice(0, 2000);
+    saveStoreToDisk();
+  }
+  res.json({ success: true, list: auditLogs });
+});
+
+// API: Clear Audit Logs
+app.post("/api/analytics/audit-logs/clear", (req, res) => {
+  auditLogs = [];
+  saveStoreToDisk();
+  res.json({ success: true, list: [] });
 });
 
 // API: Get Admin Sheet Config

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Users, Activity, Eye, UserCheck, ShieldCheck, Calendar, Clock, RefreshCw, FileSpreadsheet, Trash2, CheckCircle, Search, Laptop, Smartphone, Printer } from "lucide-react";
 import { VisitorLog, AuditLog } from "../types";
-import { getVisitorLogs, getAuditLogs, recordVisitorAccess, clearVisitorLogs, clearAuditLogs, clearAllLogs } from "../lib/analyticsService";
+import { getVisitorLogs, getAuditLogs, fetchVisitorLogsApi, fetchAuditLogsApi, clearVisitorLogs, clearAuditLogs, clearAllLogs } from "../lib/analyticsService";
 
 interface VisitorAnalyticsModalProps {
   isOpen: boolean;
@@ -20,10 +20,21 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
   const [visitorLogs, setVisitorLogs] = useState<VisitorLog[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const refreshData = () => {
+  const refreshData = async () => {
+    setIsLoading(true);
     setVisitorLogs(getVisitorLogs());
     setAuditLogs(getAuditLogs());
+
+    const [freshVisitors, freshAudits] = await Promise.all([
+      fetchVisitorLogsApi(),
+      fetchAuditLogsApi()
+    ]);
+
+    setVisitorLogs(freshVisitors);
+    setAuditLogs(freshAudits);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -139,6 +150,16 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
           </div>
 
           <div className="flex items-center space-x-2 no-print">
+            <button
+              onClick={refreshData}
+              disabled={isLoading}
+              className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors flex items-center space-x-1.5 cursor-pointer"
+              title="Segarkan & Ambil Log Terbaru dari Server Central"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin text-emerald-400" : ""}`} />
+              <span>{isLoading ? "Memuat..." : "Sync Server Log"}</span>
+            </button>
+
             <button
               onClick={handlePrintLogs}
               className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-colors flex items-center space-x-1.5 shadow-md cursor-pointer"
