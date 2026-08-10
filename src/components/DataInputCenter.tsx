@@ -557,7 +557,13 @@ export default function DataInputCenter({
     onAddWeightRecord(targetBen.id, updatedRecord);
 
     setEditWeightSuccess(true);
-    setOrigWeightPeriod(newPeriod);
+    setOrigWeightPeriod("");
+    setEditWeightPeriod("");
+    setEditWeightKg("");
+    setEditHeightCm("");
+    setEditStatusGizi("Normal");
+    setEditMeasuredAt(new Date().toISOString().split("T")[0]);
+
     setTimeout(() => {
       setEditWeightSuccess(false);
     }, 1200);
