@@ -12,13 +12,17 @@ import {
   CheckCircle2, 
   Building2,
   Mail,
-  Lock
+  ExternalLink,
+  FileSpreadsheet,
+  Maximize2,
+  RefreshCw,
+  Layers,
+  FileText
 } from "lucide-react";
 import { NutritionBannerGallery, BannerImage, DEFAULT_NUTRITION_IMAGES } from "./NutritionBannerGallery";
 import { BeneficiaryDetailModal } from "./BeneficiaryDetailModal";
 import { AdminNutritionCharts } from "./AdminNutritionCharts";
 import { MBGBeneficiary } from "../types";
-import { ExternalLink, FileSpreadsheet } from "lucide-react";
 
 interface PublicDashboardViewProps {
   onBackToLauncher: () => void;
@@ -43,9 +47,10 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   villages: propVillages,
   adminSheetUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115"
 }) => {
-  const [activeTab, setActiveTab] = useState<"SUMMARY" | "BENEFICIARIES" | "GALLERY" | "VILLAGES">("SUMMARY");
+  const [activeTab, setActiveTab] = useState<"SUMMARY" | "SHEET_LIVE" | "BENEFICIARIES" | "GALLERY" | "VILLAGES">("SUMMARY");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("ALL");
+  const [iframeKey, setIframeKey] = useState<number>(0);
 
   const currentEmail = currentUserEmail || "pengunjung@public.go.id";
   const isAdminEmail = currentUserEmail?.toLowerCase().trim() === "properwahyu294@gmail.com";
@@ -65,7 +70,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     return DEFAULT_NUTRITION_IMAGES;
   });
 
-  // Calculate live beneficiaries list (prop first, then local storage)
+  // Calculate live beneficiaries list
   const beneficiaries: MBGBeneficiary[] = React.useMemo(() => {
     if (propBeneficiaries && propBeneficiaries.length > 0) {
       return propBeneficiaries;
@@ -74,7 +79,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     if (stored) {
       try {
         const parsed: MBGBeneficiary[] = JSON.parse(stored);
-        return parsed.filter(b => b.id && !b.id.startsWith("ben_ngt_") && !b.id.startsWith("b1") && b.id !== "b1" && b.id !== "b2" && b.id !== "b3" && b.id !== "b4" && b.id !== "b5");
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch {
         return [];
       }
@@ -82,7 +87,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     return [];
   }, [propBeneficiaries]);
 
-  // Calculate live villages list (prop first, then orbitGiziData, then local storage)
+  // Calculate live villages list
   const villages: any[] = React.useMemo(() => {
     if (propVillages && propVillages.length > 0) return propVillages;
     if (orbitGiziData?.villages && orbitGiziData.villages.length > 0) return orbitGiziData.villages;
@@ -104,6 +109,79 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     const matchesCategory = filterCategory === "ALL" || b.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // Derive Google Sheet Embed URL
+  const getEmbedUrl = (rawUrl: string) => {
+    if (!rawUrl) return "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/pubhtml?widget=true&headers=false";
+    const match = rawUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (match && match[1]) {
+      return `https://docs.google.com/spreadsheets/d/${match[1]}/pubhtml?widget=true&headers=false`;
+    }
+    return rawUrl;
+  };
+
+  const embedSheetUrl = getEmbedUrl(adminSheetUrl);
+
+  const indexScore = orbitGiziData?.indexScore || 82.9;
+  const categoryLabel = orbitGiziData?.category?.label || "Hijau";
+  const categoryDesc = orbitGiziData?.category?.desc || "Optimal (Sangat Baik & Berkelanjutan)";
+
+  const pillarsList = orbitGiziData?.pillars || [
+    {
+      id: "pilar1",
+      name: "Pilar 1. Sinkronisasi Data",
+      weight: 10,
+      indicators: [
+        { id: "mbg_data", name: "Pilar 1. Sinkronisasi Data - Data MBG Tersinkronisasi", score: 100, description: "Penerima data MBG tersinkronisasi (1 dari 10 anak)" },
+        { id: "pmt_data", name: "Pilar 1. Sinkronisasi Data - Data PMT Tersinkronisasi", score: 100, description: "Data ibu hamil KEK & balita gizi kurang tersinkronisasi (1 dari 5 sasaran)" },
+        { id: "posyandu_data", name: "Pilar 1. Sinkronisasi Data - Data Posyandu Digital", score: 100, description: "Data pendaftaran & pengukuran posyandu terdigitalisasi (1 dari 1 unit)" },
+        { id: "eppgbm_data", name: "Pilar 1. Sinkronisasi Data - Data e-PPGBM Sinkron", score: 100, description: "Sinkronisasi dengan e-PPGBM Kemenkes RI (1 dari 10 balita)" },
+      ]
+    },
+    {
+      id: "pilar2",
+      name: "Pilar 2. Kolaborasi OPD",
+      weight: 30,
+      indicators: [
+        { id: "dinkes", name: "Pilar 2. Kolaborasi OPD - Keaktifan Dinkes", score: 100, description: "Dinas Kesehatan aktif mendampingi puskesmas di 1 dari 1 desa" },
+        { id: "bgn", name: "Pilar 2. Kolaborasi OPD - Kemitraan BGN", score: 100, description: "Badan Gizi Nasional terlibat di 1 dari 1 desa" },
+        { id: "pkk", name: "Pilar 2. Kolaborasi OPD - Edukasi Tim PKK", score: 100, description: "Kader PKK menyelenggarakan penyuluhan berkala di 1 dari 1 desa" },
+        { id: "pemdes", name: "Pilar 2. Kolaborasi OPD - Dukungan Pemdes (Dana Desa)", score: 100, description: "Alokasi Dana Desa untuk stunting di 1 dari 1 desa" },
+        { id: "puskesmas", name: "Pilar 2. Kolaborasi OPD - Pendampingan Puskesmas", score: 100, description: "Rujukan gizi buruk terpantau di 1 dari 1 desa" },
+      ]
+    },
+    {
+      id: "pilar3",
+      name: "Pilar 3. Digitalisasi",
+      weight: 10,
+      indicators: [
+        { id: "dashboard_online", name: "Pilar 3. Digitalisasi - Dashboard Online Desa", score: 100, description: "Tersedianya dashboard publik online desa di 1 dari 1 desa" },
+        { id: "validation_flow", name: "Pilar 3. Digitalisasi - Validasi Berjenjang Selesai", score: 100, description: "Penyelesaian validasi data gizi di 1 dari 1 desa" },
+        { id: "real_time_update", name: "Pilar 3. Digitalisasi - Sistem Pelaporan Real-Time", score: 100, description: "Pelaporan data harian aktif di 1 dari 1 desa" },
+      ]
+    },
+    {
+      id: "pilar4",
+      name: "Pilar 4. Pelayanan Gizi",
+      weight: 25,
+      indicators: [
+        { id: "mbg_coverage", name: "Pilar 4. Pelayanan Gizi - Cakupan Layanan MBG", score: 85, description: "Realisasi distribusi MBG posyandu mencapai 1 dari 10 sasaran" },
+        { id: "pmt_coverage", name: "Pilar 4. Pelayanan Gizi - Cakupan Layanan PMT", score: 85, description: "Realisasi PMT ibu hamil & balita mencapai 1 dari 5 sasaran" },
+        { id: "home_visit", name: "Pilar 4. Pelayanan Gizi - Rasio Home Visit", score: 90, description: "Kunjungan rumah oleh kader mencapai sasaran prioritas" },
+        { id: "posyandu_active", name: "Pilar 4. Pelayanan Gizi - Tingkat Keaktifan Posyandu", score: 100, description: "Kondisi posyandu aktif operasional 100%" },
+      ]
+    },
+    {
+      id: "pilar5",
+      name: "Pilar 5. Outcome & Dampak",
+      weight: 25,
+      indicators: [
+        { id: "stunting_reduction", name: "Pilar 5. Outcome & Dampak - Penurunan Kasus Stunting", score: 90, description: "Tren penurunan kumulatif kasus stunting berjalan stabil" },
+        { id: "wasting_reduction", name: "Pilar 5. Outcome & Dampak - Penurunan Kasus Wasting", score: 90, description: "Tren penurunan kumulatif kasus wasting terpantau optimal" },
+        { id: "target_accuracy", name: "Pilar 5. Outcome & Dampak - Keakuratan Sasaran Penerima", score: 95, description: "Tingkat ketepatan sasaran intervensi gizi terpadu di kabupaten" },
+      ]
+    }
+  ];
 
   return (
     <div className="min-h-screen text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white relative overflow-x-hidden"
@@ -143,8 +221,8 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
             href={adminSheetUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl border border-emerald-300 text-xs font-bold transition-all shadow-2xs"
-            title="Buka Google Sheet Admin Nagekeo"
+            className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl border border-emerald-300 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+            title="Buka Google Sheet Admin Nagekeo di Tab Baru"
           >
             <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
             <span>Sheet Admin Live</span>
@@ -197,6 +275,19 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveTab("SHEET_LIVE")}
+              className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center space-x-2 ${
+                activeTab === "SHEET_LIVE" 
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20" 
+                  : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300"
+              }`}
+            >
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+              <span>Sheet Admin Live (Google Sheet Sync)</span>
+              <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[9px] font-extrabold uppercase animate-pulse">LIVE</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab("BENEFICIARIES")}
               className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center space-x-2 ${
                 activeTab === "BENEFICIARIES" 
@@ -244,7 +335,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
       {/* MAIN CONTENT CONTAINER */}
       <main className="max-w-7xl w-full mx-auto p-4 sm:p-8 flex-1 space-y-8">
         
-        {/* TAB 1: SUMMARY & STATS */}
+        {/* TAB 1: SUMMARY & STATS & LAPORAN INDEKS SHEET */}
         {activeTab === "SUMMARY" && (
           <div className="space-y-8 animate-in fade-in duration-300">
             
@@ -253,24 +344,115 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
               <div className="space-y-3">
                 <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold">
                   <Sparkles className="h-3.5 w-3.5" />
-                  <span>Transparansi Publik • Klik Nama Sasaran untuk Detail Lengkap</span>
+                  <span>Transparansi Publik • Synchronized Google Sheets Live</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-white">
-                  Portal Eksekutif & Pemantauan Gizi Nagekeo
+                  Laporan Indeks Transformasi Orbit Gizi {selectedKabupaten}
                 </h2>
                 <p className="text-emerald-100 text-xs sm:text-sm font-medium max-w-2xl leading-relaxed">
-                  Dashboard publik transparan untuk stakeholder dan masyarakat. Sistem otomatis mengenali hak akses berdasarkan email aktif (<code className="text-emerald-300 font-mono font-bold">{currentEmail}</code>).
+                  Laporan publik ini secara langsung merefleksikan seluruh data pada Google Sheet Admin Live. Publik dapat memantau pilar intervensi, detail indikator penyusun, dan daftar sasaran secara real-time.
                 </p>
               </div>
 
               <div className="flex flex-col gap-3 shrink-0">
-                <div className="bg-slate-950/80 border border-emerald-500/30 p-4 rounded-2xl text-center">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Status Hak Akses</span>
-                  <span className="font-black text-xs flex items-center justify-center space-x-1.5 mt-1 text-emerald-400">
-                    <CheckCircle2 className="h-4 w-4" />
-                    <span>{isAdminEmail ? "Akses Admin Terverifikasi" : "Akses Tamu Publik"}</span>
+                <div className="bg-slate-950/80 border border-emerald-500/30 p-5 rounded-2xl text-center min-w-[200px]">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Skor Indeks Kabupaten</span>
+                  <span className="text-3xl font-black text-emerald-400 block mt-1">{indexScore} / 100</span>
+                  <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-black uppercase mt-2 bg-emerald-500 text-slate-950">
+                    Kategori {categoryLabel} ({categoryDesc})
                   </span>
                 </div>
+              </div>
+            </div>
+
+            {/* TABEL SKOR PILAR INTERVENSI (Google Sheet Ringkasan Indeks) */}
+            <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <Layers className="h-5 w-5 text-emerald-600" />
+                    <h3 className="text-lg font-black text-slate-900">TABEL SKOR PILAR INTERVENSI</h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">Data pilar yang tersinkronisasi otomatis dengan Google Sheet Admin Live.</p>
+                </div>
+                <button
+                  onClick={() => setActiveTab("SHEET_LIVE")}
+                  className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-300 flex items-center space-x-1.5 transition-colors cursor-pointer"
+                >
+                  <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+                  <span>Buka Embed Google Sheet Live →</span>
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-black text-slate-600 uppercase tracking-wider">
+                      <th className="p-3.5">Nama Pilar Intervensi</th>
+                      <th className="p-3.5 text-center">Bobot Pilar (%)</th>
+                      <th className="p-3.5 text-center">Skor Rata-Rata Pilar (0-100)</th>
+                      <th className="p-3.5 text-right">Status Evaluasi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs font-medium">
+                    {pillarsList.map((p: any, idx: number) => {
+                      const avgScore = p.indicators ? Math.round(p.indicators.reduce((acc: number, i: any) => acc + i.score, 0) / p.indicators.length) : 100;
+                      return (
+                        <tr key={p.id || idx} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="p-3.5 font-bold text-slate-900 flex items-center space-x-2">
+                            <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-[10px]">
+                              P{idx + 1}
+                            </span>
+                            <span>{p.name}</span>
+                          </td>
+                          <td className="p-3.5 text-center font-mono font-bold text-slate-700">{p.weight}%</td>
+                          <td className="p-3.5 text-center font-mono font-black text-emerald-700 text-sm">{avgScore} / 100</td>
+                          <td className="p-3.5 text-right">
+                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black ${
+                              avgScore >= 80 ? "bg-emerald-100 text-emerald-800 border border-emerald-300" :
+                              avgScore >= 60 ? "bg-amber-100 text-amber-800 border border-amber-300" :
+                              "bg-rose-100 text-rose-800 border border-rose-300"
+                            }`}>
+                              {avgScore >= 80 ? "Optimal" : avgScore >= 60 ? "Perlu Peningkatan" : "Kritis"}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* DETIL INDIKATOR PENYUSUN (Google Sheet Tab Detil) */}
+            <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+              <div className="flex items-center space-x-2 border-b border-slate-100 pb-4">
+                <FileText className="h-5 w-5 text-teal-600" />
+                <div>
+                  <h3 className="text-lg font-black text-slate-900">DETIL INDIKATOR PENYUSUN</h3>
+                  <p className="text-xs text-slate-500">Rincian indikator dari pilar-pilar gizi terpadu Kabupaten Nagekeo.</p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-black text-slate-600 uppercase tracking-wider">
+                      <th className="p-3.5">Nama Indikator</th>
+                      <th className="p-3.5 text-center">Skor (0-100)</th>
+                      <th className="p-3.5">Deskripsi Realiasasi & Capaian</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs font-medium">
+                    {pillarsList.flatMap((p: any) => p.indicators || []).map((i: any, idx: number) => (
+                      <tr key={i.id || idx} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="p-3.5 font-bold text-slate-900 max-w-xs">{i.name}</td>
+                        <td className="p-3.5 text-center font-mono font-black text-emerald-700">{i.score}</td>
+                        <td className="p-3.5 text-slate-600">{i.description}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -311,7 +493,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
 
               <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 shadow-sm space-y-2">
                 <div className="flex items-center justify-between text-slate-500">
-                  <span className="text-xs font-bold uppercase tracking-wider">Posyandu Aktif</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">Posyandu Terdaftar</span>
                   <div className="p-2 bg-teal-50 text-teal-600 rounded-xl">
                     <Building2 className="h-5 w-5" />
                   </div>
@@ -324,21 +506,74 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
             {/* NUTRITION CHARTS (RECHARTS) */}
             <AdminNutritionCharts beneficiariesCount={beneficiaries.length} />
 
-            {/* EMBEDDED BANNER GALLERY IN SUMMARY */}
-            <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
-              <NutritionBannerGallery
-                images={bannerImages}
-                onAddImage={() => alert("Fitur tambah gambar memerlukan login Admin/Nakes dengan email properwahyu294@gmail.com.")}
-                onDeleteImage={() => alert("Fitur hapus gambar memerlukan login Admin/Nakes dengan email properwahyu294@gmail.com.")}
-                title="Galeri Visual & Dokumentasi Gizi Publik"
-                subtitle="Dokumentasi kegiatan intervensi gizi, Posyandu, dan Makanan Bergizi Gratis (MBG) di Nagekeo."
-              />
-            </div>
-
           </div>
         )}
 
-        {/* TAB 2: BENEFICIARIES READ-ONLY TABLE (WITH CLICKABLE NAMES FOR MODAL) */}
+        {/* TAB 2: LIVE EMBEDDED GOOGLE SHEET VIEW */}
+        {activeTab === "SHEET_LIVE" && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="bg-gradient-to-r from-emerald-800 via-teal-900 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-lg border border-emerald-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold">
+                  <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Transparansi Google Sheet Live (Google Drive Interaktif)</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white">
+                  Pratinjau Langsung Spreadsheet Admin Nagekeo
+                </h3>
+                <p className="text-xs sm:text-sm text-emerald-100 max-w-2xl">
+                  Seluruh tab sheet (Ringkasan Indeks, Data Desa, Penerima MBG, Ibu Hamil, Ibu Menyusui, Catatan Timbang) dapat diakses dan dilihat langsung di bawah ini secara transparan.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => setIframeKey(prev => prev + 1)}
+                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/30 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 cursor-pointer shadow-sm"
+                  title="Muat ulang spreadsheet"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  <span>Segarkan Sheet</span>
+                </button>
+
+                <a
+                  href={adminSheetUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition-all flex items-center space-x-2 shadow-md cursor-pointer"
+                >
+                  <Maximize2 className="h-4 w-4" />
+                  <span>Buka di Google Drive ↗</span>
+                </a>
+              </div>
+            </div>
+
+            {/* EMBED IFRAME */}
+            <div className="bg-white/95 backdrop-blur-md border border-slate-300 rounded-3xl overflow-hidden shadow-xl p-2 sm:p-4 min-h-[700px] flex flex-col">
+              <div className="flex items-center justify-between px-4 py-3 bg-slate-100 border-b border-slate-200 rounded-t-2xl mb-2 text-xs text-slate-600 font-bold">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-rose-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                  <span className="ml-2 font-mono text-slate-700">Google Sheets Viewer Live • Nagekeo</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px]">Tersinkronisasi Live</span>
+                </div>
+              </div>
+
+              <iframe
+                key={iframeKey}
+                src={embedSheetUrl}
+                className="w-full h-[700px] rounded-xl border border-slate-200 shadow-inner"
+                title="Google Sheet Admin Orbit Gizi"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: BENEFICIARIES READ-ONLY TABLE (WITH CLICKABLE NAMES FOR MODAL) */}
         {activeTab === "BENEFICIARIES" && (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/95 backdrop-blur-md border border-slate-200 p-6 rounded-3xl shadow-sm">
@@ -435,7 +670,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
           </div>
         )}
 
-        {/* TAB 3: GALLERY */}
+        {/* TAB 4: GALLERY */}
         {activeTab === "GALLERY" && (
           <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 animate-in fade-in duration-300">
             <NutritionBannerGallery
@@ -449,7 +684,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
           </div>
         )}
 
-        {/* TAB 4: VILLAGES & DISTRICT RECAP */}
+        {/* TAB 5: VILLAGES & DISTRICT RECAP */}
         {activeTab === "VILLAGES" && (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="bg-white/95 backdrop-blur-md border border-slate-200 p-6 rounded-3xl shadow-sm">

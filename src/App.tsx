@@ -398,10 +398,13 @@ export default function App() {
       const emailSuffix = `_${currentUser.email.toLowerCase().trim()}`;
       const urlKey = `orbit_gizi_spreadsheet_url${emailSuffix}`;
       const savedUrl = localStorage.getItem(urlKey);
-      setSheetsSyncUrl(savedUrl || localStorage.getItem("orbit_gizi_spreadsheet_url"));
-    } else {
-      setSheetsSyncUrl(null);
+      if (savedUrl) {
+        setSheetsSyncUrl(savedUrl);
+        return;
+      }
     }
+    const globalSaved = localStorage.getItem("orbit_gizi_spreadsheet_url");
+    setSheetsSyncUrl(globalSaved || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115");
   }, [currentUser]);
 
   const handleGoogleLogin = async () => {
