@@ -258,15 +258,16 @@ export default function App() {
       try {
         const parsed: MBGBeneficiary[] = JSON.parse(stored);
         const clean = parsed.filter(b => b.id && !b.id.startsWith("ben_ngt_") && !b.id.startsWith("b1") && b.id !== "b1" && b.id !== "b2" && b.id !== "b3");
-        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(clean));
-        return clean;
+        if (clean.length > 0) {
+          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(clean));
+          return clean;
+        }
       } catch {
-        localStorage.setItem("orbit_gizi_local_beneficiaries", "[]");
-        return [];
+        // fallback
       }
     }
-    localStorage.setItem("orbit_gizi_local_beneficiaries", "[]");
-    return [];
+    localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(DEFAULT_BENEFICIARIES));
+    return DEFAULT_BENEFICIARIES as MBGBeneficiary[];
   });
 
   const collaborationMetrics = useMemo(() => {

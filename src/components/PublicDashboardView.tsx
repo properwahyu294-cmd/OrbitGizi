@@ -80,19 +80,19 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
 
   // Calculate live beneficiaries list
   const beneficiaries: MBGBeneficiary[] = React.useMemo(() => {
-    if (propBeneficiaries) {
+    if (propBeneficiaries && propBeneficiaries.length > 0) {
       return propBeneficiaries;
     }
     const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
     if (stored !== null) {
       try {
         const parsed: MBGBeneficiary[] = JSON.parse(stored);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch {
         // ignore
       }
     }
-    return [];
+    return (DEFAULT_BENEFICIARIES || []) as MBGBeneficiary[];
   }, [propBeneficiaries]);
 
   // Calculate live villages list
