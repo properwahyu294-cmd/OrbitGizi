@@ -52,6 +52,8 @@ import {
   deleteBeneficiaryApi,
   getAdminSheetConfigApi,
   updateAdminSheetConfigApi,
+  getBannersApi,
+  saveBannersApi,
   isUsingLocalFallback
 } from "./lib/dataService";
 
@@ -185,6 +187,14 @@ export default function App() {
     return DEFAULT_NUTRITION_IMAGES;
   });
 
+  useEffect(() => {
+    getBannersApi().then(res => {
+      if (Array.isArray(res.dashboardBannerImages) && res.dashboardBannerImages.length > 0) {
+        setDashboardBannerImages(res.dashboardBannerImages);
+      }
+    });
+  }, []);
+
   const handleAddDashboardBannerImage = (img: { title: string; subtitle: string; url: string }) => {
     if (dashboardBannerImages.length >= 15) {
       alert("Maksimal 15 gambar tersimpan.");
@@ -195,13 +205,13 @@ export default function App() {
       { id: "dash_img_" + Date.now(), ...img }
     ];
     setDashboardBannerImages(updated);
-    localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
+    saveBannersApi("dashboard", updated);
   };
 
   const handleDeleteDashboardBannerImage = (id: string) => {
     const updated = dashboardBannerImages.filter(img => img.id !== id);
     setDashboardBannerImages(updated);
-    localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
+    saveBannersApi("dashboard", updated);
   };
 
   // Automatic visitor analytics tracking on mount and view changes

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Sparkles, 
   ShieldCheck, 
@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import BannerCarousel from "./BannerCarousel";
 import { NutritionBannerGallery, BannerImage, DEFAULT_NUTRITION_IMAGES } from "./NutritionBannerGallery";
+import { getBannersApi, saveBannersApi } from "../lib/dataService";
 
 interface LauncherLandingProps {
   onLaunchDashboard: () => void;
@@ -69,6 +70,14 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
     return DEFAULT_NUTRITION_IMAGES;
   });
 
+  useEffect(() => {
+    getBannersApi().then(res => {
+      if (Array.isArray(res.bannerImages) && res.bannerImages.length > 0) {
+        setBannerImages(res.bannerImages);
+      }
+    });
+  }, []);
+
   const handleAddBannerImage = (img: { title: string; subtitle: string; url: string }) => {
     if (bannerImages.length >= 15) {
       alert("Maksimal 15 gambar tersimpan.");
@@ -79,13 +88,13 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
       { id: "img_" + Date.now(), ...img }
     ];
     setBannerImages(updated);
-    localStorage.setItem("orbit_gizi_banner_images", JSON.stringify(updated));
+    saveBannersApi("landing", updated);
   };
 
   const handleDeleteBannerImage = (id: string) => {
     const updated = bannerImages.filter(img => img.id !== id);
     setBannerImages(updated);
-    localStorage.setItem("orbit_gizi_banner_images", JSON.stringify(updated));
+    saveBannersApi("landing", updated);
   };
 
   const handleOpenLogin = () => {

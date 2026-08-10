@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { IbuHamilBeneficiary } from "../types";
 import { Users, Plus, Edit3, Trash2, Search, Heart, MapPin, CheckCircle2, X, Save, Calendar, Filter } from "lucide-react";
+import { getIbuHamilApi, saveIbuHamilApi, deleteIbuHamilApi } from "../lib/dataService";
 
 const DEFAULT_IBU_HAMIL: IbuHamilBeneficiary[] = [];
 
@@ -27,17 +28,21 @@ export default function IbuHamilView() {
     if (stored) {
       try {
         const parsed: IbuHamilBeneficiary[] = JSON.parse(stored);
-        const clean = parsed.filter(b => b.id && !b.id.startsWith("hamil_"));
-        localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(clean));
-        return clean;
+        return Array.isArray(parsed) ? parsed : [];
       } catch {
-        localStorage.setItem("orbit_gizi_ibu_hamil", "[]");
         return [];
       }
     }
-    localStorage.setItem("orbit_gizi_ibu_hamil", "[]");
     return [];
   });
+
+  useEffect(() => {
+    getIbuHamilApi().then(data => {
+      if (Array.isArray(data)) {
+        setBeneficiaries(data);
+      }
+    });
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedIndividualId, setSelectedIndividualId] = useState<string>("ALL");
@@ -63,7 +68,7 @@ export default function IbuHamilView() {
   const [catatan, setCatatan] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const saveToStorage = (updated: IbuHamilBeneficiary[]) => {
+  const saveToStorage = async (updated: IbuHamilBeneficiary[]) => {
     setBeneficiaries(updated);
     localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(updated));
   };
@@ -98,16 +103,16 @@ export default function IbuHamilView() {
     setShowModal(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus data Ibu Hamil ini?")) {
-      const updated = beneficiaries.filter(b => b.id !== id);
-      saveToStorage(updated);
+      const newList = await deleteIbuHamilApi(id);
+      setBeneficiaries(newList);
       setSuccessMessage("Data Ibu Hamil berhasil dihapus.");
       setTimeout(() => setSuccessMessage(null), 3000);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!namaIbu.trim()) {
       alert("Nama Ibu wajib diisi!");
@@ -128,16 +133,14 @@ export default function IbuHamilView() {
       catatan: catatan.trim()
     };
 
-    let updated: IbuHamilBeneficiary[];
+    const newList = await saveIbuHamilApi(newItem);
+    setBeneficiaries(newList);
     if (editingId) {
-      updated = beneficiaries.map(b => (b.id === editingId ? newItem : b));
       setSuccessMessage("Data Ibu Hamil berhasil diperbarui.");
     } else {
-      updated = [newItem, ...beneficiaries];
       setSuccessMessage("Data Ibu Hamil baru berhasil ditambahkan.");
     }
 
-    saveToStorage(updated);
     setShowModal(false);
     setTimeout(() => setSuccessMessage(null), 3000);
   };

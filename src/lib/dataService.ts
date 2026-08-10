@@ -1009,3 +1009,171 @@ export async function updateAdminSheetConfigApi(url: string): Promise<{ adminShe
   return { adminSheetUrl: url, adminSheetId: id };
 }
 
+/**
+ * IBU HAMIL API HELPERS
+ */
+export async function getIbuHamilApi(): Promise<any[]> {
+  try {
+    const res = await fetch("/api/ibu-hamil");
+    const json = await parseResponseSafely(res);
+    if (json.success && Array.isArray(json.list)) {
+      localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(json.list));
+      return json.list;
+    }
+  } catch (err) {
+    console.warn("API ibu-hamil unavailable, using local cache:", err);
+  }
+  const stored = localStorage.getItem("orbit_gizi_ibu_hamil");
+  return stored ? JSON.parse(stored) : [];
+}
+
+export async function saveIbuHamilApi(item: any): Promise<any[]> {
+  try {
+    const res = await fetch("/api/ibu-hamil/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item)
+    });
+    const json = await parseResponseSafely(res);
+    if (json.success && Array.isArray(json.list)) {
+      localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(json.list));
+      return json.list;
+    }
+  } catch (err) {
+    console.warn("Failed to save ibu-hamil to API, saving locally:", err);
+  }
+  const stored = localStorage.getItem("orbit_gizi_ibu_hamil");
+  let list: any[] = stored ? JSON.parse(stored) : [];
+  const idx = list.findIndex(b => b.id === item.id);
+  if (idx !== -1) list[idx] = item;
+  else list.unshift(item);
+  localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(list));
+  return list;
+}
+
+export async function deleteIbuHamilApi(id: string): Promise<any[]> {
+  try {
+    const res = await fetch("/api/ibu-hamil/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+    const json = await parseResponseSafely(res);
+    if (json.success && Array.isArray(json.list)) {
+      localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(json.list));
+      return json.list;
+    }
+  } catch (err) {
+    console.warn("Failed to delete ibu-hamil via API, deleting locally:", err);
+  }
+  const stored = localStorage.getItem("orbit_gizi_ibu_hamil");
+  let list: any[] = stored ? JSON.parse(stored) : [];
+  list = list.filter(b => b.id !== id);
+  localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(list));
+  return list;
+}
+
+/**
+ * IBU MENYUSUI API HELPERS
+ */
+export async function getIbuMenyusuiApi(): Promise<any[]> {
+  try {
+    const res = await fetch("/api/ibu-menyusui");
+    const json = await parseResponseSafely(res);
+    if (json.success && Array.isArray(json.list)) {
+      localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(json.list));
+      return json.list;
+    }
+  } catch (err) {
+    console.warn("API ibu-menyusui unavailable, using local cache:", err);
+  }
+  const stored = localStorage.getItem("orbit_gizi_ibu_menyusui");
+  return stored ? JSON.parse(stored) : [];
+}
+
+export async function saveIbuMenyusuiApi(item: any): Promise<any[]> {
+  try {
+    const res = await fetch("/api/ibu-menyusui/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item)
+    });
+    const json = await parseResponseSafely(res);
+    if (json.success && Array.isArray(json.list)) {
+      localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(json.list));
+      return json.list;
+    }
+  } catch (err) {
+    console.warn("Failed to save ibu-menyusui to API, saving locally:", err);
+  }
+  const stored = localStorage.getItem("orbit_gizi_ibu_menyusui");
+  let list: any[] = stored ? JSON.parse(stored) : [];
+  const idx = list.findIndex(b => b.id === item.id);
+  if (idx !== -1) list[idx] = item;
+  else list.unshift(item);
+  localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(list));
+  return list;
+}
+
+export async function deleteIbuMenyusuiApi(id: string): Promise<any[]> {
+  try {
+    const res = await fetch("/api/ibu-menyusui/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+    const json = await parseResponseSafely(res);
+    if (json.success && Array.isArray(json.list)) {
+      localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(json.list));
+      return json.list;
+    }
+  } catch (err) {
+    console.warn("Failed to delete ibu-menyusui via API, deleting locally:", err);
+  }
+  const stored = localStorage.getItem("orbit_gizi_ibu_menyusui");
+  let list: any[] = stored ? JSON.parse(stored) : [];
+  list = list.filter(b => b.id !== id);
+  localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(list));
+  return list;
+}
+
+/**
+ * BANNERS API HELPERS
+ */
+export async function getBannersApi(): Promise<{ bannerImages: any[]; dashboardBannerImages: any[] }> {
+  try {
+    const res = await fetch("/api/banners");
+    const json = await parseResponseSafely(res);
+    if (json.success) {
+      if (Array.isArray(json.bannerImages)) localStorage.setItem("orbit_gizi_banner_images", JSON.stringify(json.bannerImages));
+      if (Array.isArray(json.dashboardBannerImages)) localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(json.dashboardBannerImages));
+      return { bannerImages: json.bannerImages || [], dashboardBannerImages: json.dashboardBannerImages || [] };
+    }
+  } catch (err) {
+    console.warn("API banners unavailable:", err);
+  }
+  const storedBanner = localStorage.getItem("orbit_gizi_banner_images");
+  const storedDash = localStorage.getItem("orbit_gizi_dashboard_banner_images");
+  return {
+    bannerImages: storedBanner ? JSON.parse(storedBanner) : [],
+    dashboardBannerImages: storedDash ? JSON.parse(storedDash) : []
+  };
+}
+
+export async function saveBannersApi(type: "landing" | "dashboard", images: any[]): Promise<void> {
+  try {
+    await fetch("/api/banners/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, images })
+    });
+  } catch (err) {
+    console.warn("Failed to save banners via API:", err);
+  }
+  if (type === "dashboard") {
+    localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(images));
+  } else {
+    localStorage.setItem("orbit_gizi_banner_images", JSON.stringify(images));
+  }
+}
+

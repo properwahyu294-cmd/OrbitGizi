@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { IbuMenyusuiBeneficiary } from "../types";
 import { Users, Plus, Edit3, Trash2, Search, Heart, MapPin, CheckCircle2, X, Save, Calendar, Filter } from "lucide-react";
+import { getIbuMenyusuiApi, saveIbuMenyusuiApi, deleteIbuMenyusuiApi } from "../lib/dataService";
 
 const DEFAULT_IBU_MENYUSUI: IbuMenyusuiBeneficiary[] = [];
 
@@ -27,17 +28,21 @@ export default function IbuMenyusuiView() {
     if (stored) {
       try {
         const parsed: IbuMenyusuiBeneficiary[] = JSON.parse(stored);
-        const clean = parsed.filter(b => b.id && !b.id.startsWith("ibu_"));
-        localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(clean));
-        return clean;
+        return Array.isArray(parsed) ? parsed : [];
       } catch {
-        localStorage.setItem("orbit_gizi_ibu_menyusui", "[]");
         return [];
       }
     }
-    localStorage.setItem("orbit_gizi_ibu_menyusui", "[]");
     return [];
   });
+
+  useEffect(() => {
+    getIbuMenyusuiApi().then(data => {
+      if (Array.isArray(data)) {
+        setBeneficiaries(data);
+      }
+    });
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedIndividualId, setSelectedIndividualId] = useState<string>("ALL");
@@ -63,7 +68,7 @@ export default function IbuMenyusuiView() {
   const [catatan, setCatatan] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const saveToStorage = (updated: IbuMenyusuiBeneficiary[]) => {
+  const saveToStorage = async (updated: IbuMenyusuiBeneficiary[]) => {
     setBeneficiaries(updated);
     localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(updated));
   };
@@ -98,16 +103,16 @@ export default function IbuMenyusuiView() {
     setShowModal(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus data Ibu Menyusui ini?")) {
-      const updated = beneficiaries.filter(b => b.id !== id);
-      saveToStorage(updated);
+      const newList = await deleteIbuMenyusuiApi(id);
+      setBeneficiaries(newList);
       setSuccessMessage("Data Ibu Menyusui berhasil dihapus.");
       setTimeout(() => setSuccessMessage(null), 3000);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!namaIbu.trim()) {
       alert("Nama Ibu wajib diisi!");
@@ -128,16 +133,14 @@ export default function IbuMenyusuiView() {
       catatan: catatan.trim()
     };
 
-    let updated: IbuMenyusuiBeneficiary[];
+    const newList = await saveIbuMenyusuiApi(newItem);
+    setBeneficiaries(newList);
     if (editingId) {
-      updated = beneficiaries.map(b => (b.id === editingId ? newItem : b));
       setSuccessMessage("Data Ibu Menyusui berhasil diperbarui.");
     } else {
-      updated = [newItem, ...beneficiaries];
       setSuccessMessage("Data Ibu Menyusui baru berhasil ditambahkan.");
     }
 
-    saveToStorage(updated);
     setShowModal(false);
     setTimeout(() => setSuccessMessage(null), 3000);
   };

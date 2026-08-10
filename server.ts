@@ -226,6 +226,8 @@ let villages: Village[] = [];
 let beneficiaries: any[] = [];
 let ibuHamil: any[] = [];
 let ibuMenyusui: any[] = [];
+let bannerImages: any[] = [];
+let dashboardBannerImages: any[] = [];
 
 // Load data store from disk or initialize with seeds
 function loadStoreFromDisk() {
@@ -241,6 +243,8 @@ function loadStoreFromDisk() {
       beneficiaries = Array.isArray(parsed.beneficiaries) ? parsed.beneficiaries : [];
       ibuHamil = Array.isArray(parsed.ibuHamil) ? parsed.ibuHamil : [];
       ibuMenyusui = Array.isArray(parsed.ibuMenyusui) ? parsed.ibuMenyusui : [];
+      bannerImages = Array.isArray(parsed.bannerImages) ? parsed.bannerImages : [];
+      dashboardBannerImages = Array.isArray(parsed.dashboardBannerImages) ? parsed.dashboardBannerImages : [];
       lastUpdated = parsed.lastUpdated || new Date().toISOString();
     } else {
       villages = [...SEED_VILLAGES];
@@ -268,7 +272,9 @@ function saveStoreToDisk() {
       villages,
       beneficiaries,
       ibuHamil,
-      ibuMenyusui
+      ibuMenyusui,
+      bannerImages,
+      dashboardBannerImages
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(payload, null, 2), "utf-8");
   } catch (e) {
@@ -641,6 +647,89 @@ app.post("/api/beneficiaries/batch", (req, res) => {
     beneficiaries,
     appData: buildAppData()
   });
+});
+
+// API: Get Ibu Hamil List
+app.get("/api/ibu-hamil", (req, res) => {
+  res.json({ success: true, list: ibuHamil });
+});
+
+// API: Save or Update Ibu Hamil
+app.post("/api/ibu-hamil/save", (req, res) => {
+  const item = req.body;
+  if (!item || !item.id) {
+    return res.status(400).json({ error: "Data ibu hamil tidak valid (ID diperlukan)." });
+  }
+  const idx = ibuHamil.findIndex(b => b.id === item.id);
+  if (idx !== -1) {
+    ibuHamil[idx] = item;
+  } else {
+    ibuHamil.unshift(item);
+  }
+  saveStoreToDisk();
+  res.json({ success: true, message: "Data Ibu Hamil berhasil disimpan ke server.", list: ibuHamil });
+});
+
+// API: Delete Ibu Hamil
+app.post("/api/ibu-hamil/delete", (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(400).json({ error: "ID ibu hamil diperlukan." });
+  }
+  ibuHamil = ibuHamil.filter(b => b.id !== id);
+  saveStoreToDisk();
+  res.json({ success: true, message: "Data Ibu Hamil berhasil dihapus dari server.", list: ibuHamil });
+});
+
+// API: Get Ibu Menyusui List
+app.get("/api/ibu-menyusui", (req, res) => {
+  res.json({ success: true, list: ibuMenyusui });
+});
+
+// API: Save or Update Ibu Menyusui
+app.post("/api/ibu-menyusui/save", (req, res) => {
+  const item = req.body;
+  if (!item || !item.id) {
+    return res.status(400).json({ error: "Data ibu menyusui tidak valid (ID diperlukan)." });
+  }
+  const idx = ibuMenyusui.findIndex(b => b.id === item.id);
+  if (idx !== -1) {
+    ibuMenyusui[idx] = item;
+  } else {
+    ibuMenyusui.unshift(item);
+  }
+  saveStoreToDisk();
+  res.json({ success: true, message: "Data Ibu Menyusui berhasil disimpan ke server.", list: ibuMenyusui });
+});
+
+// API: Delete Ibu Menyusui
+app.post("/api/ibu-menyusui/delete", (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(400).json({ error: "ID ibu menyusui diperlukan." });
+  }
+  ibuMenyusui = ibuMenyusui.filter(b => b.id !== id);
+  saveStoreToDisk();
+  res.json({ success: true, message: "Data Ibu Menyusui berhasil dihapus dari server.", list: ibuMenyusui });
+});
+
+// API: Get Banners List
+app.get("/api/banners", (req, res) => {
+  res.json({ success: true, bannerImages, dashboardBannerImages });
+});
+
+// API: Save Banners List
+app.post("/api/banners/save", (req, res) => {
+  const { type, images } = req.body;
+  if (Array.isArray(images)) {
+    if (type === "dashboard") {
+      dashboardBannerImages = images;
+    } else {
+      bannerImages = images;
+    }
+    saveStoreToDisk();
+  }
+  res.json({ success: true, bannerImages, dashboardBannerImages });
 });
 
 // API: Get Admin Sheet Config
