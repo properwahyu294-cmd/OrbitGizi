@@ -71,6 +71,9 @@ export interface MBGBeneficiary {
   isSpecialInterventionNeeded?: boolean;
   specialInterventionNote?: string;
   stakeholdersHadir?: string[];
+  initialWeightKg?: number;
+  initialHeightCm?: number;
+  initialStatusGizi?: string;
   weightRecords: WeightRecord[];
   notes?: string;
 }

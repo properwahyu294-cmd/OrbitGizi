@@ -347,9 +347,9 @@ export default function DataInputCenter({
     setBenPuskesmas(b.location.puskesmas || selectedPuskesmas);
     setBenNotes(b.notes || "");
     
-    const targetRecord = record || b.weightRecords[b.weightRecords.length - 1];
-    setBenInitialWeight(targetRecord?.weightKg?.toString() || "14");
-    setBenInitialHeight(targetRecord?.heightCm?.toString() || "95");
+    const targetRecord = record || (b.weightRecords && b.weightRecords.length > 0 ? b.weightRecords[b.weightRecords.length - 1] : null);
+    setBenInitialWeight(b.initialWeightKg?.toString() || targetRecord?.weightKg?.toString() || "14");
+    setBenInitialHeight(b.initialHeightCm?.toString() || targetRecord?.heightCm?.toString() || "95");
     setShowAddBenModal(true);
   };
 
@@ -676,36 +676,10 @@ export default function DataInputCenter({
       isSpecialInterventionNeeded: benIsSpecialInterventionNeeded,
       specialInterventionNote: benSpecialInterventionNote.trim(),
       stakeholdersHadir: benStakeholdersHadir,
-      weightRecords: existingBen ? (
-        existingBen.weightRecords.length > 0
-          ? existingBen.weightRecords.map((wr, idx) => 
-              idx === existingBen.weightRecords.length - 1
-                ? {
-                    ...wr,
-                    weightKg: initialWeightVal,
-                    heightCm: initialHeightVal,
-                    statusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal)
-                  }
-                : wr
-            )
-          : [
-              {
-                period: "Maret 2026",
-                weightKg: initialWeightVal,
-                heightCm: initialHeightVal,
-                statusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal),
-                measuredAt: new Date().toISOString().split("T")[0]
-              }
-            ]
-      ) : [
-        {
-          period: "Januari 2026",
-          weightKg: initialWeightVal,
-          heightCm: initialHeightVal,
-          statusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal),
-          measuredAt: new Date().toISOString().split("T")[0]
-        }
-      ],
+      initialWeightKg: initialWeightVal,
+      initialHeightCm: initialHeightVal,
+      initialStatusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal),
+      weightRecords: existingBen ? (existingBen.weightRecords || []) : [],
       notes: benNotes.trim()
     };
 
@@ -1287,8 +1261,15 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                                 {latestWeight.period} ({latestWeight.statusGizi || "Normal"})
                               </span>
                             </div>
+                          ) : b.initialWeightKg ? (
+                            <div>
+                              <span>{b.initialWeightKg} kg</span>
+                              <span className="text-[10px] text-slate-400 block font-normal">
+                                BB Awal ({b.initialStatusGizi || "Normal"})
+                              </span>
+                            </div>
                           ) : (
-                            <span className="text-slate-400">-</span>
+                            <span className="text-slate-400 text-xs font-normal">Belum Timbang</span>
                           )}
                         </td>
 
@@ -2531,7 +2512,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">BB AWAL / TERAKHIR (KG)</label>
+                  <label className="font-bold text-slate-700 block mb-1">BB AWAL REGISTRASI (KG)</label>
                   <input
                     type="text"
                     inputMode="decimal"
@@ -2540,10 +2521,11 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     onChange={(e) => setBenInitialWeight(e.target.value)}
                     className="w-full border border-slate-200 rounded-xl p-2 font-bold focus:ring-2 focus:ring-indigo-500/20 focus:outline-none text-xs"
                   />
+                  <span className="text-[10px] text-slate-500 block mt-0.5 font-normal">Hanya acuan awal MBG (tidak masuk riwayat bulanan).</span>
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">TB AWAL / TERAKHIR (CM)</label>
+                  <label className="font-bold text-slate-700 block mb-1">TB AWAL REGISTRASI (CM)</label>
                   <input
                     type="text"
                     inputMode="decimal"
@@ -2552,6 +2534,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     onChange={(e) => setBenInitialHeight(e.target.value)}
                     className="w-full border border-slate-200 rounded-xl p-2 font-bold focus:ring-2 focus:ring-indigo-500/20 focus:outline-none text-xs"
                   />
+                  <span className="text-[10px] text-slate-500 block mt-0.5 font-normal">Hanya acuan awal MBG (tidak masuk riwayat bulanan).</span>
                 </div>
               </div>
 
