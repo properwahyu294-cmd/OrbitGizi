@@ -54,6 +54,8 @@ import {
   updateAdminSheetConfigApi,
   getBannersApi,
   saveBannersApi,
+  getIbuHamilApi,
+  getIbuMenyusuiApi,
   isUsingLocalFallback
 } from "./lib/dataService";
 
@@ -473,10 +475,12 @@ export default function App() {
     try {
       const activeUser = userObj !== undefined ? userObj : currentUser;
 
-      // Ensure fresh beneficiaries & sheet config from API server before syncing
-      const [latestBens, sheetConfig] = await Promise.all([
+      // Ensure fresh beneficiaries, ibu hamil, ibu menyusui & sheet config from API server before syncing
+      const [latestBens, sheetConfig, latestHamil, latestMenyusui] = await Promise.all([
         getBeneficiariesApi(),
-        getAdminSheetConfigApi()
+        getAdminSheetConfigApi(),
+        getIbuHamilApi(),
+        getIbuMenyusuiApi()
       ]);
       const currentBens = (latestBens && Array.isArray(latestBens)) ? latestBens : beneficiaries;
       setBeneficiaries(currentBens);
@@ -484,6 +488,8 @@ export default function App() {
       const fullData = {
         ...data,
         beneficiaries: currentBens,
+        ibuHamil: (latestHamil && Array.isArray(latestHamil)) ? latestHamil : [],
+        ibuMenyusui: (latestMenyusui && Array.isArray(latestMenyusui)) ? latestMenyusui : [],
         adminSheetUrl: sheetConfig?.adminSheetUrl || data.adminSheetUrl,
         adminSheetId: sheetConfig?.adminSheetId || data.adminSheetId
       };

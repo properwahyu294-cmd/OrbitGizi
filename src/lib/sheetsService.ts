@@ -319,7 +319,9 @@ export async function syncToGoogleSheets(
     ["ID", "Nama Ibu", "Umur", "NIK", "Alamat", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Usia Kehamilan", "Catatan"]
   ];
   try {
-    let ibuHamilData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
+    let ibuHamilData = (data && Array.isArray(data.ibuHamil))
+      ? data.ibuHamil
+      : JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
     if (!Array.isArray(ibuHamilData)) ibuHamilData = [];
     ibuHamilData.forEach((b: any) => {
       ibuHamilValues.push([
@@ -345,7 +347,9 @@ export async function syncToGoogleSheets(
     ["ID", "Nama Ibu", "Umur", "NIK", "Alamat", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Nama Bayi", "Catatan"]
   ];
   try {
-    let ibuMenyusuiData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
+    let ibuMenyusuiData = (data && Array.isArray(data.ibuMenyusui))
+      ? data.ibuMenyusui
+      : JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
     if (!Array.isArray(ibuMenyusuiData)) ibuMenyusuiData = [];
     ibuMenyusuiData.forEach((b: any) => {
       ibuMenyusuiValues.push([
@@ -398,11 +402,15 @@ export async function syncToGoogleSheets(
     if (!Array.isArray(mbgData)) mbgData = [];
     processRecords(mbgData);
 
-    let ibuHamilData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
+    let ibuHamilData = (data && Array.isArray(data.ibuHamil))
+      ? data.ibuHamil
+      : JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
     if (!Array.isArray(ibuHamilData)) ibuHamilData = [];
     processRecords(ibuHamilData, "Ibu Hamil");
 
-    let ibuMenyusuiData = JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
+    let ibuMenyusuiData = (data && Array.isArray(data.ibuMenyusui))
+      ? data.ibuMenyusui
+      : JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
     if (!Array.isArray(ibuMenyusuiData)) ibuMenyusuiData = [];
     processRecords(ibuMenyusuiData, "Ibu Menyusui");
   } catch (e) {
