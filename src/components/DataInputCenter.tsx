@@ -469,8 +469,8 @@ export default function DataInputCenter({
     return list;
   }, [beneficiaries, histSearchQuery, histCategoryFilter, histPosyanduFilter]);
 
-  // Dedicated Modal States for Catat Timbang (Weight Records)
-  const [editingWeightItem, setEditingWeightItem] = useState<{ ben: MBGBeneficiary; record: WeightRecord } | null>(null);
+  // Dedicated Modal States for Catat Timbang (Weight Records Manager)
+  const [editingWeightBen, setEditingWeightBen] = useState<MBGBeneficiary | null>(null);
   const [deletingWeightItem, setDeletingWeightItem] = useState<{ ben: MBGBeneficiary; record: WeightRecord } | null>(null);
 
   // Form States for Edit Weight Modal
@@ -480,10 +480,37 @@ export default function DataInputCenter({
   const [editStatusGizi, setEditStatusGizi] = useState<string>("Normal");
   const [editMeasuredAt, setEditMeasuredAt] = useState<string>("");
   const [editWeightSuccess, setEditWeightSuccess] = useState<boolean>(false);
+  const [origWeightPeriod, setOrigWeightPeriod] = useState<string>("");
 
-  const handleOpenEditWeightModal = (ben: MBGBeneficiary, record: WeightRecord) => {
-    setEditingWeightItem({ ben, record });
-    setEditWeightPeriod(record.period || "Maret 2026");
+  const handleOpenEditWeightModal = (ben: MBGBeneficiary, preselectedRecord?: WeightRecord) => {
+    setEditingWeightBen(ben);
+    setEditWeightSuccess(false);
+
+    const liveBen = beneficiaries.find(b => b.id === ben.id) || ben;
+    const records = liveBen.weightRecords || [];
+
+    const recToEdit = preselectedRecord || (records.length > 0 ? records[records.length - 1] : null);
+
+    if (recToEdit) {
+      setOrigWeightPeriod(recToEdit.period);
+      setEditWeightPeriod(recToEdit.period);
+      setEditWeightKg(recToEdit.weightKg !== undefined ? recToEdit.weightKg.toString() : "");
+      setEditHeightCm(recToEdit.heightCm !== undefined ? recToEdit.heightCm.toString() : "");
+      setEditStatusGizi(recToEdit.statusGizi || "Normal");
+      setEditMeasuredAt(recToEdit.measuredAt || new Date().toISOString().split("T")[0]);
+    } else {
+      setOrigWeightPeriod("");
+      setEditWeightPeriod("Maret 2026");
+      setEditWeightKg("");
+      setEditHeightCm("");
+      setEditStatusGizi("Normal");
+      setEditMeasuredAt(new Date().toISOString().split("T")[0]);
+    }
+  };
+
+  const handleSelectRecordToEdit = (ben: MBGBeneficiary, record: WeightRecord) => {
+    setOrigWeightPeriod(record.period);
+    setEditWeightPeriod(record.period);
     setEditWeightKg(record.weightKg !== undefined ? record.weightKg.toString() : "");
     setEditHeightCm(record.heightCm !== undefined ? record.heightCm.toString() : "");
     setEditStatusGizi(record.statusGizi || "Normal");
@@ -491,11 +518,20 @@ export default function DataInputCenter({
     setEditWeightSuccess(false);
   };
 
+  const handlePrepareAddNewPeriod = () => {
+    setOrigWeightPeriod("");
+    setEditWeightPeriod("Maret 2026");
+    setEditWeightKg("");
+    setEditHeightCm("");
+    setEditStatusGizi("Normal");
+    setEditMeasuredAt(new Date().toISOString().split("T")[0]);
+    setEditWeightSuccess(false);
+  };
+
   const handleSaveEditedWeightRecord = (e: FormEvent) => {
     e.preventDefault();
-    if (!editingWeightItem) return;
+    if (!editingWeightBen) return;
 
-    const { ben, record: origRecord } = editingWeightItem;
     const newPeriod = editWeightPeriod.trim();
     const weightVal = parseDecimal(editWeightKg, NaN);
     const heightVal = parseOptionalDecimal(editHeightCm);
@@ -503,7 +539,7 @@ export default function DataInputCenter({
     if (!newPeriod || isNaN(weightVal)) return;
 
     // Cross-check against MBG beneficiary list
-    const targetBen = beneficiaries.find(b => b.id === ben.id) || ben;
+    const targetBen = beneficiaries.find(b => b.id === editingWeightBen.id) || editingWeightBen;
 
     const updatedRecord: WeightRecord = {
       period: newPeriod,
@@ -514,17 +550,17 @@ export default function DataInputCenter({
     };
 
     // If period string changed, delete old period entry first to avoid duplicate periods
-    if (origRecord.period && origRecord.period !== newPeriod) {
-      onDeleteWeightRecord(targetBen.id, origRecord.period);
+    if (origWeightPeriod && origWeightPeriod !== newPeriod) {
+      onDeleteWeightRecord(targetBen.id, origWeightPeriod);
     }
 
     onAddWeightRecord(targetBen.id, updatedRecord);
 
     setEditWeightSuccess(true);
+    setOrigWeightPeriod(newPeriod);
     setTimeout(() => {
       setEditWeightSuccess(false);
-      setEditingWeightItem(null);
-    }, 600);
+    }, 1200);
   };
 
   const handleOpenDeleteWeightModal = (ben: MBGBeneficiary, record: WeightRecord) => {
@@ -536,6 +572,12 @@ export default function DataInputCenter({
     const { ben, record } = deletingWeightItem;
     // Delete only that specific period's weight record
     onDeleteWeightRecord(ben.id, record.period);
+    
+    // If we are currently editing this same period, reset the form
+    if (editingWeightBen?.id === ben.id && origWeightPeriod === record.period) {
+      handlePrepareAddNewPeriod();
+    }
+    
     setDeletingWeightItem(null);
   };
 
@@ -3245,184 +3287,304 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
         </div>
       )}
 
-      {/* 1. MODAL DEDIKASI EDIT CATAT TIMBANG */}
-      {editingWeightItem && (
-        <div className="fixed inset-0 z-[120] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden border border-slate-200 shadow-2xl relative p-6 space-y-4 text-slate-900">
-            
-            {/* Header */}
-            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center space-x-3">
-                <div className="p-2.5 bg-amber-100 text-amber-800 rounded-2xl shrink-0">
-                  <Scale className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="text-base font-black text-slate-900 leading-tight">
-                    Edit Rekam Hasil Timbang
-                  </h3>
-                  <p className="text-xs font-bold text-slate-500">
-                    Periode Asal: <span className="text-slate-800">{editingWeightItem.record.period}</span>
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEditingWeightItem(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
-              >
-                <XCircle className="h-5 w-5" />
-              </button>
-            </div>
+      {/* 1. MODAL DEDIKASI KELOLA & EDIT RIWAYAT CATAT TIMBANG */}
+      {editingWeightBen && (() => {
+        const activeBen = beneficiaries.find(b => b.id === editingWeightBen.id) || editingWeightBen;
+        const allWeightRecords = activeBen.weightRecords || [];
 
-            {/* Beneficiary & MBG Check Info Card */}
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
-                  {editingWeightItem.ben.name}
-                </span>
-                {editingWeightItem.ben.isReceivedMBG ? (
-                  <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center space-x-1">
-                    <Check className="h-3 w-3 text-emerald-600 shrink-0" />
-                    <span>PENERIMA MBG</span>
-                  </span>
-                ) : (
-                  <span className="px-2 py-0.5 bg-slate-200 text-slate-700 rounded-full text-[10px] font-bold">
-                    NON-MBG
-                  </span>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 font-medium">
-                <div><span className="text-slate-400 font-bold">NIK:</span> {editingWeightItem.ben.nik || '-'}</div>
-                <div><span className="text-slate-400 font-bold">Kategori:</span> {editingWeightItem.ben.category}</div>
-                <div className="col-span-2"><span className="text-slate-400 font-bold">Posyandu:</span> {editingWeightItem.ben.location.posyandu || editingWeightItem.ben.location.kelurahan}</div>
-              </div>
-              <div className="bg-amber-50/90 border border-amber-200 rounded-xl p-2.5 text-[10px] text-amber-900 font-bold flex items-center space-x-1.5">
-                <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0" />
-                <span>Pemeriksaan MBG: Mengubah data timbang ini HANYA memperbarui rekam timbang. Profil master MBG anak tidak akan berubah.</span>
-              </div>
-            </div>
-
-            {/* Form Fields */}
-            <form onSubmit={handleSaveEditedWeightRecord} className="space-y-3.5 text-xs">
-              <div>
-                <label className="text-[10px] font-black text-slate-600 uppercase block mb-1">
-                  PERIODE PENIMBANGAN *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Maret 2026, TW1 2026..."
-                  value={editWeightPeriod}
-                  onChange={(e) => setEditWeightPeriod(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] font-black text-slate-600 uppercase block mb-1">
-                    BERAT BADAN (KG) *
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    required
-                    placeholder="Contoh: 14.5"
-                    value={editWeightKg}
-                    onChange={(e) => setEditWeightKg(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-black text-slate-600 uppercase block mb-1">
-                    TINGGI BADAN (CM)
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="Contoh: 95.0"
-                    value={editHeightCm}
-                    onChange={(e) => setEditHeightCm(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-[10px] font-black text-slate-600 uppercase block">
-                      STATUS GIZI
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const w = parseDecimal(editWeightKg, 0);
-                        const h = parseOptionalDecimal(editHeightCm);
-                        setEditStatusGizi(calculateStatusGizi(w, h));
-                      }}
-                      className="text-[9px] font-black text-amber-700 hover:underline cursor-pointer"
-                    >
-                      Hitung Otomatis
-                    </button>
+        return (
+          <div className="fixed inset-0 z-[120] bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200 overflow-y-auto">
+            <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200 shadow-2xl relative text-slate-900 my-auto">
+              
+              {/* Header */}
+              <div className="p-5 bg-slate-900 text-white flex items-start justify-between border-b border-slate-800 shrink-0">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2.5 bg-amber-500/20 text-amber-400 rounded-2xl border border-amber-500/30 shrink-0">
+                    <Scale className="h-6 w-6" />
                   </div>
-                  <select
-                    value={editStatusGizi}
-                    onChange={(e) => setEditStatusGizi(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
-                  >
-                    <option value="Normal">Normal</option>
-                    <option value="Stunting">Stunting</option>
-                    <option value="Risiko Stunting">Risiko Stunting</option>
-                    <option value="Gizi Kurang">Gizi Kurang</option>
-                    <option value="Gizi Buruk / Wasting">Gizi Buruk / Wasting</option>
-                  </select>
+                  <div>
+                    <h3 className="text-base font-black text-white leading-tight">
+                      Kelola Riwayat Hasil Timbang Penerima
+                    </h3>
+                    <p className="text-xs font-bold text-amber-400">
+                      {activeBen.name} ({allWeightRecords.length} Periode Tercatat)
+                    </p>
+                  </div>
                 </div>
-
-                <div>
-                  <label className="text-[10px] font-black text-slate-600 uppercase block mb-1">
-                    TANGGAL UKUR
-                  </label>
-                  <input
-                    type="date"
-                    value={editMeasuredAt}
-                    onChange={(e) => setEditMeasuredAt(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setEditingWeightItem(null)}
-                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                  onClick={() => setEditingWeightBen(null)}
+                  className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full transition-colors cursor-pointer"
                 >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
-                >
-                  {editWeightSuccess ? (
-                    <>
-                      <Check className="h-4 w-4" />
-                      <span>Berhasil Disimpan!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Check className="h-4 w-4" />
-                      <span>Simpan Perubahan Timbang</span>
-                    </>
-                  )}
+                  <XCircle className="h-5 w-5" />
                 </button>
               </div>
-            </form>
+
+              <div className="p-5 overflow-y-auto space-y-5 text-xs">
+                {/* Beneficiary & MBG Info Card */}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                      {activeBen.name}
+                    </span>
+                    {activeBen.isReceivedMBG ? (
+                      <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center space-x-1">
+                        <Check className="h-3 w-3 text-emerald-600 shrink-0" />
+                        <span>PENERIMA MBG</span>
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 bg-slate-200 text-slate-700 rounded-full text-[10px] font-bold">
+                        NON-MBG
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] text-slate-600 font-medium">
+                    <div><span className="text-slate-400 font-bold">NIK:</span> {activeBen.nik || '-'}</div>
+                    <div><span className="text-slate-400 font-bold">Kategori:</span> {activeBen.category}</div>
+                    <div><span className="text-slate-400 font-bold">Posyandu:</span> {activeBen.location.posyandu || activeBen.location.kelurahan}</div>
+                  </div>
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-[10px] text-amber-900 font-bold flex items-center space-x-1.5">
+                    <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0" />
+                    <span>Transparansi MBG: Mengedit atau menghapus data timbang periode tertentu HANYA memperbarui catatan timbang periode tersebut. Profil anak tetap utuh.</span>
+                  </div>
+                </div>
+
+                {/* Section 1: All Recorded Periods List */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-black uppercase text-slate-800 tracking-wider flex items-center space-x-1.5">
+                      <Calendar className="h-4 w-4 text-amber-600" />
+                      <span>Semua Data Timbang Tercatat ({allWeightRecords.length})</span>
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={handlePrepareAddNewPeriod}
+                      className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-[10px] rounded-lg transition-colors cursor-pointer flex items-center space-x-1"
+                    >
+                      <span>+ Tambah Periode Baru</span>
+                    </button>
+                  </div>
+
+                  {allWeightRecords.length === 0 ? (
+                    <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center text-slate-400 font-bold">
+                      Belum ada riwayat timbang tercatat untuk anak ini. Gunakan form di bawah untuk menambah data.
+                    </div>
+                  ) : (
+                    <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+                      <div className="max-h-48 overflow-y-auto">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead className="bg-slate-100 text-slate-500 font-bold uppercase text-[9px] tracking-wider sticky top-0 z-10 border-b border-slate-200">
+                            <tr>
+                              <th className="p-2.5">Periode</th>
+                              <th className="p-2.5">Berat (kg)</th>
+                              <th className="p-2.5">Tinggi (cm)</th>
+                              <th className="p-2.5">Status Gizi</th>
+                              <th className="p-2.5">Tanggal</th>
+                              <th className="p-2.5 text-center">Aksi Pilih</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 bg-white font-medium">
+                            {allWeightRecords.map((rec, idx) => {
+                              const isCurrentlySelected = origWeightPeriod === rec.period;
+                              return (
+                                <tr 
+                                  key={`${rec.period}-${idx}`} 
+                                  className={`transition-colors ${isCurrentlySelected ? "bg-amber-50/80 font-bold border-l-4 border-l-amber-500" : "hover:bg-slate-50"}`}
+                                >
+                                  <td className="p-2.5 font-bold text-slate-800">
+                                    {rec.period}
+                                    {isCurrentlySelected && <span className="ml-1 text-[9px] text-amber-700 font-black">(Sedang Diedit)</span>}
+                                  </td>
+                                  <td className="p-2.5 font-black text-slate-900">{rec.weightKg} kg</td>
+                                  <td className="p-2.5 text-slate-600">{rec.heightCm || '-'} cm</td>
+                                  <td className="p-2.5">
+                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${
+                                      rec.statusGizi === "Normal" 
+                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                                        : "bg-amber-50 text-amber-700 border-amber-200"
+                                    }`}>
+                                      {rec.statusGizi || "Normal"}
+                                    </span>
+                                  </td>
+                                  <td className="p-2.5 text-slate-500 text-[10px]">{rec.measuredAt || '-'}</td>
+                                  <td className="p-2.5 text-center">
+                                    <div className="flex items-center justify-center space-x-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSelectRecordToEdit(activeBen, rec)}
+                                        className={`px-2 py-1 rounded-lg text-[10px] font-bold flex items-center space-x-1 cursor-pointer transition-colors ${
+                                          isCurrentlySelected 
+                                            ? "bg-amber-600 text-white shadow-xs" 
+                                            : "bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200"
+                                        }`}
+                                        title="Pilih & Edit Periode Ini"
+                                      >
+                                        <Edit3 className="h-3 w-3" />
+                                        <span>Edit</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOpenDeleteWeightModal(activeBen, rec)}
+                                        className="p-1 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors cursor-pointer"
+                                        title="Hapus Hanya Periode Ini"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Section 2: Edit Form for Selected Period */}
+                <form onSubmit={handleSaveEditedWeightRecord} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-wide">
+                      {origWeightPeriod ? (
+                        <span className="text-amber-800">Edit Data Periode: <strong className="underline">{origWeightPeriod}</strong></span>
+                      ) : (
+                        <span className="text-emerald-700">+ Form Tambah Periode Timbang Baru</span>
+                      )}
+                    </h4>
+                    {origWeightPeriod && (
+                      <button
+                        type="button"
+                        onClick={handlePrepareAddNewPeriod}
+                        className="text-[10px] font-bold text-indigo-600 hover:underline cursor-pointer"
+                      >
+                        Beralih ke Form Tambah Baru
+                      </button>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black text-slate-600 uppercase block mb-1">
+                      PERIODE PENIMBANGAN *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Maret 2026, TW1 2026..."
+                      value={editWeightPeriod}
+                      onChange={(e) => setEditWeightPeriod(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[10px] font-black text-slate-600 uppercase block mb-1">
+                        BERAT BADAN (KG) *
+                      </label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        required
+                        placeholder="Contoh: 14.5"
+                        value={editWeightKg}
+                        onChange={(e) => setEditWeightKg(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-black text-slate-600 uppercase block mb-1">
+                        TINGGI BADAN (CM)
+                      </label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="Contoh: 95.0"
+                        value={editHeightCm}
+                        onChange={(e) => setEditHeightCm(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-[10px] font-black text-slate-600 uppercase block">
+                          STATUS GIZI
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const w = parseDecimal(editWeightKg, 0);
+                            const h = parseOptionalDecimal(editHeightCm);
+                            setEditStatusGizi(calculateStatusGizi(w, h));
+                          }}
+                          className="text-[9px] font-black text-amber-700 hover:underline cursor-pointer"
+                        >
+                          Hitung Otomatis
+                        </button>
+                      </div>
+                      <select
+                        value={editStatusGizi}
+                        onChange={(e) => setEditStatusGizi(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
+                      >
+                        <option value="Normal">Normal</option>
+                        <option value="Stunting">Stunting</option>
+                        <option value="Risiko Stunting">Risiko Stunting</option>
+                        <option value="Gizi Kurang">Gizi Kurang</option>
+                        <option value="Gizi Buruk / Wasting">Gizi Buruk / Wasting</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-black text-slate-600 uppercase block mb-1">
+                        TANGGAL UKUR
+                      </label>
+                      <input
+                        type="date"
+                        value={editMeasuredAt}
+                        onChange={(e) => setEditMeasuredAt(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Form Action Buttons */}
+                  <div className="flex items-center space-x-2 pt-2 border-t border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setEditingWeightBen(null)}
+                      className="flex-1 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                    >
+                      Selesai / Tutup
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
+                    >
+                      {editWeightSuccess ? (
+                        <>
+                          <Check className="h-4 w-4" />
+                          <span>Berhasil Disimpan!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4" />
+                          <span>Simpan Perubahan Periode Ini</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 2. MODAL DEDIKASI HAPUS CATAT TIMBANG */}
       {deletingWeightItem && (
