@@ -208,118 +208,7 @@ const SEED_VILLAGES: Village[] = [
   }
 ];
 
-const SEED_BENEFICIARIES = [
-  {
-    id: "ben_seed_1",
-    name: "Maria Lada",
-    parentName: "Yoseph Lada",
-    nik: "5316010101210001",
-    gender: "Perempuan",
-    age: "24 Bulan",
-    category: "Balita",
-    location: {
-      propinsi: "Nusa Tenggara Timur",
-      kabupaten: "Kabupaten Nagekeo",
-      puskesmas: "Puskesmas Boawae",
-      kelurahan: "Desa Boawae",
-      dusun: "Dusun 1",
-      posyandu: "Posyandu Mekar Boawae"
-    },
-    attendanceStatus: "Mengunjungi Posyandu",
-    isReceivedMBG: true,
-    isReceivedPMT: true,
-    isPetugasDesaHadir: true,
-    isPetugasPosyanduHadir: true,
-    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu", "Puskesmas"],
-    notes: "Balita rutin mendapatkan PMT dan pengukuran timbang bulanan.",
-    weightRecords: [
-      { id: "wr_1", period: "Januari 2026", weightKg: 11.2, heightCm: 84.5, statusGizi: "Normal", measuredAt: "15 Jan 2026" },
-      { id: "wr_2", period: "Februari 2026", weightKg: 11.8, heightCm: 85.2, statusGizi: "Normal", measuredAt: "10 Feb 2026" }
-    ]
-  },
-  {
-    id: "ben_seed_2",
-    name: "Yohanes Bria",
-    parentName: "Antonius Bria",
-    nik: "5316010203210002",
-    gender: "Laki-Laki",
-    age: "18 Bulan",
-    category: "Balita",
-    location: {
-      propinsi: "Nusa Tenggara Timur",
-      kabupaten: "Kabupaten Nagekeo",
-      puskesmas: "Puskesmas Nangaroro",
-      kelurahan: "Kelurahan Nangaroro",
-      dusun: "Dusun Mangaroro",
-      posyandu: "Posyandu Mawar Nangaroro"
-    },
-    attendanceStatus: "Mengunjungi Posyandu",
-    isReceivedMBG: true,
-    isReceivedPMT: true,
-    isPetugasDesaHadir: true,
-    isPetugasPosyanduHadir: true,
-    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu"],
-    notes: "Sudah dipantau oleh Puskesmas dan tim BGN.",
-    weightRecords: [
-      { id: "wr_3", period: "Januari 2026", weightKg: 9.8, heightCm: 79.0, statusGizi: "Risiko Stunting", measuredAt: "12 Jan 2026" },
-      { id: "wr_4", period: "Februari 2026", weightKg: 10.4, heightCm: 80.5, statusGizi: "Normal", measuredAt: "12 Feb 2026" }
-    ]
-  },
-  {
-    id: "ben_seed_3",
-    name: "Sinta Nage",
-    parentName: "Mikael Nage",
-    nik: "5316014506980003",
-    gender: "Perempuan",
-    age: "28 Tahun",
-    category: "Ibu Hamil",
-    location: {
-      propinsi: "Nusa Tenggara Timur",
-      kabupaten: "Kabupaten Nagekeo",
-      puskesmas: "Puskesmas Aesesa",
-      kelurahan: "Desa Aesesa",
-      dusun: "Dusun Danga",
-      posyandu: "Posyandu Kasih Aesesa"
-    },
-    attendanceStatus: "Mengunjungi Posyandu",
-    isReceivedMBG: true,
-    isReceivedPMT: true,
-    isPetugasDesaHadir: true,
-    isPetugasPosyanduHadir: true,
-    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu", "Puskesmas"],
-    notes: "Ibu Hamil KEK mendapat asupan PMT tambahan setiap minggu.",
-    weightRecords: [
-      { id: "wr_5", period: "Januari 2026", weightKg: 52.0, heightCm: 156.0, statusGizi: "Normal", measuredAt: "14 Jan 2026" }
-    ]
-  },
-  {
-    id: "ben_seed_4",
-    name: "Elisabeth Keo",
-    parentName: "Dominikus Keo",
-    nik: "5316015208950004",
-    gender: "Perempuan",
-    age: "25 Tahun",
-    category: "Ibu Menyusui",
-    location: {
-      propinsi: "Nusa Tenggara Timur",
-      kabupaten: "Kabupaten Nagekeo",
-      puskesmas: "Puskesmas Mbay",
-      kelurahan: "Kelurahan Mbay",
-      dusun: "Dusun Kota Mbay",
-      posyandu: "Posyandu Sejahtera Mbay"
-    },
-    attendanceStatus: "Mengunjungi Posyandu",
-    isReceivedMBG: true,
-    isReceivedPMT: true,
-    isPetugasDesaHadir: true,
-    isPetugasPosyanduHadir: true,
-    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu"],
-    notes: "Ibu Menyusui aktif mengikuti sosialisasi gizi Posyandu.",
-    weightRecords: [
-      { id: "wr_6", period: "Januari 2026", weightKg: 55.5, heightCm: 158.0, statusGizi: "Normal", measuredAt: "18 Jan 2026" }
-    ]
-  }
-];
+const SEED_BENEFICIARIES: any[] = [];
 
 // Memory state loaded from data_store.json
 let adminSheetUrl = DEFAULT_ADMIN_SHEET_URL;
@@ -349,7 +238,7 @@ function loadStoreFromDisk() {
       kabupatenName = parsed.kabupatenName || "Kabupaten Nagekeo";
       weights = parsed.weights || weights;
       villages = Array.isArray(parsed.villages) && parsed.villages.length > 0 ? parsed.villages : [...SEED_VILLAGES];
-      beneficiaries = Array.isArray(parsed.beneficiaries) && parsed.beneficiaries.length > 0 ? parsed.beneficiaries : [...SEED_BENEFICIARIES];
+      beneficiaries = Array.isArray(parsed.beneficiaries) ? parsed.beneficiaries : [];
       ibuHamil = Array.isArray(parsed.ibuHamil) ? parsed.ibuHamil : [];
       ibuMenyusui = Array.isArray(parsed.ibuMenyusui) ? parsed.ibuMenyusui : [];
       lastUpdated = parsed.lastUpdated || new Date().toISOString();

@@ -112,20 +112,38 @@ export default function App() {
   const [showOperatorModal, setShowOperatorModal] = useState<boolean>(false);
   const [pendingOperatorAction, setPendingOperatorAction] = useState<((profile: OperatorProfile) => void) | null>(null);
 
-  const handleResetAllData = () => {
-    localStorage.removeItem("orbit_gizi_local_beneficiaries");
+  const handleResetAllData = async () => {
+    localStorage.setItem("orbit_gizi_local_beneficiaries", "[]");
     localStorage.removeItem("orbit_gizi_local_villages");
     localStorage.removeItem("orbit_gizi_banner_images");
     localStorage.removeItem("orbit_gizi_dashboard_banner_images");
-    setBeneficiaries(DEFAULT_BENEFICIARIES);
+    setBeneficiaries([]);
     setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
+    try {
+      await fetch("/api/beneficiaries/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ beneficiaries: [] })
+      });
+    } catch (e) {
+      console.warn("Failed to reset backend beneficiaries:", e);
+    }
     setRefreshTrigger(prev => prev + 1);
   };
 
-  const handleDeleteSelectedData = (options: { beneficiaries: boolean; villages: boolean; banners: boolean }) => {
+  const handleDeleteSelectedData = async (options: { beneficiaries: boolean; villages: boolean; banners: boolean }) => {
     if (options.beneficiaries) {
-      localStorage.removeItem("orbit_gizi_local_beneficiaries");
+      localStorage.setItem("orbit_gizi_local_beneficiaries", "[]");
       setBeneficiaries([]);
+      try {
+        await fetch("/api/beneficiaries/batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ beneficiaries: [] })
+        });
+      } catch (e) {
+        console.warn("Failed to clear backend beneficiaries:", e);
+      }
     }
     if (options.villages) {
       localStorage.removeItem("orbit_gizi_local_villages");
@@ -444,8 +462,15 @@ export default function App() {
     setSyncSuccess(false);
     try {
       const activeUser = userObj !== undefined ? userObj : currentUser;
-      const result = await syncToGoogleSheets(token, data.kabupatenName, data, activeUser?.email || undefined);
+      const fullData = {
+        ...data,
+        beneficiaries: beneficiaries
+      };
+      const result = await syncToGoogleSheets(token, data.kabupatenName, fullData, activeUser?.email || undefined);
       setSheetsSyncUrl(result.spreadsheetUrl);
+      if (result.spreadsheetUrl) {
+        await updateAdminSheetConfigApi(result.spreadsheetUrl);
+      }
       setSyncSuccess(true);
       setTimeout(() => setSyncSuccess(false), 5000);
     } catch (err: any) {

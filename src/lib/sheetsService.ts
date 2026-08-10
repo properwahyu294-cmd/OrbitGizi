@@ -272,7 +272,9 @@ export async function syncToGoogleSheets(
     ["ID", "Nama Beneficiary", "Nama Orang Tua/Wali", "NIK", "Gender", "Usia", "Kategori", "Propinsi", "Kabupaten", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Status Kunjungan", "Wajib Kunjungan Rumah", "Menerima MBG", "Menerima PMT", "Petugas Desa Hadir", "Petugas Posyandu Hadir", "Stakeholder Kolaborasi", "Catatan"]
   ];
   try {
-    let mbgData = JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
+    let mbgData = (data && Array.isArray(data.beneficiaries))
+      ? data.beneficiaries
+      : JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
     if (!Array.isArray(mbgData)) mbgData = [];
     mbgData.forEach((b: any) => {
       const attendance = b?.attendanceStatus || "Mengunjungi Posyandu";
