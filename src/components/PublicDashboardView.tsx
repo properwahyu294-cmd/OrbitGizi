@@ -23,6 +23,7 @@ import { NutritionBannerGallery, BannerImage, DEFAULT_NUTRITION_IMAGES } from ".
 import { BeneficiaryDetailModal } from "./BeneficiaryDetailModal";
 import { AdminNutritionCharts } from "./AdminNutritionCharts";
 import { MBGBeneficiary } from "../types";
+import { DEFAULT_BENEFICIARIES } from "../lib/dataService";
 
 interface PublicDashboardViewProps {
   onBackToLauncher: () => void;
@@ -81,10 +82,10 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
         const parsed: MBGBeneficiary[] = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch {
-        return [];
+        // ignore
       }
     }
-    return [];
+    return DEFAULT_BENEFICIARIES as MBGBeneficiary[];
   }, [propBeneficiaries]);
 
   // Calculate live villages list
@@ -94,9 +95,10 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     const stored = localStorage.getItem("orbit_gizi_local_villages");
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch {
-        return [];
+        // ignore
       }
     }
     return [];
@@ -110,17 +112,25 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
     return matchesSearch && matchesCategory;
   });
 
+  // Mode pratinjau Google Sheet Embed (preview vs pubhtml vs htmlembed)
+  const [embedMode, setEmbedMode] = useState<"preview" | "htmlembed" | "pubhtml">("preview");
+
   // Derive Google Sheet Embed URL
-  const getEmbedUrl = (rawUrl: string) => {
-    if (!rawUrl) return "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/pubhtml?widget=true&headers=false";
+  const getEmbedUrl = (rawUrl: string, mode: "preview" | "htmlembed" | "pubhtml") => {
+    if (!rawUrl) rawUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115";
     const match = rawUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (match && match[1]) {
-      return `https://docs.google.com/spreadsheets/d/${match[1]}/pubhtml?widget=true&headers=false`;
+    const sheetId = match && match[1] ? match[1] : "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
+
+    if (mode === "preview") {
+      return `https://docs.google.com/spreadsheets/d/${sheetId}/preview`;
+    } else if (mode === "htmlembed") {
+      return `https://docs.google.com/spreadsheets/d/${sheetId}/htmlembed?widget=true&headers=false`;
+    } else {
+      return `https://docs.google.com/spreadsheets/d/${sheetId}/pubhtml?widget=true&headers=false`;
     }
-    return rawUrl;
   };
 
-  const embedSheetUrl = getEmbedUrl(adminSheetUrl);
+  const embedSheetUrl = getEmbedUrl(adminSheetUrl, embedMode);
 
   const indexScore = orbitGiziData?.indexScore || 82.9;
   const categoryLabel = orbitGiziData?.category?.label || "Hijau";
@@ -548,6 +558,54 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
               </div>
             </div>
 
+            {/* EMBED MODE SWITCHER BAR */}
+            <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-4 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-black text-slate-800">Format Pratinjau:</span>
+                <button
+                  onClick={() => setEmbedMode("preview")}
+                  className={`px-3 py-1.5 rounded-xl font-black transition-all cursor-pointer ${
+                    embedMode === "preview"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
+                  }`}
+                  title="Gunakan ini jika Google Sheet belum dipublikasikan ke web"
+                >
+                  Mode Pratinjau Link (Preview)
+                </button>
+
+                <button
+                  onClick={() => setEmbedMode("pubhtml")}
+                  className={`px-3 py-1.5 rounded-xl font-black transition-all cursor-pointer ${
+                    embedMode === "pubhtml"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
+                  }`}
+                  title="Gunakan ini jika Google Sheet sudah dilakukan File > Bagikan > Publikasikan ke Web"
+                >
+                  Mode Publikasi Web (Pubhtml)
+                </button>
+
+                <button
+                  onClick={() => setEmbedMode("htmlembed")}
+                  className={`px-3 py-1.5 rounded-xl font-black transition-all cursor-pointer ${
+                    embedMode === "htmlembed"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
+                  }`}
+                  title="Mode tampilan HTML minimal"
+                >
+                  Mode HTML Embed
+                </button>
+              </div>
+
+              <div className="text-[11px] text-slate-500 font-medium italic">
+                {embedMode === "preview" && "✓ Buka langsung tanpa syarat 'Publikasikan ke web' (cukup akses link publik)."}
+                {embedMode === "pubhtml" && "ℹ️ Membutuhkan Google Sheet diterbitkan di 'File > Bagikan > Publikasikan ke Web'."}
+                {embedMode === "htmlembed" && "✓ Tampilan dokumen ringan."}
+              </div>
+            </div>
+
             {/* EMBED IFRAME */}
             <div className="bg-white/95 backdrop-blur-md border border-slate-300 rounded-3xl overflow-hidden shadow-xl p-2 sm:p-4 min-h-[700px] flex flex-col">
               <div className="flex items-center justify-between px-4 py-3 bg-slate-100 border-b border-slate-200 rounded-t-2xl mb-2 text-xs text-slate-600 font-bold">
@@ -555,7 +613,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
                   <div className="w-3 h-3 rounded-full bg-rose-500"></div>
                   <div className="w-3 h-3 rounded-full bg-amber-500"></div>
                   <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                  <span className="ml-2 font-mono text-slate-700">Google Sheets Viewer Live • Nagekeo</span>
+                  <span className="ml-2 font-mono text-slate-700">Google Sheets Viewer Live • Nagekeo ({embedMode.toUpperCase()})</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px]">Tersinkronisasi Live</span>
@@ -563,7 +621,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
               </div>
 
               <iframe
-                key={iframeKey}
+                key={iframeKey + "_" + embedMode}
                 src={embedSheetUrl}
                 className="w-full h-[700px] rounded-xl border border-slate-200 shadow-inner"
                 title="Google Sheet Admin Orbit Gizi"

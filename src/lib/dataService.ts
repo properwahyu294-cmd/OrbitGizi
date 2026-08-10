@@ -886,6 +886,120 @@ Berdasarkan analisis performa, **${weakestPillar.name}** adalah pilar dengan sko
   return { text: localResponse, source: "local_simulation_client" };
 }
 
+export const DEFAULT_BENEFICIARIES = [
+  {
+    id: "ben_seed_1",
+    name: "Maria Lada",
+    parentName: "Yoseph Lada",
+    nik: "5316010101210001",
+    gender: "Perempuan",
+    age: "24 Bulan",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Boawae",
+      dusun: "Dusun 1",
+      posyandu: "Posyandu Mekar Boawae"
+    },
+    attendanceStatus: "Mengunjungi Posyandu",
+    isReceivedMBG: true,
+    isReceivedPMT: true,
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu", "Puskesmas"],
+    notes: "Balita rutin mendapatkan PMT dan pengukuran timbang bulanan.",
+    weightRecords: [
+      { id: "wr_1", period: "Januari 2026", weightKg: 11.2, heightCm: 84.5, statusGizi: "Normal", measuredAt: "15 Jan 2026" },
+      { id: "wr_2", period: "Februari 2026", weightKg: 11.8, heightCm: 85.2, statusGizi: "Normal", measuredAt: "10 Feb 2026" }
+    ]
+  },
+  {
+    id: "ben_seed_2",
+    name: "Yohanes Bria",
+    parentName: "Antonius Bria",
+    nik: "5316010203210002",
+    gender: "Laki-Laki",
+    age: "18 Bulan",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Nangaroro",
+      kelurahan: "Kelurahan Nangaroro",
+      dusun: "Dusun Mangaroro",
+      posyandu: "Posyandu Mawar Nangaroro"
+    },
+    attendanceStatus: "Mengunjungi Posyandu",
+    isReceivedMBG: true,
+    isReceivedPMT: true,
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu"],
+    notes: "Pengawasan nutrisi gizi MBG aktif.",
+    weightRecords: [
+      { id: "wr_3", period: "Januari 2026", weightKg: 9.5, heightCm: 78.0, statusGizi: "Risiko Stunting", measuredAt: "14 Jan 2026" },
+      { id: "wr_4", period: "Februari 2026", weightKg: 10.1, heightCm: 79.2, statusGizi: "Normal", measuredAt: "11 Feb 2026" }
+    ]
+  },
+  {
+    id: "ben_seed_3",
+    name: "Sinta Dewi",
+    parentName: "Suami: Thomas Dewi",
+    nik: "5316010405900003",
+    gender: "Perempuan",
+    age: "28 Tahun",
+    category: "Ibu Hamil",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Aesesa",
+      kelurahan: "Desa Danga",
+      dusun: "Dusun 2 Danga",
+      posyandu: "Posyandu Melati Danga"
+    },
+    attendanceStatus: "Mengunjungi Posyandu",
+    isReceivedMBG: true,
+    isReceivedPMT: true,
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu", "Bidan Desa"],
+    notes: "Ibu hamil KEK menerima asupan PMT biskuit & susu hamil.",
+    weightRecords: [
+      { id: "wr_5", period: "Januari 2026", weightKg: 52.0, heightCm: 156.0, statusGizi: "Normal", measuredAt: "10 Jan 2026" },
+      { id: "wr_6", period: "Februari 2026", weightKg: 53.5, heightCm: 156.0, statusGizi: "Normal", measuredAt: "08 Feb 2026" }
+    ]
+  },
+  {
+    id: "ben_seed_4",
+    name: "Veronika Koba",
+    parentName: "Suami: Markus Koba",
+    nik: "5316010608920004",
+    gender: "Perempuan",
+    age: "25 Tahun",
+    category: "Ibu Menyusui",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Mauponggo",
+      kelurahan: "Desa Mauponggo",
+      dusun: "Dusun 1 Mauponggo",
+      posyandu: "Posyandu Anggrek Mauponggo"
+    },
+    attendanceStatus: "Mengunjungi Posyandu",
+    isReceivedMBG: true,
+    isReceivedPMT: true,
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Kader Posyandu", "Petugas Desa"],
+    notes: "Ibu menyusui aktif menerima makanan bergizi gratis (MBG).",
+    weightRecords: [
+      { id: "wr_7", period: "Januari 2026", weightKg: 55.0, heightCm: 158.0, statusGizi: "Normal", measuredAt: "12 Jan 2026" }
+    ]
+  }
+];
+
 /**
  * BENEFICIARIES API HELPERS
  */
@@ -893,7 +1007,7 @@ export async function getBeneficiariesApi(): Promise<any[]> {
   try {
     const res = await fetch("/api/beneficiaries");
     const json = await parseResponseSafely(res);
-    if (json.success && Array.isArray(json.beneficiaries)) {
+    if (json.success && Array.isArray(json.beneficiaries) && json.beneficiaries.length > 0) {
       localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(json.beneficiaries));
       return json.beneficiaries;
     }
@@ -904,12 +1018,13 @@ export async function getBeneficiariesApi(): Promise<any[]> {
   const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     } catch {
-      return [];
+      // ignore
     }
   }
-  return [];
+  return DEFAULT_BENEFICIARIES;
 }
 
 export async function saveBeneficiaryApi(ben: any): Promise<any[]> {
