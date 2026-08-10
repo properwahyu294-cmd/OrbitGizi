@@ -21,11 +21,7 @@ const PERIOD_OPTIONS = [
   "Periode TW4 2026"
 ];
 
-interface IbuMenyusuiViewProps {
-  onRequestOperatorAction?: (actionType: string, description: string, targetName: string | undefined, callback: () => void) => void;
-}
-
-export default function IbuMenyusuiView({ onRequestOperatorAction }: IbuMenyusuiViewProps) {
+export default function IbuMenyusuiView() {
   const [beneficiaries, setBeneficiaries] = useState<IbuMenyusuiBeneficiary[]>(() => {
     const stored = localStorage.getItem("orbit_gizi_ibu_menyusui");
     if (stored) {
@@ -103,22 +99,11 @@ export default function IbuMenyusuiView({ onRequestOperatorAction }: IbuMenyusui
   };
 
   const handleDelete = (id: string) => {
-    const target = beneficiaries.find(b => b.id === id);
-    const targetName = target ? target.namaIbu : id;
-
-    const executeDelete = () => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus data Ibu Menyusui ini?")) {
       const updated = beneficiaries.filter(b => b.id !== id);
       saveToStorage(updated);
       setSuccessMessage("Data Ibu Menyusui berhasil dihapus.");
       setTimeout(() => setSuccessMessage(null), 3000);
-    };
-
-    if (onRequestOperatorAction) {
-      onRequestOperatorAction("HAPUS_IBU_MENYUSUI", `Menghapus data Ibu Menyusui (${targetName})`, targetName, executeDelete);
-    } else {
-      if (window.confirm("Apakah Anda yakin ingin menghapus data Ibu Menyusui ini?")) {
-        executeDelete();
-      }
     }
   };
 
@@ -143,28 +128,18 @@ export default function IbuMenyusuiView({ onRequestOperatorAction }: IbuMenyusui
       catatan: catatan.trim()
     };
 
-    const executeSave = () => {
-      let updated: IbuMenyusuiBeneficiary[];
-      if (editingId) {
-        updated = beneficiaries.map(b => (b.id === editingId ? newItem : b));
-        setSuccessMessage("Data Ibu Menyusui berhasil diperbarui.");
-      } else {
-        updated = [newItem, ...beneficiaries];
-        setSuccessMessage("Data Ibu Menyusui baru berhasil ditambahkan.");
-      }
-
-      saveToStorage(updated);
-      setShowModal(false);
-      setTimeout(() => setSuccessMessage(null), 3000);
-    };
-
-    if (onRequestOperatorAction) {
-      const actionType = editingId ? "EDIT_IBU_MENYUSUI" : "TAMBAH_IBU_MENYUSUI";
-      const desc = editingId ? `Mengubah data Ibu Menyusui (${namaIbu})` : `Menambah data sasaran Ibu Menyusui baru (${namaIbu})`;
-      onRequestOperatorAction(actionType, desc, namaIbu.trim(), executeSave);
+    let updated: IbuMenyusuiBeneficiary[];
+    if (editingId) {
+      updated = beneficiaries.map(b => (b.id === editingId ? newItem : b));
+      setSuccessMessage("Data Ibu Menyusui berhasil diperbarui.");
     } else {
-      executeSave();
+      updated = [newItem, ...beneficiaries];
+      setSuccessMessage("Data Ibu Menyusui baru berhasil ditambahkan.");
     }
+
+    saveToStorage(updated);
+    setShowModal(false);
+    setTimeout(() => setSuccessMessage(null), 3000);
   };
 
   const filteredList = useMemo(() => {

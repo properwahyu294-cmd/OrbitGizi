@@ -45,9 +45,13 @@ import {
   addVillageApi,
   deleteVillageApi,
   updateVillageApi,
-  syncBeneficiariesApi,
   resetDataApi,
   clearDataApi,
+  getBeneficiariesApi,
+  saveBeneficiaryApi,
+  deleteBeneficiaryApi,
+  getAdminSheetConfigApi,
+  updateAdminSheetConfigApi,
   isUsingLocalFallback
 } from "./lib/dataService";
 
@@ -109,56 +113,34 @@ export default function App() {
   const [pendingOperatorAction, setPendingOperatorAction] = useState<((profile: OperatorProfile) => void) | null>(null);
 
   const handleResetAllData = () => {
-    requireOperatorProfileAndExecute(
-      "MANAGEMENT_DATA",
-      "Melakukan reset total seluruh basis data sistem",
-      "DATABASE_UTAMA",
-      () => {
-        localStorage.removeItem("orbit_gizi_local_beneficiaries");
-        localStorage.removeItem("orbit_gizi_local_villages");
-        localStorage.removeItem("orbit_gizi_banner_images");
-        localStorage.removeItem("orbit_gizi_dashboard_banner_images");
-        setBeneficiaries(DEFAULT_BENEFICIARIES);
-        setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
-        setRefreshTrigger(prev => prev + 1);
-      }
-    );
+    localStorage.removeItem("orbit_gizi_local_beneficiaries");
+    localStorage.removeItem("orbit_gizi_local_villages");
+    localStorage.removeItem("orbit_gizi_banner_images");
+    localStorage.removeItem("orbit_gizi_dashboard_banner_images");
+    setBeneficiaries(DEFAULT_BENEFICIARIES);
+    setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const handleDeleteSelectedData = (options: { beneficiaries: boolean; villages: boolean; banners: boolean }) => {
-    const selectedText = [
-      options.beneficiaries ? "Sasaran MBG/PMT" : null,
-      options.villages ? "Wilayah & Posyandu" : null,
-      options.banners ? "Banner Gallery" : null
-    ].filter(Boolean).join(", ");
-
-    requireOperatorProfileAndExecute(
-      "MANAGEMENT_DATA",
-      `Menghapus data terpilih: ${selectedText || "Sebagian Data"}`,
-      "DATA_PILIHAN",
-      () => {
-        if (options.beneficiaries) {
-          localStorage.removeItem("orbit_gizi_local_beneficiaries");
-          setBeneficiaries([]);
-        }
-        if (options.villages) {
-          localStorage.removeItem("orbit_gizi_local_villages");
-        }
-        if (options.banners) {
-          localStorage.removeItem("orbit_gizi_dashboard_banner_images");
-          localStorage.removeItem("orbit_gizi_banner_images");
-          setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
-        }
-        setRefreshTrigger(prev => prev + 1);
-      }
-    );
+    if (options.beneficiaries) {
+      localStorage.removeItem("orbit_gizi_local_beneficiaries");
+      setBeneficiaries([]);
+    }
+    if (options.villages) {
+      localStorage.removeItem("orbit_gizi_local_villages");
+    }
+    if (options.banners) {
+      localStorage.removeItem("orbit_gizi_dashboard_banner_images");
+      localStorage.removeItem("orbit_gizi_banner_images");
+      setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
+    }
+    setRefreshTrigger(prev => prev + 1);
   };
 
   // Firebase & Google Sheets integration state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  // Allow any email to act as admin since the local password already protects the dashboard
-  const isAdmin = !!currentUser;
-  const isSuperAdmin = currentUser?.email?.toLowerCase().trim() === "properwahyu294@gmail.com";
+  const isAdmin = currentUser?.email?.toLowerCase().trim() === "properwahyu294@gmail.com";
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [syncingSheets, setSyncingSheets] = useState<boolean>(false);
   const [sheetsSyncUrl, setSheetsSyncUrl] = useState<string | null>(null);
@@ -177,12 +159,9 @@ export default function App() {
     const saved = localStorage.getItem("orbit_gizi_dashboard_banner_images");
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
+        return JSON.parse(saved);
       } catch {
-        // fallback
+        return DEFAULT_NUTRITION_IMAGES;
       }
     }
     return DEFAULT_NUTRITION_IMAGES;
@@ -193,34 +172,18 @@ export default function App() {
       alert("Maksimal 10 gambar tersimpan.");
       return;
     }
-    requireOperatorProfileAndExecute(
-      "TAMBAH_BANNER",
-      `Menambah gambar galeri/banner edukasi gizi: ${img.title}`,
-      img.title,
-      () => {
-        const updated = [
-          ...dashboardBannerImages,
-          { id: "dash_img_" + Date.now(), ...img }
-        ];
-        setDashboardBannerImages(updated);
-        localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
-      }
-    );
+    const updated = [
+      ...dashboardBannerImages,
+      { id: "dash_img_" + Date.now(), ...img }
+    ];
+    setDashboardBannerImages(updated);
+    localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
   };
 
   const handleDeleteDashboardBannerImage = (id: string) => {
-    const target = dashboardBannerImages.find(img => img.id === id);
-    const targetTitle = target ? target.title : id;
-    requireOperatorProfileAndExecute(
-      "HAPUS_BANNER",
-      `Menghapus gambar galeri/banner edukasi gizi: ${targetTitle}`,
-      targetTitle,
-      () => {
-        const updated = dashboardBannerImages.filter(img => img.id !== id);
-        setDashboardBannerImages(updated);
-        localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
-      }
-    );
+    const updated = dashboardBannerImages.filter(img => img.id !== id);
+    setDashboardBannerImages(updated);
+    localStorage.setItem("orbit_gizi_dashboard_banner_images", JSON.stringify(updated));
   };
 
   // Automatic visitor analytics tracking on mount and view changes
@@ -246,7 +209,7 @@ export default function App() {
     }
 
     const email = currentUser?.email || "pengunjung@public.go.id";
-    const role = isAdmin ? "ADMIN" : "PENGUNJUNG";
+    const role = (isAdmin || currentUser?.email === "properwahyu294@gmail.com") ? "ADMIN" : "PENGUNJUNG";
 
     recordVisitorAccess(email, role, viewName);
   }, [showLauncher, showPublicDashboard, activeTab, currentUser, isAdmin]);
@@ -297,43 +260,12 @@ export default function App() {
     };
   }, [beneficiaries]);
 
-  // Calculate totals for Launcher
-  const combinedCounts = useMemo(() => {
-    let mbgCount = beneficiaries.filter(b => b.isReceivedMBG !== false).length;
-    let pmtCount = beneficiaries.filter(b => b.isReceivedPMT !== false).length;
-    let totalCount = beneficiaries.length;
-
-    try {
-      const hamil = JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
-      totalCount += hamil.length;
-      pmtCount += hamil.length;
-    } catch {}
-
-    try {
-      const menyusui = JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
-      totalCount += menyusui.length;
-      pmtCount += menyusui.length;
-    } catch {}
-
-    if (totalCount === 0 && data) {
-      totalCount = data.villages.reduce((acc, v) => acc + (v as any).pilar1_mbg_total + (v as any).pilar1_pmt_total, 0);
-      mbgCount = data.villages.reduce((acc, v) => acc + (v as any).pilar4_mbg_realized, 0);
-      pmtCount = data.villages.reduce((acc, v) => acc + (v as any).pilar4_pmt_realized, 0);
-    }
-
-    return { totalCount, mbgCount, pmtCount };
-  }, [beneficiaries, activeTab, data]);
-
   const requireOperatorProfileAndExecute = (
-    actionType: string,
+    actionType: "TAMBAH_SASARAN" | "EDIT_SASARAN" | "HAPUS_SASARAN" | "SINKRONISASI_SHEETS" | "UPDATE_WILAYAH" | "TAMBAH_BANNER" | "HAPUS_BANNER",
     description: string,
     targetName: string | undefined,
     callback: () => void
   ) => {
-    if (!isSuperAdmin) {
-      alert("Hanya Admin Utama (properwahyu294@gmail.com) yang berhak mengedit, menyimpan, atau menyinkronkan data.");
-      return;
-    }
     const existing = getOperatorProfile();
     if (existing) {
       callback();
@@ -351,16 +283,10 @@ export default function App() {
     const isEdit = beneficiaries.some(b => b.id === ben.id);
     const actionType = isEdit ? "EDIT_SASARAN" : "TAMBAH_SASARAN";
     const desc = isEdit ? `Mengubah data sasaran MBG/PMT` : `Menambah data sasaran baru MBG/PMT (${ben.category})`;
-    requireOperatorProfileAndExecute(actionType, desc, ben.name, () => {
-      let updated: MBGBeneficiary[] = [];
-      if (isEdit) {
-        updated = beneficiaries.map(b => (b.id === ben.id ? ben : b));
-      } else {
-        updated = [ben, ...beneficiaries];
-      }
+
+    requireOperatorProfileAndExecute(actionType, desc, ben.name, async () => {
+      const updated = await saveBeneficiaryApi(ben);
       setBeneficiaries(updated);
-      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-      syncBeneficiariesApi(updated).catch(console.error);
       setRefreshTrigger(prev => prev + 1);
     });
   };
@@ -368,75 +294,72 @@ export default function App() {
   const handleDeleteBeneficiary = (id: string) => {
     const target = beneficiaries.find(b => b.id === id);
     const targetName = target ? target.name : id;
-    requireOperatorProfileAndExecute("HAPUS_SASARAN", "Menghapus data sasaran", targetName, () => {
-      const updated = beneficiaries.filter(b => b.id !== id);
+
+    requireOperatorProfileAndExecute("HAPUS_SASARAN", "Menghapus data sasaran", targetName, async () => {
+      const updated = await deleteBeneficiaryApi(id);
       setBeneficiaries(updated);
-      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-      syncBeneficiariesApi(updated).catch(console.error);
       setRefreshTrigger(prev => prev + 1);
     });
   };
 
   const handleAddWeightRecord = (beneficiaryId: string, record: WeightRecord) => {
-    const target = beneficiaries.find(b => b.id === beneficiaryId);
-    const targetName = target ? target.name : beneficiaryId;
-    requireOperatorProfileAndExecute(
-      "CATAT_PENIMBANGAN",
-      `Mencatat/memperbarui pengukuran BB/TB (${record.weightKg}kg, ${record.heightCm}cm, Periode: ${record.period})`,
-      targetName,
-      () => {
-        const updated = beneficiaries.map(b => {
-          if (b.id === beneficiaryId) {
-            const filtered = b.weightRecords.filter(r => r.period !== record.period);
-            return {
-              ...b,
-              weightRecords: [...filtered, record]
-            };
-          }
-          return b;
-        });
-        setBeneficiaries(updated);
-        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-        syncBeneficiariesApi(updated).catch(console.error);
-        setRefreshTrigger(prev => prev + 1);
-      }
-    );
+    setBeneficiaries(prev => {
+      const updated = prev.map(b => {
+        if (b.id === beneficiaryId) {
+          const filtered = b.weightRecords.filter(r => r.period !== record.period);
+          const target = {
+            ...b,
+            weightRecords: [...filtered, record]
+          };
+          saveBeneficiaryApi(target);
+          return target;
+        }
+        return b;
+      });
+      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+      return updated;
+    });
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const handleDeleteWeightRecord = (beneficiaryId: string, period: string) => {
-    const target = beneficiaries.find(b => b.id === beneficiaryId);
-    const targetName = target ? target.name : beneficiaryId;
-    requireOperatorProfileAndExecute(
-      "HAPUS_PENIMBANGAN",
-      `Menghapus riwayat penimbangan periode ${period}`,
-      targetName,
-      () => {
-        const updated = beneficiaries.map(b => {
-          if (b.id === beneficiaryId) {
-            const filtered = b.weightRecords.filter(r => r.period !== period);
-            return {
-              ...b,
-              weightRecords: filtered
-            };
-          }
-          return b;
-        });
-        setBeneficiaries(updated);
-        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-        syncBeneficiariesApi(updated).catch(console.error);
-        setRefreshTrigger(prev => prev + 1);
-      }
-    );
+    setBeneficiaries(prev => {
+      const updated = prev.map(b => {
+        if (b.id === beneficiaryId) {
+          const filtered = b.weightRecords.filter(r => r.period !== period);
+          const target = {
+            ...b,
+            weightRecords: filtered
+          };
+          saveBeneficiaryApi(target);
+          return target;
+        }
+        return b;
+      });
+      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
+      return updated;
+    });
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const loadData = async () => {
     try {
-      const json = await getAppData();
+      const [json, bensList, sheetConfig] = await Promise.all([
+        getAppData(),
+        getBeneficiariesApi(),
+        getAdminSheetConfigApi()
+      ]);
+
       setData(json);
-      if (json.beneficiaries && json.beneficiaries.length > 0) {
-        setBeneficiaries(json.beneficiaries);
-        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(json.beneficiaries));
+
+      if (bensList && Array.isArray(bensList) && bensList.length > 0) {
+        setBeneficiaries(bensList);
       }
+
+      if (sheetConfig && sheetConfig.adminSheetUrl) {
+        setSheetsSyncUrl(sheetConfig.adminSheetUrl);
+      }
+
       setWeightP1(json.weights.pilar1 * 100);
       setWeightP2(json.weights.pilar2 * 100);
       setWeightP3(json.weights.pilar3 * 100);
@@ -513,29 +436,21 @@ export default function App() {
 
   const handleSyncSheetsDirect = async (token: string, userObj?: User | null) => {
     if (!data) return;
-    const activeUser = userObj !== undefined ? userObj : currentUser;
-
-    requireOperatorProfileAndExecute(
-      "SINKRONISASI_SHEETS",
-      `Melakukan sinkronisasi data ke Google Spreadsheet (${activeUser?.email || "Google Account"})`,
-      "GOOGLE_SHEETS",
-      async () => {
-        setSyncingSheets(true);
-        setSyncError(null);
-        setSyncSuccess(false);
-        try {
-          const result = await syncToGoogleSheets(token, data.kabupatenName, data, activeUser?.email || undefined);
-          setSheetsSyncUrl(result.spreadsheetUrl);
-          setSyncSuccess(true);
-          setTimeout(() => setSyncSuccess(false), 5000);
-        } catch (err: any) {
-          console.error(err);
-          setSyncError("Gagal sinkronisasi data: " + err.message);
-        } finally {
-          setSyncingSheets(false);
-        }
-      }
-    );
+    setSyncingSheets(true);
+    setSyncError(null);
+    setSyncSuccess(false);
+    try {
+      const activeUser = userObj !== undefined ? userObj : currentUser;
+      const result = await syncToGoogleSheets(token, data.kabupatenName, data, activeUser?.email || undefined);
+      setSheetsSyncUrl(result.spreadsheetUrl);
+      setSyncSuccess(true);
+      setTimeout(() => setSyncSuccess(false), 5000);
+    } catch (err: any) {
+      console.error(err);
+      setSyncError("Gagal sinkronisasi data: " + err.message);
+    } finally {
+      setSyncingSheets(false);
+    }
   };
 
   const handleSyncSheets = async () => {
@@ -555,98 +470,58 @@ export default function App() {
 
   // Handle village metrics changes
   const handleVillageUpdate = async (updatedMetrics: Partial<Village>) => {
-    if (!updatedMetrics.id) return;
-    const vName = updatedMetrics.name || updatedMetrics.id;
-
-    requireOperatorProfileAndExecute(
-      "UPDATE_WILAYAH",
-      `Memperbarui data indikator & statistik wilayah/posyandu (${vName})`,
-      vName,
-      async () => {
-        try {
-          const json = await updateVillageApi(updatedMetrics as any);
-          setData(json);
-          setRefreshTrigger(prev => prev + 1);
-        } catch (e: any) {
-          alert("Error: " + e.message);
-        }
-      }
-    );
+    try {
+      if (!updatedMetrics.id) return;
+      const json = await updateVillageApi(updatedMetrics as any);
+      setData(json);
+      setRefreshTrigger(prev => prev + 1);
+    } catch (e: any) {
+      alert("Error: " + e.message);
+    }
   };
 
   // Handle adding a new village or unit
   const handleVillageAdd = async (name: string, unitType?: UnitType) => {
-    requireOperatorProfileAndExecute(
-      "TAMBAH_WILAYAH",
-      `Menambah unit/wilayah/posyandu baru (${unitType || 'Desa'}: ${name})`,
-      name,
-      async () => {
-        try {
-          const json = await addVillageApi(name, unitType);
-          setData(json);
-          setRefreshTrigger(prev => prev + 1);
-        } catch (e: any) {
-          alert("Error: " + e.message);
-        }
-      }
-    );
+    try {
+      const json = await addVillageApi(name, unitType);
+      setData(json);
+      setRefreshTrigger(prev => prev + 1);
+    } catch (e: any) {
+      alert("Error: " + e.message);
+    }
   };
 
   // Handle deleting a village
   const handleVillageDelete = async (id: string) => {
-    const target = data?.villages?.find(v => v.id === id);
-    const targetName = target ? target.name : id;
-
-    requireOperatorProfileAndExecute(
-      "HAPUS_WILAYAH",
-      `Menghapus unit/wilayah/posyandu (${targetName})`,
-      targetName,
-      async () => {
-        try {
-          const json = await deleteVillageApi(id);
-          setData(json);
-          setRefreshTrigger(prev => prev + 1);
-        } catch (e: any) {
-          alert("Error: " + e.message);
-        }
-      }
-    );
+    try {
+      const json = await deleteVillageApi(id);
+      setData(json);
+      setRefreshTrigger(prev => prev + 1);
+    } catch (e: any) {
+      alert("Error: " + e.message);
+    }
   };
 
   // Handle resetting database
   const handleResetData = async () => {
-    requireOperatorProfileAndExecute(
-      "MANAGEMENT_DATA",
-      "Reset data sampel awal sistem",
-      "SAMPEL_WILAYAH",
-      async () => {
-        try {
-          const json = await resetDataApi();
-          setData(json);
-          setRefreshTrigger(prev => prev + 1);
-        } catch (e: any) {
-          alert("Error: " + e.message);
-        }
-      }
-    );
+    try {
+      const json = await resetDataApi();
+      setData(json);
+      setRefreshTrigger(prev => prev + 1);
+    } catch (e: any) {
+      alert("Error: " + e.message);
+    }
   };
 
   // Handle clearing all database records
   const handleClearData = async () => {
-    requireOperatorProfileAndExecute(
-      "MANAGEMENT_DATA",
-      "Pembersihan seluruh catatan wilayah dari server",
-      "WILAYAH_SERVER",
-      async () => {
-        try {
-          const json = await clearDataApi();
-          setData(json);
-          setRefreshTrigger(prev => prev + 1);
-        } catch (e: any) {
-          alert("Error: " + e.message);
-        }
-      }
-    );
+    try {
+      const json = await clearDataApi();
+      setData(json);
+      setRefreshTrigger(prev => prev + 1);
+    } catch (e: any) {
+      alert("Error: " + e.message);
+    }
   };
 
   // Handle saving weights config
@@ -658,28 +533,21 @@ export default function App() {
     }
 
     setWeightError(null);
-    requireOperatorProfileAndExecute(
-      "UPDATE_BOBOT",
-      `Mengubah bobot pilar gizi: P1=${weightP1}%, P2=${weightP2}%, P3=${weightP3}%, P4=${weightP4}%, P5=${weightP5}%`,
-      "KONFIGURASI_BOBOT",
-      async () => {
-        try {
-          const json = await updateWeightsApi({
-            pilar1: weightP1 / 100,
-            pilar2: weightP2 / 100,
-            pilar3: weightP3 / 100,
-            pilar4: weightP4 / 100,
-            pilar5: weightP5 / 100,
-          });
+    try {
+      const json = await updateWeightsApi({
+        pilar1: weightP1 / 100,
+        pilar2: weightP2 / 100,
+        pilar3: weightP3 / 100,
+        pilar4: weightP4 / 100,
+        pilar5: weightP5 / 100,
+      });
 
-          setData(json);
-          setShowConfigModal(false);
-          setRefreshTrigger(prev => prev + 1);
-        } catch (e: any) {
-          setWeightError(e.message);
-        }
-      }
-    );
+      setData(json);
+      setShowConfigModal(false);
+      setRefreshTrigger(prev => prev + 1);
+    } catch (e: any) {
+      setWeightError(e.message);
+    }
   };
 
   if (loading) {
@@ -732,7 +600,10 @@ export default function App() {
       <PublicDashboardView
         currentUserEmail={currentUser?.email || null}
         isAdmin={isAdmin}
-        data={data}
+        orbitGiziData={data}
+        beneficiaries={beneficiaries}
+        villages={data?.villages || []}
+        adminSheetUrl={sheetsSyncUrl || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115"}
         onBackToLauncher={() => {
           setShowPublicDashboard(false);
           setShowLauncher(true);
@@ -740,9 +611,11 @@ export default function App() {
         onOpenLogin={() => {
           if (!currentUser) {
             handleGoogleLogin();
-          } else {
+          } else if (isAdmin) {
             setShowPublicDashboard(false);
             setShowLauncher(false);
+          } else {
+            alert(`Email Anda (${currentUser.email}) masuk sebagai Pengunjung. Akses Admin khusus untuk properwahyu294@gmail.com.`);
           }
         }}
         selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
@@ -754,9 +627,18 @@ export default function App() {
     return (
       <LauncherLanding
         onLaunchDashboard={() => {
-          if (currentUser) {
+          if (isAdmin) {
             setShowLauncher(false);
             setShowPublicDashboard(false);
+          } else if (currentUser) {
+            // Give option to switch to admin Google account or proceed to public dashboard
+            const wantLoginAdmin = window.confirm(`Email Anda (${currentUser.email}) terdaftar sebagai Pengunjung. Apakah Anda ingin login / ganti ke akun Google Admin (properwahyu294@gmail.com)?\n\nKlik OK untuk Ganti Akun Admin, atau Cancel untuk lanjut ke Dashboard Publik.`);
+            if (wantLoginAdmin) {
+              handleGoogleLogin();
+            } else {
+              setShowLauncher(false);
+              setShowPublicDashboard(true);
+            }
           } else {
             handleGoogleLogin();
           }
@@ -765,9 +647,9 @@ export default function App() {
           setShowLauncher(false);
           setShowPublicDashboard(true);
         }}
-        totalBeneficiariesCount={combinedCounts.totalCount}
-        totalMbgCount={combinedCounts.mbgCount}
-        totalPmtCount={combinedCounts.pmtCount}
+        totalBeneficiariesCount={beneficiaries.length}
+        totalMbgCount={beneficiaries.filter(b => b.isReceivedMBG !== false).length}
+        totalPmtCount={beneficiaries.filter(b => b.isReceivedPMT !== false).length}
         selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
       />
     );
@@ -779,7 +661,10 @@ export default function App() {
       <PublicDashboardView
         currentUserEmail={currentUser?.email || null}
         isAdmin={false}
-        data={data}
+        orbitGiziData={data}
+        beneficiaries={beneficiaries}
+        villages={data?.villages || []}
+        adminSheetUrl={sheetsSyncUrl || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115"}
         onBackToLauncher={() => {
           setShowPublicDashboard(false);
           setShowLauncher(true);
@@ -833,8 +718,8 @@ export default function App() {
           
           <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
             <button
-              onClick={() => isSuperAdmin ? setShowDataInputModal(true) : alert("Hanya Admin Utama yang berhak melakukan sinkronisasi & input data.")}
-              className={`flex items-center justify-center space-x-1.5 text-xs font-bold text-indigo-900 bg-indigo-100/80 border border-indigo-300 px-3.5 py-2 rounded-xl transition-colors shadow-2xs ${isSuperAdmin ? 'hover:bg-indigo-200 cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+              onClick={() => setShowDataInputModal(true)}
+              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-indigo-900 bg-indigo-100/80 border border-indigo-300 px-3.5 py-2 rounded-xl hover:bg-indigo-200 transition-colors shadow-2xs cursor-pointer"
             >
               <Building2 className="h-4 w-4 text-indigo-700" />
               <span>Modal Input & Sinkronisasi MBG</span>
@@ -865,16 +750,16 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => isSuperAdmin ? setShowConfigModal(true) : alert("Hanya Admin Utama yang berhak mengubah bobot pilar.")}
-              className={`flex items-center justify-center space-x-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl transition-colors shadow-2xs ${isSuperAdmin ? 'hover:bg-slate-50 cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+              onClick={() => setShowConfigModal(true)}
+              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
             >
               <Settings className="h-4 w-4 text-slate-500" />
               <span>Atur Bobot Pilar</span>
             </button>
 
             <button
-              onClick={() => isSuperAdmin ? setShowDataManagementModal(true) : alert("Hanya Admin Utama yang berhak mengelola master data.")}
-              className={`flex items-center justify-center space-x-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3.5 py-2 rounded-xl transition-colors shadow-2xs ${isSuperAdmin ? 'hover:bg-rose-100 cursor-pointer' : 'opacity-60 cursor-not-allowed'}`}
+              onClick={() => setShowDataManagementModal(true)}
+              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3.5 py-2 rounded-xl hover:bg-rose-100 transition-colors shadow-2xs cursor-pointer"
             >
               <Trash2 className="h-4 w-4 text-rose-600" />
               <span>Manajemen / Reset Data</span>
@@ -1223,8 +1108,8 @@ export default function App() {
                     <p className="text-[11px] text-slate-500">Sinkronisasikan data bulanan MBG, PMT, Posyandu, & e-PPGBM untuk Desa, Kelurahan, Posyandu, Puskesmas, atau Kabupaten.</p>
                   </div>
                   <button
-                    onClick={() => isSuperAdmin ? setShowInputWizard(true) : alert("Hanya Admin Utama yang berhak melakukan sinkronisasi & input data.")}
-                    className={`w-full md:w-auto px-4 py-2 text-white text-xs font-black rounded-xl transition-all shadow-xs ${isSuperAdmin ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer' : 'bg-indigo-400 opacity-70 cursor-not-allowed'}`}
+                    onClick={() => setShowInputWizard(true)}
+                    className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white text-xs font-black rounded-xl hover:bg-indigo-700 transition-all shadow-xs cursor-pointer"
                   >
                     Buka Wizard Input Data
                   </button>
@@ -1246,8 +1131,8 @@ export default function App() {
                     </div>
                   </div>
                   <button
-                    onClick={() => isSuperAdmin ? setShowDataInputModal(true) : alert("Hanya Admin Utama yang berhak melakukan sinkronisasi & input data.")}
-                    className={`px-4 py-2 font-black text-xs rounded-xl shadow-xs transition-all flex items-center space-x-1.5 border ${isSuperAdmin ? 'bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer border-indigo-400/40' : 'bg-slate-700 text-slate-300 opacity-60 cursor-not-allowed border-slate-600'}`}
+                    onClick={() => setShowDataInputModal(true)}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer shrink-0 flex items-center space-x-1.5 border border-indigo-400/40"
                   >
                     <Sparkles className="h-4 w-4 text-amber-300" />
                     <span>Buka Tampilan Modal</span>
@@ -1262,20 +1147,19 @@ export default function App() {
                   onAddWeightRecord={handleAddWeightRecord}
                   onDeleteWeightRecord={handleDeleteWeightRecord}
                   onUpdateVillageMetrics={handleVillageUpdate}
-                  onRequestOperatorAction={requireOperatorProfileAndExecute}
                 />
               </div>
             )}
 
             {activeTab === "ibu_hamil" && (
               <div className="animate-in fade-in duration-200">
-                <IbuHamilView onRequestOperatorAction={requireOperatorProfileAndExecute} />
+                <IbuHamilView />
               </div>
             )}
 
             {activeTab === "ibu_menyusui" && (
               <div className="animate-in fade-in duration-200">
-                <IbuMenyusuiView onRequestOperatorAction={requireOperatorProfileAndExecute} />
+                <IbuMenyusuiView />
               </div>
             )}
 
@@ -1603,7 +1487,6 @@ export default function App() {
         onClose={() => setShowAnalyticsModal(false)}
         currentUserEmail={currentUser?.email || null}
         isAdmin={isAdmin}
-        isSuperAdmin={isSuperAdmin}
       />
 
       {/* Full-Screen Interactive Modal for Data Input Center */}
@@ -1618,7 +1501,6 @@ export default function App() {
           onUpdateVillageMetrics={handleVillageUpdate}
           isModal={true}
           onCloseModal={() => setShowDataInputModal(false)}
-          onRequestOperatorAction={requireOperatorProfileAndExecute}
         />
       )}
 

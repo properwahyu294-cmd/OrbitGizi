@@ -1,12 +1,86 @@
-import { UnitType, OrbitGiziData, Pillar, Indicator, Village, MBGBeneficiary } from "../types";
+import { UnitType } from "../types";
 
+export interface Village {
+  id: string;
+  name: string;
+  unitType?: UnitType;
+  riskLevel: "Hijau" | "Kuning" | "Merah";
+  score: number;
+  coordinates: { x: number; y: number };
+  locationHierarchy?: {
+    propinsi?: string;
+    kabupaten?: string;
+    puskesmas?: string;
+    kelurahan?: string;
+    dusun?: string;
+    posyandu?: string;
+  };
+  pilar1_mbg_sync: number;
+  pilar1_mbg_total: number;
+  pilar1_pmt_sync: number;
+  pilar1_pmt_total: number;
+  pilar1_posyandu_sync: number;
+  pilar1_posyandu_total: number;
+  pilar1_eppgbm_sync: number;
+  pilar1_eppgbm_total: number;
+  pilar2_dinkes_aktif: boolean;
+  pilar2_bgn_aktif: boolean;
+  pilar2_pkk_aktif: boolean;
+  pilar2_pemdes_aktif: boolean;
+  pilar2_puskesmas_aktif: boolean;
+  pilar3_dashboard_online: boolean;
+  pilar3_validasi_data: boolean;
+  pilar3_real_time_update: boolean;
+  pilar4_mbg_realized: number;
+  pilar4_mbg_target: number;
+  pilar4_pmt_realized: number;
+  pilar4_pmt_target: number;
+  pilar4_home_visit: number;
+  pilar4_home_visit_target: number;
+  pilar4_posyandu_aktif: number;
+  pilar4_posyandu_total: number;
+  pilar5_stunting_prev: number;
+  pilar5_stunting_curr: number;
+  pilar5_wasting_prev: number;
+  pilar5_wasting_curr: number;
+  pilar5_target_accuracy: number;
+}
 
+export interface PillarIndicator {
+  id: string;
+  name: string;
+  score: number;
+  description: string;
+}
 
+export interface Pillar {
+  id: string;
+  name: string;
+  weight: number;
+  indicators: PillarIndicator[];
+}
 
-
-
-
-
+export interface OrbitGiziData {
+  kabupatenName: string;
+  lastUpdated: string;
+  weights: {
+    pilar1: number;
+    pilar2: number;
+    pilar3: number;
+    pilar4: number;
+    pilar5: number;
+  };
+  pillars: Pillar[];
+  villages: Village[];
+  mbgMonthlyTrend: Array<{ month: string; target: number; realized: number }>;
+  pmtMonthlyTrend: Array<{ month: string; target: number; realized: number }>;
+  indexScore: number;
+  category: {
+    label: "Merah" | "Kuning" | "Hijau";
+    color: string;
+    desc: string;
+  };
+}
 
 const DEFAULT_WEIGHTS = {
   pilar1: 0.10,
@@ -464,8 +538,7 @@ function buildLocalAppData(): OrbitGiziData {
       label: categoryLabel,
       color: categoryColor,
       desc: categoryDesc
-    },
-    beneficiaries: localBeneficiaries
+    }
   };
 }
 
@@ -493,25 +566,6 @@ export async function getAppData(): Promise<OrbitGiziData> {
   } catch (err) {
     console.warn("API Endpoint unavailable or returned HTML (Cloudflare Pages fallback). Switching to full offline client-side state...", err);
     isUsingLocalMode = true;
-    return buildLocalAppData();
-  }
-}
-
-export async function syncBeneficiariesApi(beneficiaries: MBGBeneficiary[]): Promise<OrbitGiziData> {
-  if (isUsingLocalMode) {
-    localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(beneficiaries));
-    return buildLocalAppData();
-  }
-  try {
-    const res = await fetch("/api/beneficiaries/sync", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ beneficiaries })
-    });
-    return await parseResponseSafely(res);
-  } catch {
-    isUsingLocalMode = true;
-    localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(beneficiaries));
     return buildLocalAppData();
   }
 }
@@ -831,3 +885,124 @@ Berdasarkan analisis performa, **${weakestPillar.name}** adalah pilar dengan sko
 
   return { text: localResponse, source: "local_simulation_client" };
 }
+
+/**
+ * BENEFICIARIES API HELPERS
+ */
+export async function getBeneficiariesApi(): Promise<any[]> {
+  try {
+    const res = await fetch("/api/beneficiaries");
+    const json = await parseResponseSafely(res);
+    if (json.success && Array.isArray(json.beneficiaries)) {
+      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(json.beneficiaries));
+      return json.beneficiaries;
+    }
+  } catch (err) {
+    console.warn("API beneficiaries unavailable, using local cache:", err);
+  }
+
+  const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+export async function saveBeneficiaryApi(ben: any): Promise<any[]> {
+  try {
+    const res = await fetch("/api/beneficiaries/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(ben)
+    });
+    const json = await parseResponseSafely(res);
+    if (json.success && Array.isArray(json.beneficiaries)) {
+      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(json.beneficiaries));
+      return json.beneficiaries;
+    }
+  } catch (err) {
+    console.warn("Failed to save beneficiary to API, saving locally:", err);
+  }
+
+  const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
+  let list: any[] = stored ? JSON.parse(stored) : [];
+  const idx = list.findIndex(b => b.id === ben.id);
+  if (idx !== -1) list[idx] = ben;
+  else list.unshift(ben);
+  localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(list));
+  return list;
+}
+
+export async function deleteBeneficiaryApi(id: string): Promise<any[]> {
+  try {
+    const res = await fetch("/api/beneficiaries/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+    const json = await parseResponseSafely(res);
+    if (json.success && Array.isArray(json.beneficiaries)) {
+      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(json.beneficiaries));
+      return json.beneficiaries;
+    }
+  } catch (err) {
+    console.warn("Failed to delete beneficiary via API, deleting locally:", err);
+  }
+
+  const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
+  let list: any[] = stored ? JSON.parse(stored) : [];
+  list = list.filter(b => b.id !== id);
+  localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(list));
+  return list;
+}
+
+/**
+ * ADMIN GOOGLE SHEET CONFIG HELPERS
+ */
+export async function getAdminSheetConfigApi(): Promise<{ adminSheetUrl: string; adminSheetId: string }> {
+  const defaultUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115";
+  const defaultId = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
+
+  try {
+    const res = await fetch("/api/sheets/config");
+    const json = await parseResponseSafely(res);
+    if (json.success && json.adminSheetUrl) {
+      localStorage.setItem("orbit_gizi_admin_sheet_url", json.adminSheetUrl);
+      return { adminSheetUrl: json.adminSheetUrl, adminSheetId: json.adminSheetId };
+    }
+  } catch (err) {
+    console.warn("Failed to fetch sheet config from API, using cached or default:", err);
+  }
+
+  const savedUrl = localStorage.getItem("orbit_gizi_admin_sheet_url") || defaultUrl;
+  const match = savedUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  const savedId = match ? match[1] : defaultId;
+  return { adminSheetUrl: savedUrl, adminSheetId: savedId };
+}
+
+export async function updateAdminSheetConfigApi(url: string): Promise<{ adminSheetUrl: string; adminSheetId: string }> {
+  try {
+    const res = await fetch("/api/sheets/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url })
+    });
+    const json = await parseResponseSafely(res);
+    if (json.success && json.adminSheetUrl) {
+      localStorage.setItem("orbit_gizi_admin_sheet_url", json.adminSheetUrl);
+      return { adminSheetUrl: json.adminSheetUrl, adminSheetId: json.adminSheetId };
+    }
+  } catch (err) {
+    console.warn("Failed to update sheet config via API, updating local:", err);
+  }
+
+  localStorage.setItem("orbit_gizi_admin_sheet_url", url);
+  const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  const id = match ? match[1] : "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
+  return { adminSheetUrl: url, adminSheetId: id };
+}
+

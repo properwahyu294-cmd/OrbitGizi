@@ -120,8 +120,7 @@ export function PosyanduOfflineFormTemplateModal({
                 }
                 #printable-offline-form, #printable-offline-form *,
                 #printable-portfolio-report, #printable-portfolio-report *,
-                #printable-manual-book, #printable-manual-book *,
-                #printable-audit-report, #printable-audit-report * {
+                #printable-manual-book, #printable-manual-book * {
                   visibility: visible !important;
                 }
                 #printable-offline-form {

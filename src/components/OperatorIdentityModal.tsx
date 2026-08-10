@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { UserCheck, Building2, ShieldCheck, Mail, Phone, Lock, Sparkles, CheckCircle2, Clock, Info } from "lucide-react";
+import { UserCheck, Building2, ShieldCheck, Mail, Phone, Lock, Sparkles, CheckCircle2 } from "lucide-react";
 import { OperatorProfile } from "../types";
 import { saveOperatorProfile, getOperatorProfile } from "../lib/analyticsService";
 
@@ -21,7 +21,6 @@ export const OperatorIdentityModal: React.FC<OperatorIdentityModalProps> = ({
   const [instansi, setInstansi] = useState("Puskesmas Boawae / Dinkes Nagekeo");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [sessionDurationMinutes, setSessionDurationMinutes] = useState<number>(60); // Default 1 hour
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
@@ -31,11 +30,10 @@ export const OperatorIdentityModal: React.FC<OperatorIdentityModalProps> = ({
         setName(existing.name || "");
         setRole(existing.role || "Petugas Ahli Gizi / Nakes");
         setInstansi(existing.instansi || "Puskesmas Boawae / Dinkes Nagekeo");
-        setEmail(existing.email || currentUserEmail || "admin@orbitgizi.com");
+        setEmail(existing.email || currentUserEmail || "properwahyu294@gmail.com");
         setPhone(existing.phone || "");
-        setSessionDurationMinutes(existing.sessionDurationMinutes || 60);
       } else {
-        setEmail(currentUserEmail || "admin@orbitgizi.com");
+        setEmail(currentUserEmail || "properwahyu294@gmail.com");
       }
     }
   }, [isOpen, currentUserEmail]);
@@ -53,7 +51,7 @@ export const OperatorIdentityModal: React.FC<OperatorIdentityModalProps> = ({
       return;
     }
 
-    const profileData: Partial<OperatorProfile> = {
+    const profile: OperatorProfile = {
       name: name.trim(),
       role: role.trim(),
       instansi: instansi.trim(),
@@ -61,9 +59,9 @@ export const OperatorIdentityModal: React.FC<OperatorIdentityModalProps> = ({
       phone: phone.trim()
     };
 
-    const saved = saveOperatorProfile(profileData, sessionDurationMinutes);
+    saveOperatorProfile(profile);
     setErrorMsg("");
-    onConfirm(saved);
+    onConfirm(profile);
   };
 
   return (
@@ -79,23 +77,15 @@ export const OperatorIdentityModal: React.FC<OperatorIdentityModalProps> = ({
           </div>
           <div>
             <span className="text-[10px] font-black tracking-widest text-emerald-400 uppercase">
-              Verifikasi Sesi Pengakses Data
+              Verifikasi Pengakses Data
             </span>
             <h3 className="text-lg font-black text-white">Identitas Operator / Petugas Input</h3>
           </div>
         </div>
 
-        <div className="bg-slate-950/80 border border-emerald-500/20 rounded-2xl p-3.5 flex items-start space-x-3 text-xs text-slate-300">
-          <Clock className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <p className="font-bold text-emerald-300">
-              Sistem Durasi Sesi & Transparansi Audit SPBE
-            </p>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              Sesi aktif berlaku selama durasi pilihan Anda (<strong>maksimal 2 jam</strong>). Selama sesi aktif di perangkat ini, Anda tidak perlu menginput ulang identitas. Bila sesi berakhir atau dibuka di perangkat lain, identitas sesi baru wajib diisi.
-            </p>
-          </div>
-        </div>
+        <p className="text-xs text-slate-300 leading-relaxed">
+          Untuk akuntabilitas dan audit transparansi gizi, mohon konfirmasi identitas Anda sebelum melakukan penambahan atau perubahan data sasaran.
+        </p>
 
         {errorMsg && (
           <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-rose-300 text-xs font-bold">
@@ -167,32 +157,16 @@ export const OperatorIdentityModal: React.FC<OperatorIdentityModalProps> = ({
 
             <div>
               <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                Durasi Sesi Aktif (Maks 2 Jam)
+                No. HP / WhatsApp (Opsional)
               </label>
-              <select
-                value={sessionDurationMinutes}
-                onChange={(e) => setSessionDurationMinutes(Number(e.target.value))}
-                className="w-full px-3 py-2.5 bg-slate-950 border border-emerald-500/50 focus:border-emerald-400 rounded-xl text-emerald-300 font-bold text-xs outline-none cursor-pointer"
-              >
-                <option value={30}>30 Menit</option>
-                <option value={60}>1 Jam (60 Menit) - Standar Default</option>
-                <option value={90}>1.5 Jam (90 Menit)</option>
-                <option value={120}>2 Jam (120 Menit) - Batas Maksimal</option>
-              </select>
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="08123456789"
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl text-white text-xs outline-none"
+              />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-bold text-slate-300 mb-1">
-              No. HP / WhatsApp (Opsional)
-            </label>
-            <input
-              type="text"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="08123456789"
-              className="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl text-white text-xs outline-none"
-            />
           </div>
 
           <div className="pt-2 flex items-center justify-between gap-3">
@@ -206,17 +180,17 @@ export const OperatorIdentityModal: React.FC<OperatorIdentityModalProps> = ({
 
             <button
               type="submit"
-              className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs rounded-xl transition-all shadow-lg shadow-emerald-600/30 flex items-center space-x-2 cursor-pointer"
+              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl transition-all shadow-lg shadow-emerald-600/30 flex items-center space-x-2 cursor-pointer"
             >
               <CheckCircle2 className="h-4 w-4" />
-              <span>Verifikasi & Mulai Sesi ({sessionDurationMinutes} Mins)</span>
+              <span>Verifikasi & Lanjutkan Input</span>
             </button>
           </div>
         </form>
 
         <div className="text-[10px] text-slate-400 flex items-center justify-center space-x-1 border-t border-slate-800/80 pt-3">
           <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-          <span>Audit trail otomatis tersimpan dengan ID Sesi & disinkronkan ke Google Sheets Admin</span>
+          <span>Audit trail otomatis tersimpan & disinkronkan ke Google Sheets Admin</span>
         </div>
 
       </div>

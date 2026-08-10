@@ -1,29 +1,19 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const admin = require('firebase-admin');
-const appModule = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
 
 dotenv.config();
-
-// Initialize Firebase Admin
-if (admin.getApps().length === 0) {
-  admin.initializeApp({
-    credential: appModule.applicationDefault(),
-  });
-}
-console.log("Firebase Admin initialized");
-const db = getFirestore();
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+
+// File path for persistent database store
+const DATA_FILE = path.join(process.cwd(), "data_store.json");
 
 // Dynamic Initial Villages Database
 interface Village {
@@ -64,21 +54,340 @@ interface Village {
   pilar5_target_accuracy: number;
 }
 
-const SEED_VILLAGES: Village[] = [];
+const DEFAULT_ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115";
+const DEFAULT_ADMIN_SHEET_ID = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
 
-let villages: Village[] = [...SEED_VILLAGES];
-let beneficiaries: any[] = [];
+const SEED_VILLAGES: Village[] = [
+  {
+    id: "v_boawae",
+    name: "Desa Boawae",
+    unitType: "Desa",
+    riskLevel: "Kuning",
+    score: 68,
+    coordinates: { x: 121.21, y: -8.82 },
+    pilar1_mbg_sync: 15,
+    pilar1_mbg_total: 20,
+    pilar1_pmt_sync: 8,
+    pilar1_pmt_total: 10,
+    pilar1_posyandu_sync: 3,
+    pilar1_posyandu_total: 3,
+    pilar1_eppgbm_sync: 18,
+    pilar1_eppgbm_total: 20,
+    pilar2_dinkes_aktif: true,
+    pilar2_bgn_aktif: true,
+    pilar2_pkk_aktif: true,
+    pilar2_pemdes_aktif: true,
+    pilar2_puskesmas_aktif: true,
+    pilar3_dashboard_online: true,
+    pilar3_validasi_data: true,
+    pilar3_real_time_update: true,
+    pilar4_mbg_realized: 15,
+    pilar4_mbg_target: 20,
+    pilar4_pmt_realized: 8,
+    pilar4_pmt_target: 10,
+    pilar4_home_visit: 10,
+    pilar4_home_visit_target: 10,
+    pilar4_posyandu_aktif: 3,
+    pilar4_posyandu_total: 3,
+    pilar5_stunting_prev: 6,
+    pilar5_stunting_curr: 4,
+    pilar5_wasting_prev: 3,
+    pilar5_wasting_curr: 1,
+    pilar5_target_accuracy: 92
+  },
+  {
+    id: "v_nangaroro",
+    name: "Kelurahan Nangaroro",
+    unitType: "Kelurahan",
+    riskLevel: "Kuning",
+    score: 65,
+    coordinates: { x: 121.32, y: -8.88 },
+    pilar1_mbg_sync: 12,
+    pilar1_mbg_total: 18,
+    pilar1_pmt_sync: 6,
+    pilar1_pmt_total: 8,
+    pilar1_posyandu_sync: 2,
+    pilar1_posyandu_total: 2,
+    pilar1_eppgbm_sync: 15,
+    pilar1_eppgbm_total: 18,
+    pilar2_dinkes_aktif: true,
+    pilar2_bgn_aktif: true,
+    pilar2_pkk_aktif: true,
+    pilar2_pemdes_aktif: true,
+    pilar2_puskesmas_aktif: true,
+    pilar3_dashboard_online: true,
+    pilar3_validasi_data: true,
+    pilar3_real_time_update: true,
+    pilar4_mbg_realized: 12,
+    pilar4_mbg_target: 18,
+    pilar4_pmt_realized: 6,
+    pilar4_pmt_target: 8,
+    pilar4_home_visit: 8,
+    pilar4_home_visit_target: 8,
+    pilar4_posyandu_aktif: 2,
+    pilar4_posyandu_total: 2,
+    pilar5_stunting_prev: 5,
+    pilar5_stunting_curr: 3,
+    pilar5_wasting_prev: 2,
+    pilar5_wasting_curr: 1,
+    pilar5_target_accuracy: 88
+  },
+  {
+    id: "v_aesesa",
+    name: "Desa Aesesa",
+    unitType: "Desa",
+    riskLevel: "Hijau",
+    score: 82,
+    coordinates: { x: 121.30, y: -8.68 },
+    pilar1_mbg_sync: 25,
+    pilar1_mbg_total: 25,
+    pilar1_pmt_sync: 12,
+    pilar1_pmt_total: 12,
+    pilar1_posyandu_sync: 4,
+    pilar1_posyandu_total: 4,
+    pilar1_eppgbm_sync: 25,
+    pilar1_eppgbm_total: 25,
+    pilar2_dinkes_aktif: true,
+    pilar2_bgn_aktif: true,
+    pilar2_pkk_aktif: true,
+    pilar2_pemdes_aktif: true,
+    pilar2_puskesmas_aktif: true,
+    pilar3_dashboard_online: true,
+    pilar3_validasi_data: true,
+    pilar3_real_time_update: true,
+    pilar4_mbg_realized: 25,
+    pilar4_mbg_target: 25,
+    pilar4_pmt_realized: 12,
+    pilar4_pmt_target: 12,
+    pilar4_home_visit: 12,
+    pilar4_home_visit_target: 12,
+    pilar4_posyandu_aktif: 4,
+    pilar4_posyandu_total: 4,
+    pilar5_stunting_prev: 4,
+    pilar5_stunting_curr: 2,
+    pilar5_wasting_prev: 2,
+    pilar5_wasting_curr: 0,
+    pilar5_target_accuracy: 95
+  },
+  {
+    id: "v_mbay",
+    name: "Kelurahan Mbay",
+    unitType: "Kelurahan",
+    riskLevel: "Hijau",
+    score: 78,
+    coordinates: { x: 121.28, y: -8.65 },
+    pilar1_mbg_sync: 30,
+    pilar1_mbg_total: 30,
+    pilar1_pmt_sync: 15,
+    pilar1_pmt_total: 15,
+    pilar1_posyandu_sync: 5,
+    pilar1_posyandu_total: 5,
+    pilar1_eppgbm_sync: 30,
+    pilar1_eppgbm_total: 30,
+    pilar2_dinkes_aktif: true,
+    pilar2_bgn_aktif: true,
+    pilar2_pkk_aktif: true,
+    pilar2_pemdes_aktif: true,
+    pilar2_puskesmas_aktif: true,
+    pilar3_dashboard_online: true,
+    pilar3_validasi_data: true,
+    pilar3_real_time_update: true,
+    pilar4_mbg_realized: 30,
+    pilar4_mbg_target: 30,
+    pilar4_pmt_realized: 15,
+    pilar4_pmt_target: 15,
+    pilar4_home_visit: 15,
+    pilar4_home_visit_target: 15,
+    pilar4_posyandu_aktif: 5,
+    pilar4_posyandu_total: 5,
+    pilar5_stunting_prev: 5,
+    pilar5_stunting_curr: 3,
+    pilar5_wasting_prev: 2,
+    pilar5_wasting_curr: 1,
+    pilar5_target_accuracy: 90
+  }
+];
 
-let weights = {
-  pilar1: 0.10, // Integrasi Data
-  pilar2: 0.30, // Kolaborasi
-  pilar3: 0.10, // Digitalisasi
-  pilar4: 0.25, // Pelayanan
-  pilar5: 0.25, // Outcome
-};
+const SEED_BENEFICIARIES = [
+  {
+    id: "ben_seed_1",
+    name: "Maria Lada",
+    parentName: "Yoseph Lada",
+    nik: "5316010101210001",
+    gender: "Perempuan",
+    age: "24 Bulan",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Boawae",
+      kelurahan: "Desa Boawae",
+      dusun: "Dusun 1",
+      posyandu: "Posyandu Mekar Boawae"
+    },
+    attendanceStatus: "Mengunjungi Posyandu",
+    isReceivedMBG: true,
+    isReceivedPMT: true,
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu", "Puskesmas"],
+    notes: "Balita rutin mendapatkan PMT dan pengukuran timbang bulanan.",
+    weightRecords: [
+      { id: "wr_1", period: "Januari 2026", weightKg: 11.2, heightCm: 84.5, statusGizi: "Normal", measuredAt: "15 Jan 2026" },
+      { id: "wr_2", period: "Februari 2026", weightKg: 11.8, heightCm: 85.2, statusGizi: "Normal", measuredAt: "10 Feb 2026" }
+    ]
+  },
+  {
+    id: "ben_seed_2",
+    name: "Yohanes Bria",
+    parentName: "Antonius Bria",
+    nik: "5316010203210002",
+    gender: "Laki-Laki",
+    age: "18 Bulan",
+    category: "Balita",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Nangaroro",
+      kelurahan: "Kelurahan Nangaroro",
+      dusun: "Dusun Mangaroro",
+      posyandu: "Posyandu Mawar Nangaroro"
+    },
+    attendanceStatus: "Mengunjungi Posyandu",
+    isReceivedMBG: true,
+    isReceivedPMT: true,
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu"],
+    notes: "Sudah dipantau oleh Puskesmas dan tim BGN.",
+    weightRecords: [
+      { id: "wr_3", period: "Januari 2026", weightKg: 9.8, heightCm: 79.0, statusGizi: "Risiko Stunting", measuredAt: "12 Jan 2026" },
+      { id: "wr_4", period: "Februari 2026", weightKg: 10.4, heightCm: 80.5, statusGizi: "Normal", measuredAt: "12 Feb 2026" }
+    ]
+  },
+  {
+    id: "ben_seed_3",
+    name: "Sinta Nage",
+    parentName: "Mikael Nage",
+    nik: "5316014506980003",
+    gender: "Perempuan",
+    age: "28 Tahun",
+    category: "Ibu Hamil",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Aesesa",
+      kelurahan: "Desa Aesesa",
+      dusun: "Dusun Danga",
+      posyandu: "Posyandu Kasih Aesesa"
+    },
+    attendanceStatus: "Mengunjungi Posyandu",
+    isReceivedMBG: true,
+    isReceivedPMT: true,
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu", "Puskesmas"],
+    notes: "Ibu Hamil KEK mendapat asupan PMT tambahan setiap minggu.",
+    weightRecords: [
+      { id: "wr_5", period: "Januari 2026", weightKg: 52.0, heightCm: 156.0, statusGizi: "Normal", measuredAt: "14 Jan 2026" }
+    ]
+  },
+  {
+    id: "ben_seed_4",
+    name: "Elisabeth Keo",
+    parentName: "Dominikus Keo",
+    nik: "5316015208950004",
+    gender: "Perempuan",
+    age: "25 Tahun",
+    category: "Ibu Menyusui",
+    location: {
+      propinsi: "Nusa Tenggara Timur",
+      kabupaten: "Kabupaten Nagekeo",
+      puskesmas: "Puskesmas Mbay",
+      kelurahan: "Kelurahan Mbay",
+      dusun: "Dusun Kota Mbay",
+      posyandu: "Posyandu Sejahtera Mbay"
+    },
+    attendanceStatus: "Mengunjungi Posyandu",
+    isReceivedMBG: true,
+    isReceivedPMT: true,
+    isPetugasDesaHadir: true,
+    isPetugasPosyanduHadir: true,
+    stakeholdersHadir: ["Petugas Desa", "Kader Posyandu"],
+    notes: "Ibu Menyusui aktif mengikuti sosialisasi gizi Posyandu.",
+    weightRecords: [
+      { id: "wr_6", period: "Januari 2026", weightKg: 55.5, heightCm: 158.0, statusGizi: "Normal", measuredAt: "18 Jan 2026" }
+    ]
+  }
+];
 
+// Memory state loaded from data_store.json
+let adminSheetUrl = DEFAULT_ADMIN_SHEET_URL;
+let adminSheetId = DEFAULT_ADMIN_SHEET_ID;
 let kabupatenName = "Kabupaten Nagekeo";
 let lastUpdated = new Date().toISOString();
+let weights = {
+  pilar1: 0.10,
+  pilar2: 0.30,
+  pilar3: 0.10,
+  pilar4: 0.25,
+  pilar5: 0.25,
+};
+let villages: Village[] = [];
+let beneficiaries: any[] = [];
+let ibuHamil: any[] = [];
+let ibuMenyusui: any[] = [];
+
+// Load data store from disk or initialize with seeds
+function loadStoreFromDisk() {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const fileData = fs.readFileSync(DATA_FILE, "utf-8");
+      const parsed = JSON.parse(fileData);
+      adminSheetUrl = parsed.adminSheetUrl || DEFAULT_ADMIN_SHEET_URL;
+      adminSheetId = parsed.adminSheetId || DEFAULT_ADMIN_SHEET_ID;
+      kabupatenName = parsed.kabupatenName || "Kabupaten Nagekeo";
+      weights = parsed.weights || weights;
+      villages = Array.isArray(parsed.villages) && parsed.villages.length > 0 ? parsed.villages : [...SEED_VILLAGES];
+      beneficiaries = Array.isArray(parsed.beneficiaries) && parsed.beneficiaries.length > 0 ? parsed.beneficiaries : [...SEED_BENEFICIARIES];
+      ibuHamil = Array.isArray(parsed.ibuHamil) ? parsed.ibuHamil : [];
+      ibuMenyusui = Array.isArray(parsed.ibuMenyusui) ? parsed.ibuMenyusui : [];
+      lastUpdated = parsed.lastUpdated || new Date().toISOString();
+    } else {
+      villages = [...SEED_VILLAGES];
+      beneficiaries = [...SEED_BENEFICIARIES];
+      saveStoreToDisk();
+    }
+  } catch (e) {
+    console.error("Gagal membaca data_store.json, menggunakan seed awal:", e);
+    villages = [...SEED_VILLAGES];
+    beneficiaries = [...SEED_BENEFICIARIES];
+    saveStoreToDisk();
+  }
+}
+
+// Save data store to disk synchronously
+function saveStoreToDisk() {
+  try {
+    lastUpdated = new Date().toISOString();
+    const payload = {
+      adminSheetUrl,
+      adminSheetId,
+      kabupatenName,
+      lastUpdated,
+      weights,
+      villages,
+      beneficiaries,
+      ibuHamil,
+      ibuMenyusui
+    };
+    fs.writeFileSync(DATA_FILE, JSON.stringify(payload, null, 2), "utf-8");
+  } catch (e) {
+    console.error("Gagal menyimpan data_store.json:", e);
+  }
+}
+
+loadStoreFromDisk();
 
 // Helper to get score out of fraction
 function getRatioScore(nominator: number, denominator: number): number {
@@ -153,19 +462,6 @@ function calculateVillageScore(v: Village): number {
                 p5 * weights.pilar5;
 
   return Math.round(total);
-}
-
-// Load data from Firestore on startup
-async function loadInitialData() {
-  console.log("Starting to load data from Firestore...");
-  try {
-    const snapshot = await db.collection("beneficiaries").get();
-    console.log(`Snapshot size: ${snapshot.size}`);
-    beneficiaries = snapshot.docs.map((doc) => doc.data());
-    console.log(`Loaded ${beneficiaries.length} beneficiaries from Firestore.`);
-  } catch (error) {
-    console.error("Error loading initial data from Firestore:", error);
-  }
 }
 
 // Function to calculate and construct full data model based on live villages
@@ -369,6 +665,8 @@ function buildAppData() {
   return {
     kabupatenName,
     lastUpdated,
+    adminSheetUrl,
+    adminSheetId,
     weights,
     pillars: pillarsList,
     villages,
@@ -379,21 +677,112 @@ function buildAppData() {
       label: categoryLabel,
       color: categoryColor,
       desc: categoryDesc
-    },
-    beneficiaries
+    }
   };
 }
 
 // API: Get App State
-app.get("/api/data", async (req, res) => {
-  try {
-    const snapshot = await db.collection("beneficiaries").get();
-    beneficiaries = snapshot.docs.map((doc) => doc.data());
-  } catch (error) {
-    console.error("Error fetching beneficiaries from Firestore:", error);
-  }
+app.get("/api/data", (req, res) => {
   const aggregatedData = buildAppData();
   res.json(aggregatedData);
+});
+
+// API: Get Beneficiaries List
+app.get("/api/beneficiaries", (req, res) => {
+  res.json({
+    success: true,
+    beneficiaries,
+    ibuHamil,
+    ibuMenyusui
+  });
+});
+
+// API: Save or Update Beneficiary
+app.post("/api/beneficiaries/save", (req, res) => {
+  const ben = req.body;
+  if (!ben || !ben.id) {
+    return res.status(400).json({ error: "Data sasaran tidak valid (ID diperlukan)." });
+  }
+
+  const existingIdx = beneficiaries.findIndex(b => b.id === ben.id);
+  if (existingIdx !== -1) {
+    beneficiaries[existingIdx] = ben;
+  } else {
+    beneficiaries.unshift(ben);
+  }
+
+  saveStoreToDisk();
+
+  res.json({
+    success: true,
+    message: `Data sasaran ${ben.name} berhasil disimpan di basis data server.`,
+    beneficiaries,
+    appData: buildAppData()
+  });
+});
+
+// API: Delete Beneficiary
+app.post("/api/beneficiaries/delete", (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(400).json({ error: "ID sasaran diperlukan." });
+  }
+
+  beneficiaries = beneficiaries.filter(b => b.id !== id);
+  saveStoreToDisk();
+
+  res.json({
+    success: true,
+    message: "Data sasaran berhasil dihapus dari server.",
+    beneficiaries,
+    appData: buildAppData()
+  });
+});
+
+// API: Batch update beneficiaries
+app.post("/api/beneficiaries/batch", (req, res) => {
+  const { beneficiaries: newList } = req.body;
+  if (Array.isArray(newList)) {
+    beneficiaries = newList;
+    saveStoreToDisk();
+  }
+  res.json({
+    success: true,
+    message: "Batch sasaran berhasil diperbarui.",
+    beneficiaries,
+    appData: buildAppData()
+  });
+});
+
+// API: Get Admin Sheet Config
+app.get("/api/sheets/config", (req, res) => {
+  res.json({
+    success: true,
+    adminSheetUrl,
+    adminSheetId
+  });
+});
+
+// API: Update Admin Sheet Config
+app.post("/api/sheets/config", (req, res) => {
+  const { url } = req.body;
+  if (!url || typeof url !== "string") {
+    return res.status(400).json({ error: "URL Sheet Admin tidak valid." });
+  }
+
+  adminSheetUrl = url.trim();
+  const match = adminSheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (match && match[1]) {
+    adminSheetId = match[1];
+  }
+  saveStoreToDisk();
+
+  res.json({
+    success: true,
+    message: "URL Google Sheet Admin berhasil diperbarui.",
+    adminSheetUrl,
+    adminSheetId
+  });
 });
 
 // API: Save/Update weights
@@ -405,7 +794,7 @@ app.post("/api/weights/update", (req, res) => {
   }
 
   weights = { pilar1, pilar2, pilar3, pilar4, pilar5 };
-  lastUpdated = new Date().toISOString();
+  saveStoreToDisk();
 
   res.json({
     success: true,
@@ -470,7 +859,7 @@ app.post("/api/villages/add", (req, res) => {
   };
 
   villages.push(newVillage);
-  lastUpdated = new Date().toISOString();
+  saveStoreToDisk();
 
   res.json({
     success: true,
@@ -489,7 +878,7 @@ app.post("/api/villages/delete", (req, res) => {
     return res.status(404).json({ error: "Desa tidak ditemukan." });
   }
 
-  lastUpdated = new Date().toISOString();
+  saveStoreToDisk();
   res.json({
     success: true,
     message: "Desa berhasil dihapus.",
@@ -575,7 +964,7 @@ app.post("/api/villages/update", (req, res) => {
   updateNum("pilar5_wasting_curr", data.pilar5_wasting_curr);
   updateNum("pilar5_target_accuracy", data.pilar5_target_accuracy);
 
-  lastUpdated = new Date().toISOString();
+  saveStoreToDisk();
 
   res.json({
     success: true,
@@ -584,35 +973,10 @@ app.post("/api/villages/update", (req, res) => {
   });
 });
 
-// API: Sync Beneficiaries
-app.post("/api/beneficiaries/sync", async (req, res) => {
-  const { beneficiaries: syncedBeneficiaries } = req.body;
-  if (Array.isArray(syncedBeneficiaries)) {
-    try {
-      // Save all beneficiaries to Firestore
-      const batch = db.batch();
-      for (const ben of syncedBeneficiaries) {
-        const ref = db.collection("beneficiaries").doc(ben.id);
-        batch.set(ref, ben, { merge: true });
-      }
-      await batch.commit();
-      beneficiaries = syncedBeneficiaries;
-      lastUpdated = new Date().toISOString();
-    } catch (error) {
-      console.error("Error saving beneficiaries to Firestore:", error);
-      return res.status(500).json({ error: "Failed to sync to Firestore" });
-    }
-  }
-  res.json({
-    success: true,
-    message: "Data sasaran berhasil disinkronisasi",
-    ...buildAppData()
-  });
-});
-
 // API: Reset dataset to initial
 app.post("/api/data/reset", (req, res) => {
   villages = JSON.parse(JSON.stringify(SEED_VILLAGES));
+  beneficiaries = JSON.parse(JSON.stringify(SEED_BENEFICIARIES));
   weights = {
     pilar1: 0.10,
     pilar2: 0.30,
@@ -620,10 +984,10 @@ app.post("/api/data/reset", (req, res) => {
     pilar4: 0.25,
     pilar5: 0.25
   };
-  lastUpdated = new Date().toISOString();
+  saveStoreToDisk();
   res.json({
     success: true,
-    message: "Basis data direset ke kondisi standar (kosong).",
+    message: "Basis data direset ke kondisi standar.",
     ...buildAppData()
   });
 });
@@ -631,7 +995,8 @@ app.post("/api/data/reset", (req, res) => {
 // API: Clear all villages data completely
 app.post("/api/data/clear", (req, res) => {
   villages = [];
-  lastUpdated = new Date().toISOString();
+  beneficiaries = [];
+  saveStoreToDisk();
   res.json({
     success: true,
     message: "Semua data desa berhasil dihapus. Sistem sekarang kosong.",

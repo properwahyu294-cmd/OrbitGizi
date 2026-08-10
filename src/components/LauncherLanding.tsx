@@ -61,12 +61,9 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
     const saved = localStorage.getItem("orbit_gizi_banner_images");
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
-        }
+        return JSON.parse(saved);
       } catch {
-        // fallback
+        return DEFAULT_NUTRITION_IMAGES;
       }
     }
     return DEFAULT_NUTRITION_IMAGES;

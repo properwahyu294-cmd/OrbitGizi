@@ -431,7 +431,7 @@ export async function syncToGoogleSheets(
 
   // Prepare Audit Log Operator values
   const auditValues = [
-    ["ID Audit", "Waktu Tindakan (WITA)", "ID Sesi Operator", "Durasi Sesi (Menit)", "Urutan Input Sesi", "Nama Operator", "Jabatan / Peran", "Instansi / Puskesmas", "Email Operator", "Jenis Action", "Deskripsi Kegiatan", "Sasaran / Target"]
+    ["ID Audit", "Waktu Tindakan (WITA)", "Nama Operator", "Jabatan / Peran", "Instansi / Puskesmas", "Email Operator", "Jenis Action", "Deskripsi Kegiatan", "Sasaran / Target"]
   ];
   try {
     let auditData = JSON.parse(localStorage.getItem("orbit_gizi_audit_logs") || "[]");
@@ -443,9 +443,6 @@ export async function syncToGoogleSheets(
       auditValues.push([
         a?.id || "-",
         formattedDate,
-        a?.sessionId || "-",
-        a?.sessionDurationMinutes || 60,
-        a?.sessionInputCount ? `Input #${a.sessionInputCount}` : "-",
         a?.operatorName || "Petugas Anonim",
         a?.operatorRole || "Petugas Nakes",
         a?.operatorInstansi || "Dinas Kesehatan / Puskesmas",

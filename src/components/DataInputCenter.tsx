@@ -59,7 +59,6 @@ interface DataInputCenterProps {
   onUpdateVillageMetrics: (updatedVillage: Partial<Village>) => Promise<void>;
   isModal?: boolean;
   onCloseModal?: () => void;
-  onRequestOperatorAction?: (actionType: string, description: string, targetName: string | undefined, callback: () => void) => void;
 }
 
 const PERIOD_OPTIONS = [
@@ -102,8 +101,7 @@ export default function DataInputCenter({
   onDeleteWeightRecord,
   onUpdateVillageMetrics,
   isModal = false,
-  onCloseModal,
-  onRequestOperatorAction
+  onCloseModal
 }: DataInputCenterProps) {
   // Navigation Sub-Tabs
   const [activeSubTab, setActiveSubTab] = useState<"location_sync" | "beneficiaries" | "weight_records" | "collaboration">("beneficiaries");
@@ -144,78 +142,46 @@ export default function DataInputCenter({
 
   const handleSaveCustomPuskesmas = (val: string) => {
     if (!val) return;
-    const execute = () => {
-      setCustomPuskesmasList(prev => {
-        if (prev.includes(val)) return prev;
-        const updated = [...prev, val];
-        localStorage.setItem("orbit_custom_puskesmas", JSON.stringify(updated));
-        return updated;
-      });
-      setSelectedPuskesmas(val);
-    };
-
-    if (onRequestOperatorAction) {
-      onRequestOperatorAction("UPDATE_WILAYAH", `Menambah nama Puskesmas baru (${val}) ke daftar pilihan`, val, execute);
-    } else {
-      execute();
-    }
+    setCustomPuskesmasList(prev => {
+      if (prev.includes(val)) return prev;
+      const updated = [...prev, val];
+      localStorage.setItem("orbit_custom_puskesmas", JSON.stringify(updated));
+      return updated;
+    });
+    setSelectedPuskesmas(val);
   };
 
   const handleSaveCustomKelurahan = (val: string) => {
     if (!val) return;
-    const execute = () => {
-      setCustomKelurahanList(prev => {
-        if (prev.includes(val)) return prev;
-        const updated = [...prev, val];
-        localStorage.setItem("orbit_custom_kelurahan", JSON.stringify(updated));
-        return updated;
-      });
-      setSelectedKelurahan(val);
-    };
-
-    if (onRequestOperatorAction) {
-      onRequestOperatorAction("UPDATE_WILAYAH", `Menambah nama Kelurahan/Desa baru (${val}) ke daftar pilihan`, val, execute);
-    } else {
-      execute();
-    }
+    setCustomKelurahanList(prev => {
+      if (prev.includes(val)) return prev;
+      const updated = [...prev, val];
+      localStorage.setItem("orbit_custom_kelurahan", JSON.stringify(updated));
+      return updated;
+    });
+    setSelectedKelurahan(val);
   };
 
   const handleSaveCustomDusun = (val: string) => {
     if (!val) return;
-    const execute = () => {
-      setCustomDusunList(prev => {
-        if (prev.includes(val)) return prev;
-        const updated = [...prev, val];
-        localStorage.setItem("orbit_custom_dusun", JSON.stringify(updated));
-        return updated;
-      });
-      setSelectedDusun(val);
-    };
-
-    if (onRequestOperatorAction) {
-      onRequestOperatorAction("UPDATE_WILAYAH", `Menambah nama Dusun baru (${val}) ke daftar pilihan`, val, execute);
-    } else {
-      execute();
-    }
+    setCustomDusunList(prev => {
+      if (prev.includes(val)) return prev;
+      const updated = [...prev, val];
+      localStorage.setItem("orbit_custom_dusun", JSON.stringify(updated));
+      return updated;
+    });
+    setSelectedDusun(val);
   };
 
   const handleSaveCustomPosyandu = (val: string) => {
     if (!val) return;
-    const execute = () => {
-      setCustomPosyanduList(prev => {
-        if (prev.includes(val)) return prev;
-        const updated = [...prev, val];
-        localStorage.setItem("orbit_custom_posyandu", JSON.stringify(updated));
-        return updated;
-      });
-      setSelectedPosyandu(val);
-    };
-
-    if (onRequestOperatorAction) {
-      onRequestOperatorAction("UPDATE_WILAYAH", `Menambah nama Posyandu baru (${val}) ke daftar pilihan`, val, execute);
-    } else {
-      execute();
-    }
+    setCustomPosyanduList(prev => {
+      if (prev.includes(val)) return prev;
+      const updated = [...prev, val];
+      localStorage.setItem("orbit_custom_posyandu", JSON.stringify(updated));
+      return updated;
+    });
+    setSelectedPosyandu(val);
   };
 
   // Dynamic Options derived from data & saved master data

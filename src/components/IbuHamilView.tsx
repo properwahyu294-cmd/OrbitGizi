@@ -21,11 +21,7 @@ const PERIOD_OPTIONS = [
   "Periode TW4 2026"
 ];
 
-interface IbuHamilViewProps {
-  onRequestOperatorAction?: (actionType: string, description: string, targetName: string | undefined, callback: () => void) => void;
-}
-
-export default function IbuHamilView({ onRequestOperatorAction }: IbuHamilViewProps) {
+export default function IbuHamilView() {
   const [beneficiaries, setBeneficiaries] = useState<IbuHamilBeneficiary[]>(() => {
     const stored = localStorage.getItem("orbit_gizi_ibu_hamil");
     if (stored) {
@@ -103,22 +99,11 @@ export default function IbuHamilView({ onRequestOperatorAction }: IbuHamilViewPr
   };
 
   const handleDelete = (id: string) => {
-    const target = beneficiaries.find(b => b.id === id);
-    const targetName = target ? target.namaIbu : id;
-
-    const executeDelete = () => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus data Ibu Hamil ini?")) {
       const updated = beneficiaries.filter(b => b.id !== id);
       saveToStorage(updated);
       setSuccessMessage("Data Ibu Hamil berhasil dihapus.");
       setTimeout(() => setSuccessMessage(null), 3000);
-    };
-
-    if (onRequestOperatorAction) {
-      onRequestOperatorAction("HAPUS_IBU_HAMIL", `Menghapus data Ibu Hamil (${targetName})`, targetName, executeDelete);
-    } else {
-      if (window.confirm("Apakah Anda yakin ingin menghapus data Ibu Hamil ini?")) {
-        executeDelete();
-      }
     }
   };
 
@@ -143,28 +128,18 @@ export default function IbuHamilView({ onRequestOperatorAction }: IbuHamilViewPr
       catatan: catatan.trim()
     };
 
-    const executeSave = () => {
-      let updated: IbuHamilBeneficiary[];
-      if (editingId) {
-        updated = beneficiaries.map(b => (b.id === editingId ? newItem : b));
-        setSuccessMessage("Data Ibu Hamil berhasil diperbarui.");
-      } else {
-        updated = [newItem, ...beneficiaries];
-        setSuccessMessage("Data Ibu Hamil baru berhasil ditambahkan.");
-      }
-
-      saveToStorage(updated);
-      setShowModal(false);
-      setTimeout(() => setSuccessMessage(null), 3000);
-    };
-
-    if (onRequestOperatorAction) {
-      const actionType = editingId ? "EDIT_IBU_HAMIL" : "TAMBAH_IBU_HAMIL";
-      const desc = editingId ? `Mengubah data Ibu Hamil (${namaIbu})` : `Menambah data sasaran Ibu Hamil baru (${namaIbu})`;
-      onRequestOperatorAction(actionType, desc, namaIbu.trim(), executeSave);
+    let updated: IbuHamilBeneficiary[];
+    if (editingId) {
+      updated = beneficiaries.map(b => (b.id === editingId ? newItem : b));
+      setSuccessMessage("Data Ibu Hamil berhasil diperbarui.");
     } else {
-      executeSave();
+      updated = [newItem, ...beneficiaries];
+      setSuccessMessage("Data Ibu Hamil baru berhasil ditambahkan.");
     }
+
+    saveToStorage(updated);
+    setShowModal(false);
+    setTimeout(() => setSuccessMessage(null), 3000);
   };
 
   const filteredList = useMemo(() => {

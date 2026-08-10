@@ -223,8 +223,12 @@ export default function LogoOrbitGizi({
                   <p className="text-[10px] font-black text-slate-800 leading-tight block max-w-[130px] truncate">
                     {currentUser.displayName || "Pengguna"}
                   </p>
-                  <span className="px-1.5 py-0.2 text-[8px] font-black uppercase rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
-                    ADMIN
+                  <span className={`px-1.5 py-0.2 text-[8px] font-black uppercase rounded ${
+                    currentUser.email?.toLowerCase().trim() === "properwahyu294@gmail.com"
+                      ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                      : "bg-amber-100 text-amber-800 border border-amber-300"
+                  }`}>
+                    {currentUser.email?.toLowerCase().trim() === "properwahyu294@gmail.com" ? "ADMIN" : "PENGUNJUNG"}
                   </span>
                 </div>
                 <p className="text-[9px] font-mono text-slate-500 leading-none block max-w-[160px] truncate">

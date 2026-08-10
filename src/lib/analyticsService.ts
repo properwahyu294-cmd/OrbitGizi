@@ -64,84 +64,6 @@ export function getAuditLogs(): AuditLog[] {
   }
 }
 
-export function getOperatorProfile(): OperatorProfile | null {
-  try {
-    const stored = sessionStorage.getItem(OPERATOR_PROFILE_KEY) || localStorage.getItem(OPERATOR_PROFILE_KEY);
-    if (!stored) return null;
-    const profile: OperatorProfile = JSON.parse(stored);
-    
-    // Check expiry
-    if (profile.sessionExpiryTime) {
-      const expiryMs = new Date(profile.sessionExpiryTime).getTime();
-      const startMs = profile.sessionStartTime ? new Date(profile.sessionStartTime).getTime() : 0;
-      const now = Date.now();
-
-      // Hard limit 2 hours (120 minutes) or expired
-      if (now >= expiryMs || (startMs > 0 && now - startMs >= 2 * 60 * 60 * 1000)) {
-        sessionStorage.removeItem(OPERATOR_PROFILE_KEY);
-        localStorage.removeItem(OPERATOR_PROFILE_KEY);
-        return null;
-      }
-    } else {
-      // If no session expiry time saved, default expire after 1 hour from start
-      const startMs = profile.sessionStartTime ? new Date(profile.sessionStartTime).getTime() : Date.now();
-      if (Date.now() - startMs >= 60 * 60 * 1000) {
-        sessionStorage.removeItem(OPERATOR_PROFILE_KEY);
-        localStorage.removeItem(OPERATOR_PROFILE_KEY);
-        return null;
-      }
-    }
-    return profile;
-  } catch {
-    return null;
-  }
-}
-
-export function saveOperatorProfile(profile: Partial<OperatorProfile>, durationMinutes: number = 60): OperatorProfile {
-  const clampedDuration = Math.min(Math.max(durationMinutes || 60, 15), 120); // max 2 hours (120 min)
-  const now = new Date();
-  const expiry = new Date(now.getTime() + clampedDuration * 60 * 1000);
-
-  const fullProfile: OperatorProfile = {
-    name: profile.name || "Petugas Nakes",
-    role: profile.role || "Petugas Ahli Gizi / Nakes",
-    instansi: profile.instansi || "Puskesmas / Dinkes",
-    email: profile.email || "admin@nagekeo.go.id",
-    phone: profile.phone || "",
-    sessionId: profile.sessionId || ("sess_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6)),
-    sessionStartTime: profile.sessionStartTime || now.toISOString(),
-    sessionDurationMinutes: clampedDuration,
-    sessionExpiryTime: expiry.toISOString(),
-    inputCount: profile.inputCount || 0
-  };
-
-  try {
-    sessionStorage.setItem(OPERATOR_PROFILE_KEY, JSON.stringify(fullProfile));
-    localStorage.setItem(OPERATOR_PROFILE_KEY, JSON.stringify(fullProfile));
-  } catch (e) {
-    console.error("Gagal menyimpan profil operator", e);
-  }
-
-  return fullProfile;
-}
-
-export function incrementOperatorInputCount(): number {
-  const profile = getOperatorProfile();
-  if (!profile) return 1;
-
-  const currentCount = (profile.inputCount || 0) + 1;
-  profile.inputCount = currentCount;
-  
-  try {
-    sessionStorage.setItem(OPERATOR_PROFILE_KEY, JSON.stringify(profile));
-    localStorage.setItem(OPERATOR_PROFILE_KEY, JSON.stringify(profile));
-  } catch (e) {
-    console.error("Gagal update input count operator", e);
-  }
-
-  return currentCount;
-}
-
 export function recordAuditAction(
   operator: OperatorProfile,
   actionType: AuditLog["actionType"],
@@ -149,14 +71,10 @@ export function recordAuditAction(
   targetName?: string
 ): AuditLog {
   const currentLogs = getAuditLogs();
-  const currentInputSeq = incrementOperatorInputCount();
   
   const newLog: AuditLog = {
     id: "a_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
     timestamp: new Date().toISOString(),
-    sessionId: operator.sessionId || ("sess_" + Date.now().toString(36)),
-    sessionDurationMinutes: operator.sessionDurationMinutes || 60,
-    sessionInputCount: currentInputSeq,
     operatorName: operator.name || "Petugas Anonim",
     operatorRole: operator.role || "Petugas Nakes",
     operatorInstansi: operator.instansi || "Dinas Kesehatan / Puskesmas",
@@ -171,13 +89,28 @@ export function recordAuditAction(
   return newLog;
 }
 
-export function clearAllLogs(): { removedVisitors: number; removedAudits: number } {
+export function getOperatorProfile(): OperatorProfile | null {
+  try {
+    const stored = sessionStorage.getItem(OPERATOR_PROFILE_KEY) || localStorage.getItem(OPERATOR_PROFILE_KEY);
+    if (!stored) return null;
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+export function saveOperatorProfile(profile: OperatorProfile): void {
+  try {
+    sessionStorage.setItem(OPERATOR_PROFILE_KEY, JSON.stringify(profile));
+    localStorage.setItem(OPERATOR_PROFILE_KEY, JSON.stringify(profile));
+  } catch (e) {
+    console.error("Gagal menyimpan profil operator", e);
+  }
+}
+
+export function clearOldAnalytics(): { removedVisitors: number; removedAudits: number } {
   const visitors = getVisitorLogs();
   const audits = getAuditLogs();
-  
-  localStorage.removeItem(VISITOR_LOGS_KEY);
-  localStorage.removeItem(AUDIT_LOGS_KEY);
-
   return {
     removedVisitors: visitors.length,
     removedAudits: audits.length
