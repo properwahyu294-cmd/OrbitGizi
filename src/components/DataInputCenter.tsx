@@ -2122,37 +2122,37 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               {/* Basic Details */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">NAMA LENGKAP PENERIMA *</label>
+                  <label className="font-bold text-slate-800 block mb-1 text-xs">NAMA LENGKAP PENERIMA *</label>
                   <input
                     type="text"
                     placeholder="Contoh: ADRIAN SA"
                     value={benName}
                     onChange={(e) => setBenName(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-2 focus:ring-indigo-500/20 focus:outline-none uppercase text-slate-900"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none uppercase"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">NAMA ORANG TUA / WALI</label>
+                  <label className="font-bold text-slate-800 block mb-1 text-xs">NAMA ORANG TUA / WALI</label>
                   <input
                     type="text"
                     placeholder="Contoh: MERSIANA ERE"
                     value={benParentName}
                     onChange={(e) => setBenParentName(e.target.value)}
-                    className="w-full border border-slate-200 rounded-xl p-2.5 font-medium focus:ring-2 focus:ring-indigo-500/20 focus:outline-none uppercase"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none uppercase"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">NIK (NOMOR INDUK KEPENDUDUKAN)</label>
+                <label className="font-bold text-slate-800 block mb-1 text-xs">NIK (NOMOR INDUK KEPENDUDUKAN)</label>
                 <input
                   type="text"
                   placeholder="Contoh: 5316013011220001"
                   value={benNik}
                   onChange={(e) => setBenNik(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl p-2.5 font-mono focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                  className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-mono font-bold text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
                 />
               </div>
 

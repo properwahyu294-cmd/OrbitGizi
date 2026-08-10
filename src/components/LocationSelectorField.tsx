@@ -17,7 +17,7 @@ export function LocationSelectorField({
   onChange,
   options,
   placeholder = "Ketik nama baru...",
-  isDark = true,
+  isDark = false,
   onSaveOption
 }: LocationSelectorFieldProps) {
   const cleanOptions = useMemo(() => {
