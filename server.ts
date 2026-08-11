@@ -866,6 +866,20 @@ app.post("/api/sheets/config", (req, res) => {
   });
 });
 
+// API: Pull data from Google Sheet
+app.post("/api/sheets/pull", async (req, res) => {
+  try {
+    await autoImportFromGoogleSheet();
+    res.json({
+      success: true,
+      message: "Data berhasil ditarik dan dimuat dari Google Sheet!",
+      ...buildAppData()
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: "Gagal menarik data dari Google Sheet: " + e.message });
+  }
+});
+
 // API: Save/Update weights
 app.post("/api/weights/update", (req, res) => {
   const { pilar1, pilar2, pilar3, pilar4, pilar5 } = req.body;

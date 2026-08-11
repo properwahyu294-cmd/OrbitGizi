@@ -34,7 +34,8 @@ import {
   Heart,
   FileText,
   BookOpen,
-  Trash2
+  Trash2,
+  DownloadCloud
 } from "lucide-react";
 
 // Types
@@ -481,6 +482,26 @@ export default function App() {
     }
   };
 
+  const handlePullFromSheets = async () => {
+    try {
+      setSyncingSheets(true);
+      setSyncError(null);
+      const res = await fetch("/api/sheets/pull", { method: "POST" });
+      const json = await res.json();
+      if (json.success) {
+        setSyncSuccess(true);
+        setRefreshTrigger(prev => prev + 1);
+        setTimeout(() => setSyncSuccess(false), 4000);
+      } else {
+        setSyncError("Gagal menarik data dari Google Sheet.");
+      }
+    } catch (e: any) {
+      setSyncError("Gagal menarik data dari Google Sheet: " + e.message);
+    } finally {
+      setSyncingSheets(false);
+    }
+  };
+
 
   const handlePushToSheetsBackground = async () => {
     if (!googleToken || !data) return;
@@ -862,6 +883,16 @@ export default function App() {
             >
               <Trash2 className="h-4 w-4 text-rose-600" />
               <span>Manajemen / Reset Data</span>
+            </button>
+
+            <button
+              onClick={handlePullFromSheets}
+              disabled={syncingSheets}
+              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-xl hover:bg-emerald-100 transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
+              title="Tarik & Muat Data Terbaru dari Google Sheets"
+            >
+              <DownloadCloud className="h-4 w-4 text-emerald-600" />
+              <span>{syncingSheets ? "Memuat..." : "Tarik Data dari Sheet"}</span>
             </button>
             
             <button
