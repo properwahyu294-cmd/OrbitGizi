@@ -22,7 +22,7 @@ const PERIOD_OPTIONS = [
   "Periode TW4 2026"
 ];
 
-export default function IbuMenyusuiView() {
+export default function IbuMenyusuiView({ onDataChange }: { onDataChange?: () => void }) {
   const [beneficiaries, setBeneficiaries] = useState<IbuMenyusuiBeneficiary[]>(() => {
     const stored = localStorage.getItem("orbit_gizi_ibu_menyusui");
     if (stored) {

@@ -22,7 +22,7 @@ const PERIOD_OPTIONS = [
   "Periode TW4 2026"
 ];
 
-export default function IbuHamilView() {
+export default function IbuHamilView({ onDataChange }: { onDataChange?: () => void }) {
   const [beneficiaries, setBeneficiaries] = useState<IbuHamilBeneficiary[]>(() => {
     const stored = localStorage.getItem("orbit_gizi_ibu_hamil");
     if (stored) {

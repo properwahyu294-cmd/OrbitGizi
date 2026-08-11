@@ -1242,13 +1242,13 @@ export default function App() {
 
             {activeTab === "ibu_hamil" && (
               <div className="animate-in fade-in duration-200">
-                <IbuHamilView />
+                <IbuHamilView onDataChange={handlePushToSheetsBackground} />
               </div>
             )}
 
             {activeTab === "ibu_menyusui" && (
               <div className="animate-in fade-in duration-200">
-                <IbuMenyusuiView />
+                <IbuMenyusuiView onDataChange={handlePushToSheetsBackground} />
               </div>
             )}
 

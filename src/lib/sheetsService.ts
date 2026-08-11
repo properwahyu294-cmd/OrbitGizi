@@ -118,20 +118,16 @@ export async function syncToGoogleSheets(
   data: any,
   userEmail?: string
 ): Promise<SheetsSyncResult> {
-  const emailSuffix = userEmail ? `_${userEmail.toLowerCase().trim()}` : "";
-  const idKey = `orbit_gizi_spreadsheet_id${emailSuffix}`;
-  const urlKey = `orbit_gizi_spreadsheet_url${emailSuffix}`;
-
-  let spreadsheetId = localStorage.getItem(idKey) || data?.adminSheetId || null;
-  let spreadsheetUrl = localStorage.getItem(urlKey) || data?.adminSheetUrl || null;
+  let spreadsheetId = data?.adminSheetId || localStorage.getItem('orbit_gizi_spreadsheet_id_global') || "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
+  let spreadsheetUrl = data?.adminSheetUrl || localStorage.getItem('orbit_gizi_spreadsheet_url_global') || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
 
   // Helper to create sheet and save to local storage
   const initNewSpreadsheet = async () => {
     const newSheet = await createSpreadsheet(accessToken, kabupatenName);
     spreadsheetId = newSheet.spreadsheetId;
     spreadsheetUrl = newSheet.spreadsheetUrl;
-    localStorage.setItem(idKey, spreadsheetId);
-    localStorage.setItem(urlKey, spreadsheetUrl);
+    localStorage.setItem('orbit_gizi_spreadsheet_id_global', spreadsheetId);
+    localStorage.setItem('orbit_gizi_spreadsheet_url_global', spreadsheetUrl);
   };
 
   // If we don't have a spreadsheet id or it was cleared, create a new one
