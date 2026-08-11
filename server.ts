@@ -173,8 +173,10 @@ async function autoImportFromGoogleSheet() {
     const mbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG`);
     if (mbgRes.ok) {
       const csvText = await mbgRes.text();
+      console.log('MBG CSV Sample:', csvText.substring(0, 100));
       const rows = parseCsv(csvText);
-      const dataRows = rows.slice(1).filter(r => r.length > 1 && r[1] && r[1] !== "" && r[1] !== "Nama Beneficiary");
+      console.log('MBG Headers:', rows[0]);
+      const dataRows = rows.slice(1).filter(r => r.length > 0 && r.some(c => c !== ""));
       if (dataRows.length > 0) {
         const sheetBens = dataRows.map((row, idx) => ({
           id: (row[0] && row[0] !== "-" && row[0] !== "") ? row[0] : `ben_${Date.now()}_${idx}`,
@@ -223,7 +225,7 @@ async function autoImportFromGoogleSheet() {
     if (hamilRes.ok) {
       const csvText = await hamilRes.text();
       const rows = parseCsv(csvText);
-      const dataRows = rows.slice(1).filter(r => r.length > 1 && r[1] && r[1] !== "" && r[1] !== "Nama Ibu");
+      const dataRows = rows.slice(1).filter(r => r.length > 0 && r.some(c => c !== ""));
       if (dataRows.length > 0) {
         const sheetHamil = dataRows.map((row, idx) => ({
           id: (row[0] && row[0] !== "-" && row[0] !== "") ? row[0] : `ibu_${Date.now()}_${idx}`,
@@ -253,7 +255,7 @@ async function autoImportFromGoogleSheet() {
     if (menyusuiRes.ok) {
       const csvText = await menyusuiRes.text();
       const rows = parseCsv(csvText);
-      const dataRows = rows.slice(1).filter(r => r.length > 1 && r[1] && r[1] !== "" && r[1] !== "Nama Ibu");
+      const dataRows = rows.slice(1).filter(r => r.length > 0 && r.some(c => c !== ""));
       if (dataRows.length > 0) {
         const sheetMenyusui = dataRows.map((row, idx) => ({
           id: (row[0] && row[0] !== "-" && row[0] !== "") ? row[0] : `ibum_${Date.now()}_${idx}`,
