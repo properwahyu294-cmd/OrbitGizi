@@ -335,24 +335,60 @@ async function autoImportFromGoogleSheet() {
     if (timbangRes.ok) {
       const csvText = await timbangRes.text();
       const rows = parseCsv(csvText);
-      const dataRows = rows.slice(1).filter(r => r.length > 1 && r[0] && r[0] !== "" && r[0] !== "ID Penerima");
+      const dataRows = rows.slice(1).filter(r => r.length >= 2 && r.some(c => c !== ""));
       if (dataRows.length > 0) {
         dataRows.forEach(row => {
-          const benId = row[0];
+          const benId = (row[0] && row[0] !== "-" && row[0] !== "ID Penerima") ? String(row[0]).trim() : "";
+          const benNama = (row[1] && row[1] !== "-" && row[1] !== "Nama") ? String(row[1]).trim() : "";
+          if (!benId && !benNama) return;
+
+          const period = (row[3] && row[3] !== "-") ? String(row[3]).trim() : "Agustus 2026";
+          const rawWeight = String(row[4] || "").replace(",", ".").trim();
+          const weightKg = parseFloat(rawWeight);
+          const rawHeight = String(row[5] || "").replace(",", ".").trim();
+          const heightCm = parseFloat(rawHeight);
+          const statusGizi = (row[6] && row[6] !== "-") ? String(row[6]).trim() : undefined;
+          const measuredAt = (row[7] && row[7] !== "-") ? String(row[7]).trim() : undefined;
+
+          if (isNaN(weightKg) && (isNaN(heightCm) || heightCm <= 0)) return;
+
           const rec = {
-            period: row[3] || "Maret 2026",
-            weightKg: parseFloat(row[4]) || 12,
-            heightCm: parseFloat(row[5]) || 90,
-            statusGizi: row[6] || "Normal",
-            measuredAt: row[7] || new Date().toISOString()
+            period,
+            weightKg: !isNaN(weightKg) ? weightKg : 0,
+            heightCm: (!isNaN(heightCm) && heightCm > 0) ? heightCm : undefined,
+            statusGizi,
+            measuredAt
           };
-          const ben = beneficiaries.find(b => b.id === benId);
-          if (ben) {
-            if (!ben.weightRecords) ben.weightRecords = [];
-            const exists = ben.weightRecords.some(r => r.period === rec.period);
-            if (!exists) {
-              ben.weightRecords.push(rec);
+
+          const attachToTarget = (target: any) => {
+            if (!target.weightRecords) target.weightRecords = [];
+            const existingIdx = target.weightRecords.findIndex((r: any) => r.period === period);
+            if (existingIdx !== -1) {
+              target.weightRecords[existingIdx] = { ...target.weightRecords[existingIdx], ...rec };
+            } else {
+              target.weightRecords.push(rec);
             }
+            if (rec.weightKg > 0) target.initialWeightKg = rec.weightKg;
+            if (rec.heightCm) target.initialHeightCm = rec.heightCm;
+            if (rec.statusGizi) target.initialStatusGizi = rec.statusGizi;
+          };
+
+          let ben = beneficiaries.find(b => (benId && b.id === benId) || (benNama && b.name && b.name.toLowerCase() === benNama.toLowerCase()));
+          if (ben) {
+            attachToTarget(ben);
+            return;
+          }
+
+          let hamil = ibuHamil.find(h => (benId && h.id === benId) || (benNama && h.namaIbu && h.namaIbu.toLowerCase() === benNama.toLowerCase()));
+          if (hamil) {
+            attachToTarget(hamil);
+            return;
+          }
+
+          let menyusui = ibuMenyusui.find(m => (benId && m.id === benId) || (benNama && m.namaIbu && m.namaIbu.toLowerCase() === benNama.toLowerCase()));
+          if (menyusui) {
+            attachToTarget(menyusui);
+            return;
           }
         });
       }

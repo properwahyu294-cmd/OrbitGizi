@@ -684,11 +684,94 @@ function parseCsvSimple(text: string): string[][] {
   return lines;
 }
 
+export function parseAndMergeCatatanTimbang(
+  catatanRows: any[][],
+  parsedMbg: any[],
+  parsedIbuHamil: any[] = [],
+  parsedIbuMenyusui: any[] = []
+) {
+  if (!Array.isArray(catatanRows) || catatanRows.length === 0) return;
+
+  catatanRows.forEach(row => {
+    if (!Array.isArray(row) || row.length < 2) return;
+
+    const idPenerima = (row[0] && row[0] !== "-" && row[0] !== "ID Penerima") ? String(row[0]).trim() : "";
+    const nama = (row[1] && row[1] !== "-" && row[1] !== "Nama") ? String(row[1]).trim() : "";
+    
+    if (!idPenerima && !nama) return;
+
+    const period = (row[3] && row[3] !== "-") ? String(row[3]).trim() : "Agustus 2026";
+    
+    // Convert Indonesian comma decimal "8,6" -> "8.6"
+    const rawWeight = String(row[4] || "").replace(",", ".").trim();
+    const weightKg = parseFloat(rawWeight);
+
+    const rawHeight = String(row[5] || "").replace(",", ".").trim();
+    const heightCm = parseFloat(rawHeight);
+
+    const statusGizi = (row[6] && row[6] !== "-") ? String(row[6]).trim() as any : undefined;
+    const measuredAt = (row[7] && row[7] !== "-") ? String(row[7]).trim() : undefined;
+
+    if (isNaN(weightKg) && (isNaN(heightCm) || heightCm <= 0)) return;
+
+    const newRecord = {
+      period,
+      weightKg: !isNaN(weightKg) ? weightKg : 0,
+      heightCm: (!isNaN(heightCm) && heightCm > 0) ? heightCm : undefined,
+      statusGizi,
+      measuredAt
+    };
+
+    const attachToTarget = (target: any) => {
+      if (!target.weightRecords) target.weightRecords = [];
+      const existingIdx = target.weightRecords.findIndex((r: any) => r.period === period);
+      if (existingIdx !== -1) {
+        target.weightRecords[existingIdx] = { ...target.weightRecords[existingIdx], ...newRecord };
+      } else {
+        target.weightRecords.push(newRecord);
+      }
+      if (newRecord.weightKg > 0) target.initialWeightKg = newRecord.weightKg;
+      if (newRecord.heightCm) target.initialHeightCm = newRecord.heightCm;
+      if (newRecord.statusGizi) target.initialStatusGizi = newRecord.statusGizi;
+    };
+
+    // Match MBG beneficiary
+    let matched = parsedMbg.find(b => 
+      (idPenerima && b.id === idPenerima) || 
+      (nama && b.name && b.name.toLowerCase() === nama.toLowerCase())
+    );
+    if (matched) {
+      attachToTarget(matched);
+      return;
+    }
+
+    // Match Ibu Hamil
+    let matchedHamil = parsedIbuHamil.find(h => 
+      (idPenerima && h.id === idPenerima) || 
+      (nama && h.namaIbu && h.namaIbu.toLowerCase() === nama.toLowerCase())
+    );
+    if (matchedHamil) {
+      attachToTarget(matchedHamil);
+      return;
+    }
+
+    // Match Ibu Menyusui
+    let matchedMenyusui = parsedIbuMenyusui.find(m => 
+      (idPenerima && m.id === idPenerima) || 
+      (nama && m.namaIbu && m.namaIbu.toLowerCase() === nama.toLowerCase())
+    );
+    if (matchedMenyusui) {
+      attachToTarget(matchedMenyusui);
+      return;
+    }
+  });
+}
+
 export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: string) {
   // 1. Direct OAuth Google Sheets API pull
   if (accessToken) {
     try {
-      const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z&valueRenderOption=FORMATTED_VALUE`, {
+      const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z&ranges=Catatan%20Timbang!A2:Z&valueRenderOption=FORMATTED_VALUE`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       if (fetchRes.ok) {
@@ -698,13 +781,14 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
         const sheetMbg = valueRanges[0]?.values || [];
         const sheetIbuHamil = valueRanges[1]?.values || [];
         const sheetIbuMenyusui = valueRanges[2]?.values || [];
+        const sheetCatatanTimbang = valueRanges[3]?.values || [];
 
         const parsedMbg = sheetMbg
-          .filter((r: any[]) => r && r[1] && r[1] !== "-")
+          .filter((r: any[]) => r && r[1] && r[1] !== "-" && r[1] !== "Nama")
           .map((row: any[], idx: number) => parseMbgRow(row, idx))
           .filter(Boolean);
 
-        const parsedIbuHamil = sheetIbuHamil.filter((r: any[]) => r && r[1]).map((row: any[]) => ({
+        const parsedIbuHamil = sheetIbuHamil.filter((r: any[]) => r && r[1] && r[1] !== "Nama Ibu").map((row: any[]) => ({
           id: (row[0] && row[0] !== "-") ? row[0] : `ibu_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
           namaIbu: (row[1] && row[1] !== "-") ? row[1] : "",
           umur: parseInt(row[2]) || 0,
@@ -718,7 +802,7 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
           catatan: (row[10] && row[10] !== "-") ? row[10] : ""
         }));
 
-        const parsedIbuMenyusui = sheetIbuMenyusui.filter((r: any[]) => r && r[1]).map((row: any[]) => ({
+        const parsedIbuMenyusui = sheetIbuMenyusui.filter((r: any[]) => r && r[1] && r[1] !== "Nama Ibu").map((row: any[]) => ({
           id: (row[0] && row[0] !== "-") ? row[0] : `ibum_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
           namaIbu: (row[1] && row[1] !== "-") ? row[1] : "",
           umur: parseInt(row[2]) || 0,
@@ -731,6 +815,8 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
           bayiNama: (row[9] && row[9] !== "-") ? row[9] : "",
           catatan: (row[10] && row[10] !== "-") ? row[10] : ""
         }));
+
+        parseAndMergeCatatanTimbang(sheetCatatanTimbang, parsedMbg, parsedIbuHamil, parsedIbuMenyusui);
 
         // Persist to local storage for static host environment (e.g. Cloudflare Workers / Pages)
         try {
@@ -801,7 +887,7 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
             posyandu: row[8] || "",
             usiaKehamilan: parseInt(row[9]) || 0,
             catatan: row[10] || ""
-          })).filter(h => h.namaIbu);
+          })).filter(h => h.namaIbu && h.namaIbu !== "Nama Ibu");
         }
       } catch (e) { console.warn("Client CSV Ibu Hamil error:", e); }
 
@@ -823,9 +909,18 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
             posyandu: row[8] || "",
             bayiNama: row[9] || "",
             catatan: row[10] || ""
-          })).filter(m => m.namaIbu);
+          })).filter(m => m.namaIbu && m.namaIbu !== "Nama Ibu");
         }
       } catch (e) { console.warn("Client CSV Ibu Menyusui error:", e); }
+
+      try {
+        const csvTimbangRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Catatan%20Timbang`);
+        if (csvTimbangRes.ok) {
+          const timbangText = await csvTimbangRes.text();
+          const timbangRows = parseCsvSimple(timbangText).slice(1);
+          parseAndMergeCatatanTimbang(timbangRows, parsedMbg, parsedIbuHamil, parsedIbuMenyusui);
+        }
+      } catch (e) { console.warn("Client CSV Catatan Timbang error:", e); }
 
       if (parsedMbg.length > 0 || parsedIbuHamil.length > 0) {
         try {
