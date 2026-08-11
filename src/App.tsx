@@ -527,14 +527,9 @@ export default function App() {
     setSyncError(null);
     setSyncSuccess(false);
     try {
-      let activeSheetId = sheetsSyncUrl;
-      if (!activeSheetId) {
-         const sheetConfig = await getAdminSheetConfigApi();
-         activeSheetId = sheetConfig?.adminSheetId || data.adminSheetId;
-      } else {
-         const match = activeSheetId.match(/\/d\/([a-zA-Z0-9-_]+)/);
-         if (match) activeSheetId = match[1];
-      }
+      let activeSheetId = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE"; // Always use master sheet ID
+      
+      // Removed: local storage and config API fallback
       
       if (!activeSheetId) {
          // If there's no sheet id, just push to create one

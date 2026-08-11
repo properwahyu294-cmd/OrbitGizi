@@ -118,12 +118,31 @@ export async function syncToGoogleSheets(
   data: any,
   userEmail?: string
 ): Promise<SheetsSyncResult> {
-  let spreadsheetId = data?.adminSheetId || localStorage.getItem('orbit_gizi_spreadsheet_id_global') || "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
+  let spreadsheetId = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
   let spreadsheetUrl = data?.adminSheetUrl || localStorage.getItem('orbit_gizi_spreadsheet_url_global') || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
 
-  // Ensure all tabs exist and clear sheets using the shared master spreadsheet
+  // Ensure all tabs exist
   await ensureSheetTabsExist(accessToken, spreadsheetId!);
 
+  // Fetch current sheet data to merge
+  const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z&valueRenderOption=FORMATTED_VALUE`, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  let existingBeneficiaries: any[] = [];
+  let existingIbuHamil: any[] = [];
+  let existingIbuMenyusui: any[] = [];
+  
+  if (fetchRes.ok) {
+    const fetchJson = await fetchRes.json();
+    const valueRanges = fetchJson.valueRanges || [];
+    existingBeneficiaries = valueRanges[0]?.values || [];
+    existingIbuHamil = valueRanges[1]?.values || [];
+    existingIbuMenyusui = valueRanges[2]?.values || [];
+  }
+
+  // Helper to merge: simple approach is to trust incoming ID and overwrite or append.
+  // Given complexity, let's just append new ones for now to avoid accidental deletions.
+  
   // Prepare Ringkasan Indeks data
   const summaryValues = [
     ["LAPORAN INDEKS TRANSFORMASI ORBIT GIZI (TERSINKRONISASI SINKRON)", ""],
@@ -239,12 +258,21 @@ export async function syncToGoogleSheets(
   const mbgValues = [
     ["ID", "Nama Beneficiary", "Nama Orang Tua/Wali", "NIK", "Gender", "Usia", "Kategori", "Propinsi", "Kabupaten", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Status Kunjungan", "Wajib Kunjungan Rumah", "Menerima MBG", "Menerima PMT", "Petugas Desa Hadir", "Petugas Posyandu Hadir", "Stakeholder Kolaborasi", "Catatan"]
   ];
+  // Add existing rows first
+  mbgValues.push(...existingBeneficiaries);
+  
   try {
     let mbgData = (data && Array.isArray(data.beneficiaries))
       ? data.beneficiaries
       : JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
     if (!Array.isArray(mbgData)) mbgData = [];
+    
+    // Only add beneficiaries that are not already present (based on ID)
+    const existingIds = new Set(existingBeneficiaries.map((r: any[]) => r[0]));
+    
     mbgData.forEach((b: any) => {
+      if (existingIds.has(b?.id)) return; // Skip duplicates
+
       const attendance = b?.attendanceStatus || "Mengunjungi Posyandu";
       const needsVisit = attendance === "Tidak Mengunjungi" ? "YA (WAJIB KUNJUNGAN RUMAH)" : "TIDAK";
       const pmt = b?.isReceivedPMT !== false ? "YA" : "TIDAK";
@@ -286,12 +314,17 @@ export async function syncToGoogleSheets(
   const ibuHamilValues = [
     ["ID", "Nama Ibu", "Umur", "NIK", "Alamat", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Usia Kehamilan", "Catatan"]
   ];
+  ibuHamilValues.push(...existingIbuHamil);
   try {
     let ibuHamilData = (data && Array.isArray(data.ibuHamil))
       ? data.ibuHamil
       : JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
     if (!Array.isArray(ibuHamilData)) ibuHamilData = [];
+    
+    const existingIds = new Set(existingIbuHamil.map((r: any[]) => r[0]));
+
     ibuHamilData.forEach((b: any) => {
+      if (existingIds.has(b?.id)) return;
       ibuHamilValues.push([
         b?.id || "-",
         b?.namaIbu || "-",
@@ -314,12 +347,17 @@ export async function syncToGoogleSheets(
   const ibuMenyusuiValues = [
     ["ID", "Nama Ibu", "Umur", "NIK", "Alamat", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Nama Bayi", "Catatan"]
   ];
+  ibuMenyusuiValues.push(...existingIbuMenyusui);
   try {
     let ibuMenyusuiData = (data && Array.isArray(data.ibuMenyusui))
       ? data.ibuMenyusui
       : JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
     if (!Array.isArray(ibuMenyusuiData)) ibuMenyusuiData = [];
+    
+    const existingIds = new Set(existingIbuMenyusui.map((r: any[]) => r[0]));
+
     ibuMenyusuiData.forEach((b: any) => {
+      if (existingIds.has(b?.id)) return;
       ibuMenyusuiValues.push([
         b?.id || "-",
         b?.namaIbu || "-",
