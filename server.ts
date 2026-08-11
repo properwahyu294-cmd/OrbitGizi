@@ -141,6 +141,152 @@ function saveStoreToDisk() {
 
 loadStoreFromDisk();
 
+function parseCsv(text: string): string[][] {
+  const lines = text.split(/\r?\n/);
+  return lines.map(line => {
+    const row: string[] = [];
+    let inQuotes = false;
+    let entry = "";
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          entry += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        row.push(entry.trim());
+        entry = "";
+      } else {
+        entry += char;
+      }
+    }
+    row.push(entry.trim());
+    return row;
+  });
+}
+
+async function autoImportFromGoogleSheet() {
+  if (beneficiaries.length > 0) return;
+  try {
+    const mbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG`);
+    if (mbgRes.ok) {
+      const csvText = await mbgRes.text();
+      const rows = parseCsv(csvText);
+      const dataRows = rows.slice(1).filter(r => r.length > 1 && r[1] && r[1] !== "" && r[1] !== "Nama Beneficiary");
+      if (dataRows.length > 0) {
+        beneficiaries = dataRows.map((row, idx) => ({
+          id: (row[0] && row[0] !== "-" && row[0] !== "") ? row[0] : `ben_${Date.now()}_${idx}`,
+          name: row[1] || "",
+          parentName: row[2] || "",
+          nik: row[3] || "",
+          gender: row[4] || "Laki-laki",
+          age: parseInt(row[5]) || 2,
+          category: row[6] || "Anak Stunting",
+          location: {
+            propinsi: row[7] || "Nusa Tenggara Timur",
+            kabupaten: row[8] || "Nagekeo",
+            puskesmas: row[9] || "",
+            kelurahan: row[10] || "",
+            dusun: row[11] || "",
+            posyandu: row[12] || "",
+          },
+          attendanceStatus: row[13] || "Mengunjungi Posyandu",
+          isReceivedMBG: row[15] === "YA",
+          isReceivedPMT: row[16] === "YA",
+          isPetugasDesaHadir: row[17] === "YA",
+          isPetugasPosyanduHadir: row[18] === "YA",
+          stakeholdersHadir: row[19] ? row[19].split(",").map(s => s.trim()).filter(Boolean) : [],
+          notes: row[20] || "",
+          weightRecords: []
+        }));
+      }
+    }
+
+    const hamilRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Hamil`);
+    if (hamilRes.ok) {
+      const csvText = await hamilRes.text();
+      const rows = parseCsv(csvText);
+      const dataRows = rows.slice(1).filter(r => r.length > 1 && r[1] && r[1] !== "" && r[1] !== "Nama Ibu");
+      if (dataRows.length > 0) {
+        ibuHamil = dataRows.map((row, idx) => ({
+          id: (row[0] && row[0] !== "-" && row[0] !== "") ? row[0] : `ibu_${Date.now()}_${idx}`,
+          namaIbu: row[1] || "",
+          umur: parseInt(row[2]) || 25,
+          nik: row[3] || "",
+          alamat: row[4] || "",
+          puskesmas: row[5] || "",
+          kelurahan: row[6] || "",
+          dusun: row[7] || "",
+          posyandu: row[8] || "",
+          usiaKehamilan: parseInt(row[9]) || 1,
+          catatan: row[10] || ""
+        }));
+      }
+    }
+
+    const menyusuiRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Menyusui`);
+    if (menyusuiRes.ok) {
+      const csvText = await menyusuiRes.text();
+      const rows = parseCsv(csvText);
+      const dataRows = rows.slice(1).filter(r => r.length > 1 && r[1] && r[1] !== "" && r[1] !== "Nama Ibu");
+      if (dataRows.length > 0) {
+        ibuMenyusui = dataRows.map((row, idx) => ({
+          id: (row[0] && row[0] !== "-" && row[0] !== "") ? row[0] : `ibum_${Date.now()}_${idx}`,
+          namaIbu: row[1] || "",
+          umur: parseInt(row[2]) || 25,
+          nik: row[3] || "",
+          alamat: row[4] || "",
+          puskesmas: row[5] || "",
+          kelurahan: row[6] || "",
+          dusun: row[7] || "",
+          posyandu: row[8] || "",
+          bayiNama: row[9] || "",
+          catatan: row[10] || ""
+        }));
+      }
+    }
+
+    const timbangRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Catatan%20Timbang`);
+    if (timbangRes.ok) {
+      const csvText = await timbangRes.text();
+      const rows = parseCsv(csvText);
+      const dataRows = rows.slice(1).filter(r => r.length > 1 && r[0] && r[0] !== "" && r[0] !== "ID Penerima");
+      if (dataRows.length > 0) {
+        const recordMap = new Map<string, any[]>();
+        dataRows.forEach(row => {
+          const benId = row[0];
+          const rec = {
+            period: row[3] || "Maret 2026",
+            weightKg: parseFloat(row[4]) || 12,
+            heightCm: parseFloat(row[5]) || 90,
+            statusGizi: row[6] || "Normal",
+            measuredAt: row[7] || new Date().toISOString()
+          };
+          if (!recordMap.has(benId)) {
+            recordMap.set(benId, []);
+          }
+          recordMap.get(benId)!.push(rec);
+        });
+
+        beneficiaries.forEach(b => {
+          if (recordMap.has(b.id)) {
+            b.weightRecords = recordMap.get(b.id);
+          }
+        });
+      }
+    }
+
+    saveStoreToDisk();
+  } catch (e) {
+    console.warn("Gagal auto import dari Google Sheet saat startup:", e);
+  }
+}
+
+autoImportFromGoogleSheet();
+
 // Helper to get score out of fraction
 function getRatioScore(nominator: number, denominator: number): number {
   if (denominator <= 0) return 0;
@@ -434,13 +580,15 @@ function buildAppData() {
 }
 
 // API: Get App State
-app.get("/api/data", (req, res) => {
+app.get("/api/data", async (req, res) => {
+  await autoImportFromGoogleSheet();
   const aggregatedData = buildAppData();
   res.json(aggregatedData);
 });
 
 // API: Get Beneficiaries List
-app.get("/api/beneficiaries", (req, res) => {
+app.get("/api/beneficiaries", async (req, res) => {
+  await autoImportFromGoogleSheet();
   res.json({
     success: true,
     beneficiaries,
