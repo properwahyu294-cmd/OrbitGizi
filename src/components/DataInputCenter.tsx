@@ -1320,6 +1320,11 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                               </span>
                             )}
                             {b.age && <span className="text-[10px] font-bold text-slate-600">{b.age}</span>}
+                            {b.birthDate && (
+                              <span className="text-[9px] font-mono font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                📅 {b.birthDate}
+                              </span>
+                            )}
                           </div>
 
                           {b.parentName && (

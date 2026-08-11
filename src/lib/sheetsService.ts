@@ -1,3 +1,73 @@
+export function parseMbgRow(row: any[], idx: number = 0) {
+  if (!Array.isArray(row)) return null;
+
+  const knownCategories = ["Balita", "Ibu Hamil", "Ibu Menyusui", "Anak Stunting", "PMT Prioritas"];
+  const col6Val = (row[6] !== undefined && row[6] !== null && row[6] !== "-") ? String(row[6]).trim() : "";
+  const isOldFormat = knownCategories.some(cat => col6Val.toLowerCase().includes(cat.toLowerCase()));
+
+  const id = (row[0] && row[0] !== "-") ? String(row[0]) : `ben_${Date.now()}_${idx}`;
+  const name = (row[1] && row[1] !== "-") ? String(row[1]) : "";
+  const parentName = (row[2] && row[2] !== "-") ? String(row[2]) : "";
+  const nik = (row[3] && row[3] !== "-") ? String(row[3]) : "";
+  const gender = (row[4] && row[4] !== "-") ? String(row[4]) : "Laki-laki";
+  const age = (row[5] && row[5] !== "-") ? String(row[5]) : "";
+
+  let birthDate = "";
+  let category = "Balita";
+  let propIdx = 7;
+
+  if (isOldFormat) {
+    birthDate = "";
+    category = col6Val || "Balita";
+    propIdx = 7;
+  } else {
+    birthDate = col6Val;
+    category = (row[7] && row[7] !== "-") ? String(row[7]) : "Balita";
+    propIdx = 8;
+  }
+
+  const propinsi = (row[propIdx] && row[propIdx] !== "-") ? String(row[propIdx]) : "Nusa Tenggara Timur";
+  const kabupaten = (row[propIdx + 1] && row[propIdx + 1] !== "-") ? String(row[propIdx + 1]) : "Nagekeo";
+  const puskesmas = (row[propIdx + 2] && row[propIdx + 2] !== "-") ? String(row[propIdx + 2]) : "";
+  const kelurahan = (row[propIdx + 3] && row[propIdx + 3] !== "-") ? String(row[propIdx + 3]) : "";
+  const dusun = (row[propIdx + 4] && row[propIdx + 4] !== "-") ? String(row[propIdx + 4]) : "";
+  const posyandu = (row[propIdx + 5] && row[propIdx + 5] !== "-") ? String(row[propIdx + 5]) : "";
+  const attendanceStatus = (row[propIdx + 6] && row[propIdx + 6] !== "-") ? String(row[propIdx + 6]) : "Mengunjungi Posyandu";
+  
+  const isReceivedMBG = row[propIdx + 8] === "YA";
+  const isReceivedPMT = row[propIdx + 9] === "YA";
+  const isPetugasDesaHadir = row[propIdx + 10] === "YA";
+  const isPetugasPosyanduHadir = row[propIdx + 11] === "YA";
+  
+  const stakeholdersRaw = row[propIdx + 12];
+  let stakeholdersHadir: string[] = [];
+  if (stakeholdersRaw && stakeholdersRaw !== "-" && stakeholdersRaw !== "Petugas Desa, Kader Posyandu, Puskesmas") {
+    stakeholdersHadir = String(stakeholdersRaw).split(",").map(s => s.trim()).filter(Boolean);
+  }
+
+  const notes = (row[propIdx + 13] && row[propIdx + 13] !== "-") ? String(row[propIdx + 13]) : "";
+
+  return {
+    id,
+    name,
+    parentName,
+    nik,
+    gender,
+    age,
+    birthDate,
+    category,
+    location: { propinsi, kabupaten, puskesmas, kelurahan, dusun, posyandu },
+    attendanceStatus,
+    isReceivedMBG,
+    isReceivedPMT,
+    isPetugasDesaHadir,
+    isPetugasPosyanduHadir,
+    stakeholdersHadir,
+    notes,
+    weightRecords: []
+  };
+}
+
 export interface SheetsSyncResult {
   spreadsheetId: string;
   spreadsheetUrl: string;
@@ -256,23 +326,20 @@ export async function syncToGoogleSheets(
 
   // Prepare Penerima MBG values
   const mbgValues = [
-    ["ID", "Nama Beneficiary", "Nama Orang Tua/Wali", "NIK", "Gender", "Usia", "Kategori", "Propinsi", "Kabupaten", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Status Kunjungan", "Wajib Kunjungan Rumah", "Menerima MBG", "Menerima PMT", "Petugas Desa Hadir", "Petugas Posyandu Hadir", "Stakeholder Kolaborasi", "Catatan"]
+    ["ID", "Nama Beneficiary", "Nama Orang Tua/Wali", "NIK", "Gender", "Usia", "Tanggal Lahir", "Kategori", "Propinsi", "Kabupaten", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Status Kunjungan", "Wajib Kunjungan Rumah", "Menerima MBG", "Menerima PMT", "Petugas Desa Hadir", "Petugas Posyandu Hadir", "Stakeholder Kolaborasi", "Catatan"]
   ];
-  // Add existing rows first
-  mbgValues.push(...existingBeneficiaries);
-  
+
   try {
     let mbgData = (data && Array.isArray(data.beneficiaries))
       ? data.beneficiaries
       : JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
     if (!Array.isArray(mbgData)) mbgData = [];
-    
-    // Only add beneficiaries that are not already present (based on ID)
-    const existingIds = new Set(existingBeneficiaries.map((r: any[]) => r[0]));
-    
-    mbgData.forEach((b: any) => {
-      if (existingIds.has(b?.id)) return; // Skip duplicates
 
+    const localIds = new Set(mbgData.map((b: any) => String(b?.id)));
+    const localNiks = new Set(mbgData.map((b: any) => String(b?.nik)).filter(nik => nik && nik !== "-"));
+
+    // 1. Add all local beneficiaries first
+    mbgData.forEach((b: any) => {
       const attendance = b?.attendanceStatus || "Mengunjungi Posyandu";
       const needsVisit = attendance === "Tidak Mengunjungi" ? "YA (WAJIB KUNJUNGAN RUMAH)" : "TIDAK";
       const pmt = b?.isReceivedPMT !== false ? "YA" : "TIDAK";
@@ -288,7 +355,8 @@ export async function syncToGoogleSheets(
         b?.parentName || "-",
         b?.nik || "-",
         b?.gender || "-",
-        b?.age || "-",
+        b?.age !== undefined && b?.age !== null ? String(b.age) : "-",
+        b?.birthDate || "-",
         b?.category || "-",
         b?.location?.propinsi || "-",
         b?.location?.kabupaten || "-",
@@ -304,6 +372,43 @@ export async function syncToGoogleSheets(
         posyanduHadir,
         stakeholders,
         b?.notes || "-"
+      ]);
+    });
+
+    // 2. Add existing rows from Google Sheets that are NOT in local state
+    existingBeneficiaries.forEach((row: any[], idx: number) => {
+      const parsed = parseMbgRow(row, idx);
+      if (!parsed || !parsed.name) return;
+      if (localIds.has(parsed.id) || (parsed.nik && localNiks.has(parsed.nik))) {
+        return; // Already present in local state
+      }
+
+      const attendance = parsed.attendanceStatus || "Mengunjungi Posyandu";
+      const needsVisit = attendance === "Tidak Mengunjungi" ? "YA (WAJIB KUNJUNGAN RUMAH)" : "TIDAK";
+
+      mbgValues.push([
+        parsed.id,
+        parsed.name,
+        parsed.parentName,
+        parsed.nik,
+        parsed.gender,
+        parsed.age,
+        parsed.birthDate,
+        parsed.category,
+        parsed.location.propinsi,
+        parsed.location.kabupaten,
+        parsed.location.puskesmas,
+        parsed.location.kelurahan,
+        parsed.location.dusun,
+        parsed.location.posyandu,
+        attendance,
+        needsVisit,
+        parsed.isReceivedMBG ? "YA" : "TIDAK",
+        parsed.isReceivedPMT ? "YA" : "TIDAK",
+        parsed.isPetugasDesaHadir ? "YA" : "TIDAK",
+        parsed.isPetugasPosyanduHadir ? "YA" : "TIDAK",
+        parsed.stakeholdersHadir.join(", "),
+        parsed.notes
       ]);
     });
   } catch (e) {
@@ -551,30 +656,10 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
 
       console.error('DEBUG: sheetMbg (first 2 rows):', JSON.stringify(sheetMbg.slice(0, 2)));
 
-      const parsedMbg = sheetMbg.filter((r: any[]) => r && r[1]).map((row: any[]) => ({
-        id: (row[0] && row[0] !== "-") ? row[0] : `ben_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
-        name: (row[1] && row[1] !== "-") ? row[1] : "",
-        parentName: (row[2] && row[2] !== "-") ? row[2] : "",
-        nik: (row[3] && row[3] !== "-") ? row[3] : "",
-        gender: (row[4] && row[4] !== "-") ? row[4] : "Laki-laki",
-        age: parseInt(row[5]) || 0,
-        category: (row[6] && row[6] !== "-") ? row[6] : "Anak Stunting",
-        location: {
-          propinsi: (row[7] && row[7] !== "-") ? row[7] : "Nusa Tenggara Timur",
-          kabupaten: (row[8] && row[8] !== "-") ? row[8] : "Nagekeo",
-          puskesmas: (row[9] && row[9] !== "-") ? row[9] : "",
-          kelurahan: (row[10] && row[10] !== "-") ? row[10] : "",
-          dusun: (row[11] && row[11] !== "-") ? row[11] : "",
-          posyandu: (row[12] && row[12] !== "-") ? row[12] : "",
-        },
-        attendanceStatus: (row[13] && row[13] !== "-") ? row[13] : "Mengunjungi Posyandu",
-        isReceivedMBG: row[15] === "YA",
-        isReceivedPMT: row[16] === "YA",
-        isPetugasDesaHadir: row[17] === "YA",
-        isPetugasPosyanduHadir: row[18] === "YA",
-        stakeholdersHadir: (row[19] && row[19] !== "-" && row[19] !== "Petugas Desa, Kader Posyandu, Puskesmas") ? row[19].split(", ") : [],
-        notes: (row[20] && row[20] !== "-") ? row[20] : ""
-      }));
+      const parsedMbg = sheetMbg
+        .filter((r: any[]) => r && r[1] && r[1] !== "-")
+        .map((row: any[], idx: number) => parseMbgRow(row, idx))
+        .filter(Boolean);
 
       const parsedIbuHamil = sheetIbuHamil.filter((r: any[]) => r && r[1]).map((row: any[]) => ({
         id: (row[0] && row[0] !== "-") ? row[0] : `ibu_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
