@@ -124,12 +124,6 @@ export async function syncToGoogleSheets(
   // Ensure all tabs exist and clear sheets using the shared master spreadsheet
   await ensureSheetTabsExist(accessToken, spreadsheetId!);
 
-  try {
-    await clearSheets(accessToken, spreadsheetId!);
-  } catch (err) {
-    console.warn("Pembersihan sheet menggunakan spreadsheet bersama utama:", err);
-  }
-
   // Prepare Ringkasan Indeks data
   const summaryValues = [
     ["LAPORAN INDEKS TRANSFORMASI ORBIT GIZI (TERSINKRONISASI SINKRON)", ""],
