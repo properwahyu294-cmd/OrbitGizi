@@ -2,7 +2,7 @@
   "adminSheetUrl": "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115",
   "adminSheetId": "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE",
   "kabupatenName": "Kabupaten Nagekeo",
-  "lastUpdated": "2026-08-11T05:41:16.491Z",
+  "lastUpdated": "2026-08-11T05:48:37.666Z",
   "weights": {
     "pilar1": 0.1,
     "pilar2": 0.3,
@@ -500,6 +500,70 @@
   "bannerImages": [],
   "dashboardBannerImages": [],
   "visitorLogs": [
+    {
+      "id": "v_1786427277088_1vvq",
+      "timestamp": "2026-08-11T05:47:57.088Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786427277088_j4lm",
+      "timestamp": "2026-08-11T05:47:57.088Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786427220931_32ut",
+      "timestamp": "2026-08-11T05:47:00.931Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786427220931_4doz",
+      "timestamp": "2026-08-11T05:47:00.931Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786427099012_en8q",
+      "timestamp": "2026-08-11T05:44:59.012Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786427099007_n22z",
+      "timestamp": "2026-08-11T05:44:59.007Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786426890782_ko1z",
+      "timestamp": "2026-08-11T05:41:30.782Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786426890781_ia4u",
+      "timestamp": "2026-08-11T05:41:30.781Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
     {
       "id": "v_1786426292612_pgc2",
       "timestamp": "2026-08-11T05:31:32.612Z",

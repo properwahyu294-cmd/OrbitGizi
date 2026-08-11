@@ -506,7 +506,7 @@ export async function syncToGoogleSheets(
 
 export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: string) {
   try {
-    const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z&valueRenderOption=UNFORMATTED_VALUE`, {
+    const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z&valueRenderOption=FORMATTED_VALUE`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     if (fetchRes.ok) {
