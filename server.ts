@@ -203,8 +203,16 @@ async function autoImportFromGoogleSheet() {
         }));
 
         sheetBens.forEach(sb => {
-          const existing = beneficiaries.find(b => b.id === sb.id || (sb.nik && b.nik === sb.nik));
-          if (!existing) {
+          const idx = beneficiaries.findIndex(b => b.id === sb.id || (sb.nik && b.nik === sb.nik));
+          if (idx !== -1) {
+            beneficiaries[idx] = {
+              ...beneficiaries[idx],
+              ...sb,
+              weightRecords: (beneficiaries[idx].weightRecords && beneficiaries[idx].weightRecords.length > 0)
+                ? beneficiaries[idx].weightRecords
+                : sb.weightRecords
+            };
+          } else {
             beneficiaries.push(sb);
           }
         });
@@ -231,8 +239,10 @@ async function autoImportFromGoogleSheet() {
           catatan: row[10] || ""
         }));
         sheetHamil.forEach(sh => {
-          const existing = ibuHamil.find(i => i.id === sh.id || (sh.nik && i.nik === sh.nik));
-          if (!existing) {
+          const idx = ibuHamil.findIndex(i => i.id === sh.id || (sh.nik && i.nik === sh.nik));
+          if (idx !== -1) {
+            ibuHamil[idx] = { ...ibuHamil[idx], ...sh };
+          } else {
             ibuHamil.push(sh);
           }
         });
@@ -259,8 +269,10 @@ async function autoImportFromGoogleSheet() {
           catatan: row[10] || ""
         }));
         sheetMenyusui.forEach(sm => {
-          const existing = ibuMenyusui.find(i => i.id === sm.id || (sm.nik && i.nik === sm.nik));
-          if (!existing) {
+          const idx = ibuMenyusui.findIndex(i => i.id === sm.id || (sm.nik && i.nik === sm.nik));
+          if (idx !== -1) {
+            ibuMenyusui[idx] = { ...ibuMenyusui[idx], ...sm };
+          } else {
             ibuMenyusui.push(sm);
           }
         });
@@ -595,13 +607,15 @@ function buildAppData() {
 }
 
 // API: Get App State
-app.get("/api/data", (req, res) => {
+app.get("/api/data", async (req, res) => {
+  await autoImportFromGoogleSheet();
   const aggregatedData = buildAppData();
   res.json(aggregatedData);
 });
 
 // API: Get Beneficiaries List
-app.get("/api/beneficiaries", (req, res) => {
+app.get("/api/beneficiaries", async (req, res) => {
+  await autoImportFromGoogleSheet();
   res.json({
     success: true,
     beneficiaries,
