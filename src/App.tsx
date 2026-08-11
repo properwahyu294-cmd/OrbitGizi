@@ -544,7 +544,12 @@ export default function App() {
          return;
       }
       
-      await pullFromGoogleSheets(token, activeSheetId);
+      const sheetData = await pullFromGoogleSheets(token, activeSheetId);
+      
+      if (sheetData && sheetData.success) {
+        setBeneficiaries(sheetData.beneficiaries);
+        // We'll trigger a refresh to update other parts of the app that depend on backend state
+      }
       
       setRefreshTrigger(prev => prev + 1);
       setSyncSuccess(true);
