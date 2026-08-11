@@ -112,13 +112,14 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
         @media print {
           @page {
             size: A4 portrait;
-            margin: 10mm;
+            margin: 12mm;
           }
-          body {
+          body, html {
             background: #ffffff !important;
             color: #0f172a !important;
             margin: 0 !important;
             padding: 0 !important;
+            height: auto !important;
           }
           body * {
             visibility: hidden !important;
@@ -128,12 +129,12 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
           }
           #printable-rekening-koran {
             display: block !important;
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
+            position: relative !important;
+            left: auto !important;
+            top: auto !important;
             width: 100% !important;
             margin: 0 !important;
-            padding: 10mm !important;
+            padding: 0 !important;
             background: #ffffff !important;
             color: #0f172a !important;
             font-family: Arial, Helvetica, sans-serif !important;
@@ -149,6 +150,7 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
           }
           tr {
             page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           thead {
             display: table-header-group !important;
