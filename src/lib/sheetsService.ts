@@ -842,7 +842,7 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
 
   // 2. Client-side Public Google Sheet CSV pull (works on Cloudflare Workers / Static SPA)
   try {
-    const csvMbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG`);
+    const csvMbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG&headers=1`);
     if (csvMbgRes.ok) {
       const csvText = await csvMbgRes.text();
       const rows = parseCsvSimple(csvText);
@@ -851,7 +851,7 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
 
       let parsedIbuHamil: any[] = [];
       try {
-        const csvHamilRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Hamil`);
+        const csvHamilRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Hamil&headers=1`);
         if (csvHamilRes.ok) {
           const hamilText = await csvHamilRes.text();
           const hamilRows = parseCsvSimple(hamilText).slice(1);
@@ -873,7 +873,7 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
 
       let parsedIbuMenyusui: any[] = [];
       try {
-        const csvMenyusuiRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Menyusui`);
+        const csvMenyusuiRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Menyusui&headers=1`);
         if (csvMenyusuiRes.ok) {
           const menyusuiText = await csvMenyusuiRes.text();
           const menyusuiRows = parseCsvSimple(menyusuiText).slice(1);
@@ -894,7 +894,7 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
       } catch (e) { console.warn("Client CSV Ibu Menyusui error:", e); }
 
       try {
-        const csvTimbangRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Catatan%20Timbang`);
+        const csvTimbangRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Catatan%20Timbang&headers=1`);
         if (csvTimbangRes.ok) {
           const timbangText = await csvTimbangRes.text();
           const timbangRows = parseCsvSimple(timbangText).slice(1);

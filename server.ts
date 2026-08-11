@@ -239,7 +239,7 @@ function parseMbgRowServer(row: any[], idx: number = 0) {
 
 async function autoImportFromGoogleSheet() {
   try {
-    const mbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG`, {
+    const mbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG&headers=1`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       }
@@ -271,7 +271,7 @@ async function autoImportFromGoogleSheet() {
       }
     }
 
-    const hamilRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Hamil`);
+    const hamilRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Hamil&headers=1`);
     if (hamilRes.ok) {
       const csvText = await hamilRes.text();
       const rows = parseCsv(csvText);
@@ -301,7 +301,7 @@ async function autoImportFromGoogleSheet() {
       }
     }
 
-    const menyusuiRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Menyusui`);
+    const menyusuiRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Menyusui&headers=1`);
     if (menyusuiRes.ok) {
       const csvText = await menyusuiRes.text();
       const rows = parseCsv(csvText);
@@ -331,7 +331,7 @@ async function autoImportFromGoogleSheet() {
       }
     }
 
-    const timbangRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Catatan%20Timbang`);
+    const timbangRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Catatan%20Timbang&headers=1`);
     if (timbangRes.ok) {
       const csvText = await timbangRes.text();
       const rows = parseCsv(csvText);

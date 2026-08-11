@@ -2,7 +2,7 @@
   "adminSheetUrl": "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115",
   "adminSheetId": "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE",
   "kabupatenName": "Kabupaten Nagekeo",
-  "lastUpdated": "2026-08-11T05:48:37.666Z",
+  "lastUpdated": "2026-08-11T13:10:48.421Z",
   "weights": {
     "pilar1": 0.1,
     "pilar2": 0.3,
@@ -13,105 +13,13 @@
   "villages": [],
   "beneficiaries": [
     {
-      "id": "ben_1786162554268",
-      "name": "GUBERTA SURYATI",
-      "parentName": "YOLENTA SENA",
-      "nik": "-",
-      "gender": "Perempuan",
-      "age": 4,
-      "category": "Balita",
-      "location": {
-        "propinsi": "Nusa Tenggara Timur",
-        "kabupaten": "Kabupaten Nagekeo",
-        "puskesmas": "KOTA",
-        "kelurahan": "Desa Nangateke",
-        "dusun": "Dusun Nangateke",
-        "posyandu": "Posyandu Nangateke"
-      },
-      "attendanceStatus": "Mengunjungi Posyandu",
-      "isReceivedMBG": true,
-      "isReceivedPMT": true,
-      "isPetugasDesaHadir": false,
-      "isPetugasPosyanduHadir": true,
-      "stakeholdersHadir": [
-        "Petugas Desa / Pemdes",
-        "Kader Posyandu",
-        "Petugas Puskesmas",
-        "Petugas Dinkes / Dinas Kesehatan",
-        "Ahli Gizi Puskesmas/Desa"
-      ],
-      "notes": "-",
-      "weightRecords": []
-    },
-    {
-      "id": "ben_1786162078860",
-      "name": "FEBRIANTI OTI",
-      "parentName": "ignasus dobo",
-      "nik": "5318604102221543",
-      "gender": "Perempuan",
-      "age": 4,
-      "category": "Balita",
-      "location": {
-        "propinsi": "Nusa Tenggara Timur",
-        "kabupaten": "Kabupaten Nagekeo",
-        "puskesmas": "KOTA",
-        "kelurahan": "Desa Nangateke",
-        "dusun": "Dusun Nangateke",
-        "posyandu": "Posyandu Nangateke"
-      },
-      "attendanceStatus": "Tidak Mengunjungi",
-      "isReceivedMBG": true,
-      "isReceivedPMT": true,
-      "isPetugasDesaHadir": false,
-      "isPetugasPosyanduHadir": true,
-      "stakeholdersHadir": [
-        "Petugas Desa / Pemdes",
-        "Kader Posyandu",
-        "Petugas Puskesmas",
-        "Petugas Dinkes / Dinas Kesehatan",
-        "Ahli Gizi Puskesmas/Desa"
-      ],
-      "notes": "-",
-      "weightRecords": []
-    },
-    {
-      "id": "ben_1786161824333",
-      "name": "ADRIANUS SA.A",
-      "parentName": "MERSIANA ERE",
-      "nik": "5318603011224585",
-      "gender": "Laki-laki",
-      "age": 4,
-      "category": "Balita",
-      "location": {
-        "propinsi": "Nusa Tenggara Timur",
-        "kabupaten": "Kabupaten Nagekeo",
-        "puskesmas": "KOTA",
-        "kelurahan": "Desa Nangateke",
-        "dusun": "Dusun Nangateke",
-        "posyandu": "Posyandu Nangateke"
-      },
-      "attendanceStatus": "Mengunjungi Posyandu",
-      "isReceivedMBG": true,
-      "isReceivedPMT": true,
-      "isPetugasDesaHadir": false,
-      "isPetugasPosyanduHadir": true,
-      "stakeholdersHadir": [
-        "Petugas Desa / Pemdes",
-        "Kader Posyandu",
-        "Petugas Puskesmas",
-        "Petugas Dinkes / Dinas Kesehatan",
-        "Ahli Gizi Puskesmas/Desa"
-      ],
-      "notes": "-",
-      "weightRecords": []
-    },
-    {
       "id": "ben_1786167082380",
       "name": "ZEFANYA R RIRU KATINESI",
       "parentName": "ELISABETH NOA JA",
       "nik": "5318602911242752",
       "gender": "Laki-laki",
-      "age": 2,
+      "age": "2 TAHUN 9 BULAN",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -133,16 +41,19 @@
         "Petugas Dinkes / Dinas Kesehatan",
         "Ahli Gizi Puskesmas/Desa"
       ],
-      "notes": "-",
+      "notes": "",
       "weightRecords": [
         {
           "period": "Agustus 2026",
-          "weightKg": 8,
-          "heightCm": 74,
+          "weightKg": 8.8,
+          "heightCm": 74.2,
           "statusGizi": "Risiko Stunting",
-          "measuredAt": "2026-08-08"
+          "measuredAt": "2026-08-11"
         }
-      ]
+      ],
+      "initialWeightKg": 8.8,
+      "initialHeightCm": 74.2,
+      "initialStatusGizi": "Risiko Stunting"
     },
     {
       "id": "ben_1786166824522",
@@ -150,7 +61,8 @@
       "parentName": "margareta mboni",
       "nik": "5318606301262286",
       "gender": "Perempuan",
-      "age": 7,
+      "age": "7 bulan",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -172,16 +84,19 @@
         "Petugas Dinkes / Dinas Kesehatan",
         "Ahli Gizi Puskesmas/Desa"
       ],
-      "notes": "-",
+      "notes": "",
       "weightRecords": [
         {
           "period": "Agustus 2026",
-          "weightKg": 6,
-          "heightCm": 74,
+          "weightKg": 6.6,
+          "heightCm": 74.2,
           "statusGizi": "Risiko Stunting",
-          "measuredAt": "2026-08-08"
+          "measuredAt": "2026-08-11"
         }
-      ]
+      ],
+      "initialWeightKg": 6.6,
+      "initialHeightCm": 74.2,
+      "initialStatusGizi": "Risiko Stunting"
     },
     {
       "id": "ben_1786164550675",
@@ -189,7 +104,8 @@
       "parentName": "MARIA METI",
       "nik": "5318602601247749",
       "gender": "Perempuan",
-      "age": 2,
+      "age": "2 TAHUN 7 BULAN",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -211,7 +127,7 @@
         "Petugas Dinkes / Dinas Kesehatan",
         "Ahli Gizi Puskesmas/Desa"
       ],
-      "notes": "-",
+      "notes": "",
       "weightRecords": []
     },
     {
@@ -220,7 +136,8 @@
       "parentName": "FIRGILIA NONA ENSI",
       "nik": "5318605208246604",
       "gender": "Perempuan",
-      "age": 2,
+      "age": "2 TAHUN",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -242,7 +159,7 @@
         "Petugas Dinkes / Dinas Kesehatan",
         "Ahli Gizi Puskesmas/Desa"
       ],
-      "notes": "-",
+      "notes": "",
       "weightRecords": []
     },
     {
@@ -251,7 +168,8 @@
       "parentName": "NOVITA MADIASA",
       "nik": "5318606412236058",
       "gender": "Perempuan",
-      "age": 3,
+      "age": "3 TAHUN 8 BULAN",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -273,7 +191,7 @@
         "Petugas Dinkes / Dinas Kesehatan",
         "Ahli Gizi Puskesmas/Desa"
       ],
-      "notes": "-",
+      "notes": "",
       "weightRecords": []
     },
     {
@@ -282,7 +200,8 @@
       "parentName": "NOVITA MADRIASA",
       "nik": "5318605802237131",
       "gender": "Perempuan",
-      "age": 3,
+      "age": "3 TAHUN 6 BULAN",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -304,7 +223,7 @@
         "Petugas Dinkes / Dinas Kesehatan",
         "Ahli Gizi Puskesmas/Desa"
       ],
-      "notes": "-",
+      "notes": "",
       "weightRecords": []
     },
     {
@@ -313,7 +232,8 @@
       "parentName": "MARIA YASINTA FONGA",
       "nik": "5318604605223437",
       "gender": "Perempuan",
-      "age": 4,
+      "age": "4 TAHUN 2 BULAN",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -335,7 +255,7 @@
         "Petugas Dinkes / Dinas Kesehatan",
         "Ahli Gizi Puskesmas/Desa"
       ],
-      "notes": "-",
+      "notes": "",
       "weightRecords": []
     },
     {
@@ -344,7 +264,8 @@
       "parentName": "ELSATRI RAMA NGOLE",
       "nik": "5318602805224366",
       "gender": "Laki-laki",
-      "age": 4,
+      "age": "4 TAHUN 3 BULAN",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -366,16 +287,17 @@
         "Petugas Dinkes / Dinas Kesehatan",
         "Ahli Gizi Puskesmas/Desa"
       ],
-      "notes": "-",
+      "notes": "",
       "weightRecords": []
     },
     {
       "id": "ben_1786163460685",
       "name": "MARSELLA WIYANA NENU",
       "parentName": "NUR AYSAH",
-      "nik": "-",
+      "nik": "",
       "gender": "Perempuan",
-      "age": 2,
+      "age": "2 TAHUN 6 BULAN",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -397,7 +319,7 @@
         "Petugas Dinkes / Dinas Kesehatan",
         "Ahli Gizi Puskesmas/Desa"
       ],
-      "notes": "-",
+      "notes": "",
       "weightRecords": []
     },
     {
@@ -406,7 +328,8 @@
       "parentName": "PILOMENA METI",
       "nik": "5318604804261992",
       "gender": "Perempuan",
-      "age": 4,
+      "age": "4 BULAN",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -428,7 +351,7 @@
         "Petugas Dinkes / Dinas Kesehatan",
         "Ahli Gizi Puskesmas/Desa"
       ],
-      "notes": "-",
+      "notes": "",
       "weightRecords": []
     },
     {
@@ -437,7 +360,8 @@
       "parentName": "MARLIN DAUD",
       "nik": "5318601312236851",
       "gender": "Laki-laki",
-      "age": 3,
+      "age": "3 TAHUN 8 BULAN",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -459,7 +383,7 @@
         "Petugas Dinkes / Dinas Kesehatan",
         "Ahli Gizi Puskesmas/Desa"
       ],
-      "notes": "-",
+      "notes": "",
       "weightRecords": []
     },
     {
@@ -468,7 +392,8 @@
       "parentName": "BONEFASIUS NUSA",
       "nik": "5318602003221353",
       "gender": "Laki-laki",
-      "age": 4,
+      "age": "4 TAHUN 5 BULAN",
+      "birthDate": "",
       "category": "Balita",
       "location": {
         "propinsi": "Nusa Tenggara Timur",
@@ -491,7 +416,103 @@
         "Ahli Gizi Puskesmas/Desa",
         "Badan Gizi Nasional (BGN)"
       ],
-      "notes": "-",
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786162554268",
+      "name": "GUBERTA SURYATI",
+      "parentName": "YOLENTA SENA",
+      "nik": "5207228911",
+      "gender": "Perempuan",
+      "age": "4 TAHUN 8 BULAN",
+      "birthDate": "",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "Desa Nangateke",
+        "dusun": "Dusun Nangateke",
+        "posyandu": "Posyandu Nangateke"
+      },
+      "attendanceStatus": "Mengunjungi Posyandu",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786162078860",
+      "name": "FEBRIANTI OTI",
+      "parentName": "ignasus dobo",
+      "nik": "5318604102221543",
+      "gender": "Perempuan",
+      "age": "4 Tahun 6 Bulan",
+      "birthDate": "",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "Desa Nangateke",
+        "dusun": "Dusun Nangateke",
+        "posyandu": "Posyandu Nangateke"
+      },
+      "attendanceStatus": "Tidak Mengunjungi",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786161824333",
+      "name": "ADRIANUS SA.A",
+      "parentName": "MERSIANA ERE",
+      "nik": "5318603011224585",
+      "gender": "Laki-laki",
+      "age": "4 TAHUN 9 BULAN",
+      "birthDate": "",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "Desa Nangateke",
+        "dusun": "Dusun Nangateke",
+        "posyandu": "Posyandu Nangateke"
+      },
+      "attendanceStatus": "Mengunjungi Posyandu",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
       "weightRecords": []
     }
   ],
@@ -500,6 +521,286 @@
   "bannerImages": [],
   "dashboardBannerImages": [],
   "visitorLogs": [
+    {
+      "id": "v_1786453699201_9o8q",
+      "timestamp": "2026-08-11T13:08:19.201Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Admin (overview)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786453050426_2ssx",
+      "timestamp": "2026-08-11T12:57:30.427Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786453049389_0682",
+      "timestamp": "2026-08-11T12:57:29.389Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786453049381_vj72",
+      "timestamp": "2026-08-11T12:57:29.381Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786452091922_k3gv",
+      "timestamp": "2026-08-11T12:41:31.922Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786452091159_7asv",
+      "timestamp": "2026-08-11T12:41:31.159Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786452091154_a2li",
+      "timestamp": "2026-08-11T12:41:31.154Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786451890835_ltwg",
+      "timestamp": "2026-08-11T12:38:10.835Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786451884961_4dbv",
+      "timestamp": "2026-08-11T12:38:04.961Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786451884956_m7ut",
+      "timestamp": "2026-08-11T12:38:04.956Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786451424776_ieb5",
+      "timestamp": "2026-08-11T12:30:24.776Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786451423848_f8bo",
+      "timestamp": "2026-08-11T12:30:23.849Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786451423841_a7qq",
+      "timestamp": "2026-08-11T12:30:23.841Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786450803633_gfry",
+      "timestamp": "2026-08-11T12:20:03.633Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786450802865_6brs",
+      "timestamp": "2026-08-11T12:20:02.865Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786450802863_nvzs",
+      "timestamp": "2026-08-11T12:20:02.863Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786449900718_11ge",
+      "timestamp": "2026-08-11T12:05:00.718Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786449900097_asy4",
+      "timestamp": "2026-08-11T12:05:00.097Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786449900087_udlu",
+      "timestamp": "2026-08-11T12:05:00.087Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786449219455_83t2",
+      "timestamp": "2026-08-11T11:53:39.455Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786449218998_lzy9",
+      "timestamp": "2026-08-11T11:53:38.998Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786449218995_nvoi",
+      "timestamp": "2026-08-11T11:53:38.995Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786448628768_4bbb",
+      "timestamp": "2026-08-11T11:43:48.768Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786448628299_v0gs",
+      "timestamp": "2026-08-11T11:43:48.299Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786448628295_lwy3",
+      "timestamp": "2026-08-11T11:43:48.295Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786448271802_9rdr",
+      "timestamp": "2026-08-11T11:37:51.802Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786448271153_hqgy",
+      "timestamp": "2026-08-11T11:37:51.153Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786448271156_ynaw",
+      "timestamp": "2026-08-11T11:37:51.156Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786448038430_p95q",
+      "timestamp": "2026-08-11T11:33:58.430Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Pusat Input & Sinkronisasi MBG",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786448029784_k1p1",
+      "timestamp": "2026-08-11T11:33:49.784Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Admin (overview)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786448028965_x51n",
+      "timestamp": "2026-08-11T11:33:48.965Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786447296187_m4jw",
+      "timestamp": "2026-08-11T11:21:36.187Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786447296186_v7ms",
+      "timestamp": "2026-08-11T11:21:36.186Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786446958632_5xha",
+      "timestamp": "2026-08-11T11:15:58.632Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786446958629_udqq",
+      "timestamp": "2026-08-11T11:15:58.629Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
     {
       "id": "v_1786427277088_1vvq",
       "timestamp": "2026-08-11T05:47:57.088Z",
@@ -925,5 +1226,8 @@
       "deviceInfo": "Komputer / Desktop"
     }
   ],
-  "auditLogs": []
+  "auditLogs": [],
+  "registeredAdmins": [
+    "properwahyu294@gmail.com"
+  ]
 }
