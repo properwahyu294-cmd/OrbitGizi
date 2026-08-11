@@ -191,7 +191,6 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const currentUserEmail = currentUser?.email?.toLowerCase() || "";
   const isAdmin = !!currentUser && (
-    registeredAdmins.length === 0 ||
     registeredAdmins.some(adm => adm.toLowerCase() === currentUserEmail) ||
     currentUserEmail === "properwahyu294@gmail.com"
   );
@@ -482,22 +481,30 @@ export default function App() {
         setCurrentUser(res.user);
         setGoogleToken(res.accessToken);
 
-        // Auto-register email as admin so other emails can seamlessly sync and act as admin
-        if (res.user.email) {
-          const emailClean = res.user.email.toLowerCase();
-          if (!registeredAdmins.some(a => a.toLowerCase() === emailClean)) {
-            registerAdminEmailApi(emailClean)
-              .then(upd => {
-                if (upd?.registeredAdmins) setRegisteredAdmins(upd.registeredAdmins);
-              })
-              .catch(e => console.warn("Auto-register admin failed:", e));
-          }
-        }
+        const emailClean = res.user.email ? res.user.email.toLowerCase() : "";
 
-        // After successful login, auto sync to make user experience amazing!
-        setTimeout(() => {
-          handleSyncSheetsDirect(res.accessToken, res.user);
-        }, 800);
+        // Fetch current registered admin list
+        const adminRes = await getRegisteredAdminsApi();
+        const latestAdmins = (adminRes && Array.isArray(adminRes.registeredAdmins))
+          ? adminRes.registeredAdmins
+          : registeredAdmins;
+        if (adminRes?.registeredAdmins) setRegisteredAdmins(adminRes.registeredAdmins);
+
+        const isUserAuthorized = emailClean && (
+          latestAdmins.some(a => a.toLowerCase() === emailClean) ||
+          emailClean === "properwahyu294@gmail.com"
+        );
+
+        if (!isUserAuthorized) {
+          setSyncError(`Akses Dibatasi: Email ${res.user.email} belum terdaftar sebagai Admin. Silakan hubungi Admin Utama untuk mendaftarkan email Anda.`);
+          setShowPublicDashboard(true);
+          setShowLauncher(false);
+        } else {
+          // After successful login by registered admin, sync to sheets
+          setTimeout(() => {
+            handleSyncSheetsDirect(res.accessToken, res.user);
+          }, 800);
+        }
       }
     } catch (err: any) {
       setSyncError("Gagal masuk dengan Google: " + err.message);
@@ -756,6 +763,8 @@ export default function App() {
           } else if (isAdmin) {
             setShowPublicDashboard(false);
             setShowLauncher(false);
+          } else {
+            setSyncError(`Akses Dibatasi: Email ${currentUser.email} belum terdaftar sebagai Admin. Silakan hubungi Admin Utama.`);
           }
         }}
         selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
