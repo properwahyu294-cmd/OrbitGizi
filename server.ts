@@ -169,7 +169,6 @@ function parseCsv(text: string): string[][] {
 }
 
 async function autoImportFromGoogleSheet() {
-  if (beneficiaries.length > 0) return;
   try {
     const mbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG`);
     if (mbgRes.ok) {
@@ -177,7 +176,7 @@ async function autoImportFromGoogleSheet() {
       const rows = parseCsv(csvText);
       const dataRows = rows.slice(1).filter(r => r.length > 1 && r[1] && r[1] !== "" && r[1] !== "Nama Beneficiary");
       if (dataRows.length > 0) {
-        beneficiaries = dataRows.map((row, idx) => ({
+        const sheetBens = dataRows.map((row, idx) => ({
           id: (row[0] && row[0] !== "-" && row[0] !== "") ? row[0] : `ben_${Date.now()}_${idx}`,
           name: row[1] || "",
           parentName: row[2] || "",
@@ -202,6 +201,13 @@ async function autoImportFromGoogleSheet() {
           notes: row[20] || "",
           weightRecords: []
         }));
+
+        sheetBens.forEach(sb => {
+          const existing = beneficiaries.find(b => b.id === sb.id || (sb.nik && b.nik === sb.nik));
+          if (!existing) {
+            beneficiaries.push(sb);
+          }
+        });
       }
     }
 
@@ -211,7 +217,7 @@ async function autoImportFromGoogleSheet() {
       const rows = parseCsv(csvText);
       const dataRows = rows.slice(1).filter(r => r.length > 1 && r[1] && r[1] !== "" && r[1] !== "Nama Ibu");
       if (dataRows.length > 0) {
-        ibuHamil = dataRows.map((row, idx) => ({
+        const sheetHamil = dataRows.map((row, idx) => ({
           id: (row[0] && row[0] !== "-" && row[0] !== "") ? row[0] : `ibu_${Date.now()}_${idx}`,
           namaIbu: row[1] || "",
           umur: parseInt(row[2]) || 25,
@@ -224,6 +230,12 @@ async function autoImportFromGoogleSheet() {
           usiaKehamilan: parseInt(row[9]) || 1,
           catatan: row[10] || ""
         }));
+        sheetHamil.forEach(sh => {
+          const existing = ibuHamil.find(i => i.id === sh.id || (sh.nik && i.nik === sh.nik));
+          if (!existing) {
+            ibuHamil.push(sh);
+          }
+        });
       }
     }
 
@@ -233,7 +245,7 @@ async function autoImportFromGoogleSheet() {
       const rows = parseCsv(csvText);
       const dataRows = rows.slice(1).filter(r => r.length > 1 && r[1] && r[1] !== "" && r[1] !== "Nama Ibu");
       if (dataRows.length > 0) {
-        ibuMenyusui = dataRows.map((row, idx) => ({
+        const sheetMenyusui = dataRows.map((row, idx) => ({
           id: (row[0] && row[0] !== "-" && row[0] !== "") ? row[0] : `ibum_${Date.now()}_${idx}`,
           namaIbu: row[1] || "",
           umur: parseInt(row[2]) || 25,
@@ -246,6 +258,12 @@ async function autoImportFromGoogleSheet() {
           bayiNama: row[9] || "",
           catatan: row[10] || ""
         }));
+        sheetMenyusui.forEach(sm => {
+          const existing = ibuMenyusui.find(i => i.id === sm.id || (sm.nik && i.nik === sm.nik));
+          if (!existing) {
+            ibuMenyusui.push(sm);
+          }
+        });
       }
     }
 
@@ -255,7 +273,6 @@ async function autoImportFromGoogleSheet() {
       const rows = parseCsv(csvText);
       const dataRows = rows.slice(1).filter(r => r.length > 1 && r[0] && r[0] !== "" && r[0] !== "ID Penerima");
       if (dataRows.length > 0) {
-        const recordMap = new Map<string, any[]>();
         dataRows.forEach(row => {
           const benId = row[0];
           const rec = {
@@ -265,15 +282,13 @@ async function autoImportFromGoogleSheet() {
             statusGizi: row[6] || "Normal",
             measuredAt: row[7] || new Date().toISOString()
           };
-          if (!recordMap.has(benId)) {
-            recordMap.set(benId, []);
-          }
-          recordMap.get(benId)!.push(rec);
-        });
-
-        beneficiaries.forEach(b => {
-          if (recordMap.has(b.id)) {
-            b.weightRecords = recordMap.get(b.id);
+          const ben = beneficiaries.find(b => b.id === benId);
+          if (ben) {
+            if (!ben.weightRecords) ben.weightRecords = [];
+            const exists = ben.weightRecords.some(r => r.period === rec.period);
+            if (!exists) {
+              ben.weightRecords.push(rec);
+            }
           }
         });
       }
@@ -580,15 +595,13 @@ function buildAppData() {
 }
 
 // API: Get App State
-app.get("/api/data", async (req, res) => {
-  await autoImportFromGoogleSheet();
+app.get("/api/data", (req, res) => {
   const aggregatedData = buildAppData();
   res.json(aggregatedData);
 });
 
 // API: Get Beneficiaries List
-app.get("/api/beneficiaries", async (req, res) => {
-  await autoImportFromGoogleSheet();
+app.get("/api/beneficiaries", (req, res) => {
   res.json({
     success: true,
     beneficiaries,
