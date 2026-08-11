@@ -40,6 +40,7 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
   const [newWeight, setNewWeight] = useState<string>("18.0");
   const [newHeight, setNewHeight] = useState<string>("115");
   const [newStatusGizi, setNewStatusGizi] = useState<"Normal" | "Gizi Kurang" | "Stunting" | "Risiko Stunting">("Normal");
+  const [newMeasuredAt, setNewMeasuredAt] = useState<string>(new Date().toISOString().split("T")[0]);
 
   // Filter beneficiaries by category and search
   const filteredBeneficiaries = useMemo(() => {
@@ -132,7 +133,7 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
       weightKg: parseFloat(newWeight) || 15,
       heightCm: parseFloat(newHeight) || 100,
       statusGizi: newStatusGizi,
-      measuredAt: new Date().toISOString().split("T")[0]
+      measuredAt: newMeasuredAt || new Date().toISOString().split("T")[0]
     };
     onAddWeightRecord(currentBeneficiary.id, rec);
     setShowQuickAddModal(false);
@@ -645,6 +646,20 @@ export const AnalitikGiziView: React.FC<AnalitikGiziViewProps> = ({
                   <option value="Stunting">Stunting</option>
                   <option value="Risiko Stunting">Risiko Stunting</option>
                 </select>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700 block">Tanggal / Waktu Pengukuran</label>
+                  <span className="text-[10px] text-indigo-600 font-semibold">(bisa sebelum tanggal input)</span>
+                </div>
+                <input
+                  type="date"
+                  value={newMeasuredAt}
+                  onChange={(e) => setNewMeasuredAt(e.target.value)}
+                  className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-bold bg-white focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                  required
+                />
               </div>
 
               <div className="flex space-x-2 pt-3">

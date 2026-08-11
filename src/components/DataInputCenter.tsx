@@ -371,6 +371,7 @@ export default function DataInputCenter({
   const [isManualMeasPeriod, setIsManualMeasPeriod] = useState<boolean>(false);
   const [measWeight, setMeasWeight] = useState<string>("");
   const [measHeight, setMeasHeight] = useState<string>("");
+  const [measDate, setMeasDate] = useState<string>(new Date().toISOString().split("T")[0]);
   const [measSuccess, setMeasSuccess] = useState<boolean>(false);
 
   // Search & Filter Mode State for Selecting Beneficiary in Weight Entri
@@ -840,7 +841,7 @@ export default function DataInputCenter({
       weightKg: weightVal,
       heightCm: heightVal,
       statusGizi: calculateStatusGizi(weightVal, heightVal),
-      measuredAt: new Date().toISOString().split("T")[0]
+      measuredAt: measDate || new Date().toISOString().split("T")[0]
     };
 
     onAddWeightRecord(selectedBenId, newRecord);
@@ -1883,6 +1884,24 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                   value={measHeight}
                   onChange={(e) => setMeasHeight(e.target.value)}
                   className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-black text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] font-black text-slate-500 uppercase block">
+                    TANGGAL / WAKTU PENGUKURAN *
+                  </label>
+                  <span className="text-[9px] text-indigo-600 font-bold lowercase bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">
+                    Bisa tanggal sebelum input
+                  </span>
+                </div>
+                <input
+                  type="date"
+                  value={measDate}
+                  onChange={(e) => setMeasDate(e.target.value)}
+                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-black text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none bg-white cursor-pointer"
+                  required
                 />
               </div>
 
