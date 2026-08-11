@@ -112,7 +112,13 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
         @media print {
           @page {
             size: A4 portrait;
-            margin: 10mm 12mm 12mm 12mm;
+            margin: 10mm;
+          }
+          body {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
           body * {
             visibility: hidden !important;
@@ -127,11 +133,12 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
             top: 0 !important;
             width: 100% !important;
             margin: 0 !important;
-            padding: 0 !important;
+            padding: 10mm !important;
             background: #ffffff !important;
             color: #0f172a !important;
             font-family: Arial, Helvetica, sans-serif !important;
             font-size: 10px !important;
+            z-index: 999999 !important;
           }
           .no-print {
             display: none !important;
@@ -148,7 +155,7 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
           }
           th, td {
             border: 1px solid #334155 !important;
-            padding: 5px 6px !important;
+            padding: 4px 6px !important;
           }
         }
       `}</style>
