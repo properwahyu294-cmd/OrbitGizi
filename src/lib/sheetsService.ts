@@ -593,6 +593,9 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
         ibuHamil: parsedIbuHamil,
         ibuMenyusui: parsedIbuMenyusui
       };
+    } else {
+      const errText = await fetchRes.text();
+      throw new Error(`Akses ke Google Sheet ditolak (Status ${fetchRes.status}). Pastikan spreadsheet Google Anda disetel "Anyone with the link can view/edit" di Google Drive agar dapat diakses oleh semua akun operator.`);
     }
   } catch (err) {
     console.error("Error saat pull data dari Google Sheets:", err);
