@@ -360,6 +360,7 @@ export default function App() {
       return updated;
     });
     setRefreshTrigger(prev => prev + 1);
+    handlePushToSheetsBackground();
   };
 
   const handleDeleteWeightRecord = (beneficiaryId: string, period: string) => {
@@ -380,6 +381,7 @@ export default function App() {
       return updated;
     });
     setRefreshTrigger(prev => prev + 1);
+    handlePushToSheetsBackground();
   };
 
   const loadData = async () => {
@@ -571,6 +573,7 @@ export default function App() {
       const json = await updateVillageApi(updatedMetrics as any);
       setData(json);
       setRefreshTrigger(prev => prev + 1);
+      handlePushToSheetsBackground();
     } catch (e: any) {
       alert("Error: " + e.message);
     }
@@ -582,6 +585,7 @@ export default function App() {
       const json = await addVillageApi(name, unitType);
       setData(json);
       setRefreshTrigger(prev => prev + 1);
+      handlePushToSheetsBackground();
     } catch (e: any) {
       alert("Error: " + e.message);
     }
@@ -593,6 +597,7 @@ export default function App() {
       const json = await deleteVillageApi(id);
       setData(json);
       setRefreshTrigger(prev => prev + 1);
+      handlePushToSheetsBackground();
     } catch (e: any) {
       alert("Error: " + e.message);
     }
@@ -604,6 +609,7 @@ export default function App() {
       const json = await resetDataApi();
       setData(json);
       setRefreshTrigger(prev => prev + 1);
+      handlePushToSheetsBackground();
     } catch (e: any) {
       alert("Error: " + e.message);
     }
@@ -615,6 +621,7 @@ export default function App() {
       const json = await clearDataApi();
       setData(json);
       setRefreshTrigger(prev => prev + 1);
+      handlePushToSheetsBackground();
     } catch (e: any) {
       alert("Error: " + e.message);
     }
@@ -641,6 +648,7 @@ export default function App() {
       setData(json);
       setShowConfigModal(false);
       setRefreshTrigger(prev => prev + 1);
+      handlePushToSheetsBackground();
     } catch (e: any) {
       setWeightError(e.message);
     }
