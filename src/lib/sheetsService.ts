@@ -641,85 +641,215 @@ export async function syncToGoogleSheets(
 }
 
 
-export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: string) {
-  try {
-    const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z&valueRenderOption=FORMATTED_VALUE`, {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    if (fetchRes.ok) {
-      const fetchJson = await fetchRes.json();
-      const valueRanges = fetchJson.valueRanges || [];
-      
-      const sheetMbg = valueRanges[0]?.values || [];
-      const sheetIbuHamil = valueRanges[1]?.values || [];
-      const sheetIbuMenyusui = valueRanges[2]?.values || [];
-
-      console.error('DEBUG: sheetMbg (first 2 rows):', JSON.stringify(sheetMbg.slice(0, 2)));
-
-      const parsedMbg = sheetMbg
-        .filter((r: any[]) => r && r[1] && r[1] !== "-")
-        .map((row: any[], idx: number) => parseMbgRow(row, idx))
-        .filter(Boolean);
-
-      const parsedIbuHamil = sheetIbuHamil.filter((r: any[]) => r && r[1]).map((row: any[]) => ({
-        id: (row[0] && row[0] !== "-") ? row[0] : `ibu_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
-        namaIbu: (row[1] && row[1] !== "-") ? row[1] : "",
-        umur: parseInt(row[2]) || 0,
-        nik: (row[3] && row[3] !== "-") ? row[3] : "",
-        alamat: (row[4] && row[4] !== "-") ? row[4] : "",
-        puskesmas: row[5] !== "-" ? row[5] : "",
-        kelurahan: row[6] !== "-" ? row[6] : "",
-        dusun: row[7] !== "-" ? row[7] : "",
-        posyandu: row[8] !== "-" ? row[8] : "",
-        usiaKehamilan: parseInt(row[9]) || 0,
-        catatan: (row[10] && row[10] !== "-") ? row[10] : ""
-      }));
-
-      const parsedIbuMenyusui = sheetIbuMenyusui.filter((r: any[]) => r && r[1]).map((row: any[]) => ({
-        id: (row[0] && row[0] !== "-") ? row[0] : `ibum_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
-        namaIbu: (row[1] && row[1] !== "-") ? row[1] : "",
-        umur: parseInt(row[2]) || 0,
-        nik: (row[3] && row[3] !== "-") ? row[3] : "",
-        alamat: (row[4] && row[4] !== "-") ? row[4] : "",
-        puskesmas: row[5] !== "-" ? row[5] : "",
-        kelurahan: row[6] !== "-" ? row[6] : "",
-        dusun: row[7] !== "-" ? row[7] : "",
-        posyandu: row[8] !== "-" ? row[8] : "",
-        bayiNama: (row[9] && row[9] !== "-") ? row[9] : "",
-        catatan: (row[10] && row[10] !== "-") ? row[10] : ""
-      }));
-
-      // Post back to API to save to server
-      const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-      await fetch(`${baseUrl}/api/beneficiaries/batch`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ beneficiaries: parsedMbg })
-      }).catch(e => console.error(e));
-      
-      await fetch(`${baseUrl}/api/ibu-hamil/batch`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ibuHamil: parsedIbuHamil })
-      }).catch(e => console.error(e));
-      
-      await fetch(`${baseUrl}/api/ibu-menyusui/batch`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ibuMenyusui: parsedIbuMenyusui })
-      }).catch(e => console.error(e));
-
-      return {
-        success: true,
-        beneficiaries: parsedMbg,
-        ibuHamil: parsedIbuHamil,
-        ibuMenyusui: parsedIbuMenyusui
-      };
+function parseCsvSimple(text: string): string[][] {
+  const lines: string[][] = [];
+  let row: string[] = [];
+  let curr = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+    
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        curr += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      row.push(curr.trim());
+      curr = '';
+    } else if ((char === '\r' || char === '\n') && !inQuotes) {
+      if (char === '\r' && nextChar === '\n') {
+        i++;
+      }
+      row.push(curr.trim());
+      if (row.some(c => c !== '')) {
+        lines.push(row);
+      }
+      row = [];
+      curr = '';
     } else {
-      console.warn(`Direct OAuth Sheet pull returned status ${fetchRes.status}. Falling back to server-side pull...`);
+      curr += char;
     }
-  } catch (err) {
-    console.warn("Direct OAuth Sheet fetch error, falling back to server-side pull:", err);
+  }
+  if (curr || row.length > 0) {
+    row.push(curr.trim());
+    if (row.some(c => c !== '')) {
+      lines.push(row);
+    }
+  }
+  return lines;
+}
+
+export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: string) {
+  // 1. Direct OAuth Google Sheets API pull
+  if (accessToken) {
+    try {
+      const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z&valueRenderOption=FORMATTED_VALUE`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (fetchRes.ok) {
+        const fetchJson = await fetchRes.json();
+        const valueRanges = fetchJson.valueRanges || [];
+        
+        const sheetMbg = valueRanges[0]?.values || [];
+        const sheetIbuHamil = valueRanges[1]?.values || [];
+        const sheetIbuMenyusui = valueRanges[2]?.values || [];
+
+        const parsedMbg = sheetMbg
+          .filter((r: any[]) => r && r[1] && r[1] !== "-")
+          .map((row: any[], idx: number) => parseMbgRow(row, idx))
+          .filter(Boolean);
+
+        const parsedIbuHamil = sheetIbuHamil.filter((r: any[]) => r && r[1]).map((row: any[]) => ({
+          id: (row[0] && row[0] !== "-") ? row[0] : `ibu_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
+          namaIbu: (row[1] && row[1] !== "-") ? row[1] : "",
+          umur: parseInt(row[2]) || 0,
+          nik: (row[3] && row[3] !== "-") ? row[3] : "",
+          alamat: (row[4] && row[4] !== "-") ? row[4] : "",
+          puskesmas: row[5] !== "-" ? row[5] : "",
+          kelurahan: row[6] !== "-" ? row[6] : "",
+          dusun: row[7] !== "-" ? row[7] : "",
+          posyandu: row[8] !== "-" ? row[8] : "",
+          usiaKehamilan: parseInt(row[9]) || 0,
+          catatan: (row[10] && row[10] !== "-") ? row[10] : ""
+        }));
+
+        const parsedIbuMenyusui = sheetIbuMenyusui.filter((r: any[]) => r && r[1]).map((row: any[]) => ({
+          id: (row[0] && row[0] !== "-") ? row[0] : `ibum_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
+          namaIbu: (row[1] && row[1] !== "-") ? row[1] : "",
+          umur: parseInt(row[2]) || 0,
+          nik: (row[3] && row[3] !== "-") ? row[3] : "",
+          alamat: (row[4] && row[4] !== "-") ? row[4] : "",
+          puskesmas: row[5] !== "-" ? row[5] : "",
+          kelurahan: row[6] !== "-" ? row[6] : "",
+          dusun: row[7] !== "-" ? row[7] : "",
+          posyandu: row[8] !== "-" ? row[8] : "",
+          bayiNama: (row[9] && row[9] !== "-") ? row[9] : "",
+          catatan: (row[10] && row[10] !== "-") ? row[10] : ""
+        }));
+
+        // Persist to local storage for static host environment (e.g. Cloudflare Workers / Pages)
+        try {
+          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(parsedMbg));
+          localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(parsedIbuHamil));
+          localStorage.setItem("orbit_gizi_local_ibu_hamil", JSON.stringify(parsedIbuHamil));
+          localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
+          localStorage.setItem("orbit_gizi_local_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
+        } catch (e) {
+          console.warn("Error saving to localStorage cache:", e);
+        }
+
+        // Post back to API server if available (e.g., Cloud Run / Express mode)
+        const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+        fetch(`${baseUrl}/api/beneficiaries/batch`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ beneficiaries: parsedMbg })
+        }).catch(() => {});
+        
+        fetch(`${baseUrl}/api/ibu-hamil/batch`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ibuHamil: parsedIbuHamil })
+        }).catch(() => {});
+        
+        fetch(`${baseUrl}/api/ibu-menyusui/batch`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ibuMenyusui: parsedIbuMenyusui })
+        }).catch(() => {});
+
+        return {
+          success: true,
+          beneficiaries: parsedMbg,
+          ibuHamil: parsedIbuHamil,
+          ibuMenyusui: parsedIbuMenyusui
+        };
+      } else {
+        console.warn(`Direct OAuth Sheet pull returned status ${fetchRes.status}.`);
+      }
+    } catch (err) {
+      console.warn("Direct OAuth Sheet fetch error:", err);
+    }
   }
 
-  // Fallback to server-side autoImport endpoint
+  // 2. Client-side Public Google Sheet CSV pull (works on Cloudflare Workers / Static SPA)
+  try {
+    const csvMbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG`);
+    if (csvMbgRes.ok) {
+      const csvText = await csvMbgRes.text();
+      const rows = parseCsvSimple(csvText);
+      const dataRows = rows.slice(1).filter(r => r.length > 0 && r.some(c => c !== ""));
+      const parsedMbg = dataRows.map((row, idx) => parseMbgRow(row, idx)).filter(Boolean);
+
+      let parsedIbuHamil: any[] = [];
+      try {
+        const csvHamilRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Hamil`);
+        if (csvHamilRes.ok) {
+          const hamilText = await csvHamilRes.text();
+          const hamilRows = parseCsvSimple(hamilText).slice(1);
+          parsedIbuHamil = hamilRows.map((row, idx) => ({
+            id: (row[0] && row[0] !== "-") ? row[0] : `ibu_${Date.now()}_${idx}`,
+            namaIbu: row[1] || "",
+            umur: parseInt(row[2]) || 0,
+            nik: row[3] || "",
+            alamat: row[4] || "",
+            puskesmas: row[5] || "",
+            kelurahan: row[6] || "",
+            dusun: row[7] || "",
+            posyandu: row[8] || "",
+            usiaKehamilan: parseInt(row[9]) || 0,
+            catatan: row[10] || ""
+          })).filter(h => h.namaIbu);
+        }
+      } catch (e) { console.warn("Client CSV Ibu Hamil error:", e); }
+
+      let parsedIbuMenyusui: any[] = [];
+      try {
+        const csvMenyusuiRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Ibu%20Menyusui`);
+        if (csvMenyusuiRes.ok) {
+          const menyusuiText = await csvMenyusuiRes.text();
+          const menyusuiRows = parseCsvSimple(menyusuiText).slice(1);
+          parsedIbuMenyusui = menyusuiRows.map((row, idx) => ({
+            id: (row[0] && row[0] !== "-") ? row[0] : `ibum_${Date.now()}_${idx}`,
+            namaIbu: row[1] || "",
+            umur: parseInt(row[2]) || 0,
+            nik: row[3] || "",
+            alamat: row[4] || "",
+            puskesmas: row[5] || "",
+            kelurahan: row[6] || "",
+            dusun: row[7] || "",
+            posyandu: row[8] || "",
+            bayiNama: row[9] || "",
+            catatan: row[10] || ""
+          })).filter(m => m.namaIbu);
+        }
+      } catch (e) { console.warn("Client CSV Ibu Menyusui error:", e); }
+
+      if (parsedMbg.length > 0 || parsedIbuHamil.length > 0) {
+        try {
+          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(parsedMbg));
+          localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(parsedIbuHamil));
+          localStorage.setItem("orbit_gizi_local_ibu_hamil", JSON.stringify(parsedIbuHamil));
+          localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
+          localStorage.setItem("orbit_gizi_local_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
+        } catch (e) {}
+
+        return {
+          success: true,
+          beneficiaries: parsedMbg,
+          ibuHamil: parsedIbuHamil,
+          ibuMenyusui: parsedIbuMenyusui,
+          isCsvFallback: true
+        };
+      }
+    }
+  } catch (csvErr) {
+    console.warn("Client-side CSV pull error:", csvErr);
+  }
+
+  // 3. Fallback to server-side autoImport endpoint if Express server exists
   try {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
     const serverRes = await fetch(`${baseUrl}/api/sheets/pull`, {
@@ -728,6 +858,13 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
     });
     if (serverRes.ok) {
       const serverJson = await serverRes.json();
+      if (Array.isArray(serverJson.beneficiaries)) {
+        try {
+          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(serverJson.beneficiaries));
+          if (serverJson.ibuHamil) localStorage.setItem("orbit_gizi_local_ibu_hamil", JSON.stringify(serverJson.ibuHamil));
+          if (serverJson.ibuMenyusui) localStorage.setItem("orbit_gizi_local_ibu_menyusui", JSON.stringify(serverJson.ibuMenyusui));
+        } catch (e) {}
+      }
       return {
         success: true,
         beneficiaries: serverJson.beneficiaries || [],
@@ -737,7 +874,7 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
       };
     }
   } catch (serverErr) {
-    console.error("Server-side pull fallback error:", serverErr);
+    console.warn("Server-side pull fallback error:", serverErr);
   }
 
   throw new Error(`Akses ke Google Sheet ditolak / gagal. Pastikan spreadsheet Google Anda disetel "Anyone with the link can view/edit" di Google Drive agar dapat diakses oleh semua akun operator.`);

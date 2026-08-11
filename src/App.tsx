@@ -563,21 +563,12 @@ export default function App() {
     try {
       let activeSheetId = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE"; // Always use master sheet ID
       
-      // Removed: local storage and config API fallback
-      
-      if (!activeSheetId) {
-         // If there's no sheet id, just push to create one
-         await handlePushToSheetsBackground();
-         setSyncSuccess(true);
-         setTimeout(() => setSyncSuccess(false), 5000);
-         return;
-      }
-      
-      const sheetData = await pullFromGoogleSheets(token, activeSheetId);
+      const sheetData = await pullFromGoogleSheets(token || "", activeSheetId);
       
       if (sheetData && sheetData.success) {
-        setBeneficiaries(sheetData.beneficiaries);
-        // We'll trigger a refresh to update other parts of the app that depend on backend state
+        if (Array.isArray(sheetData.beneficiaries)) {
+          setBeneficiaries(sheetData.beneficiaries);
+        }
       }
       
       setRefreshTrigger(prev => prev + 1);
@@ -590,10 +581,15 @@ export default function App() {
       setSyncingSheets(false);
     }
   };
+
   const handleSyncSheets = async () => {
     if (!googleToken) {
-      // Prompt login first
-      await handleGoogleLogin();
+      // Try direct sync first (which pulls public CSV or triggers auth if needed)
+      try {
+        await handleSyncSheetsDirect("");
+      } catch {
+        await handleGoogleLogin();
+      }
     } else {
       await handleSyncSheetsDirect(googleToken);
     }
