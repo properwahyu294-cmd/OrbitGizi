@@ -145,8 +145,14 @@ function saveStoreToDisk() {
 loadStoreFromDisk();
 
 function parseCsv(text: string): string[][] {
+  // Try to detect if it's comma, semicolon or tab separated
+  const firstLine = text.split(/\r?\n/)[0] || "";
+  const delimiter = firstLine.includes('\t') ? '\t' : (firstLine.includes(';') ? ';' : ',');
+  
   return parse(text, {
     skip_empty_lines: true,
+    delimiter: delimiter,
+    relax_column_count: true
   });
 }
 
