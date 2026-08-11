@@ -206,7 +206,7 @@ export default function LogoOrbitGizi({
                 className="flex items-center space-x-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 px-3 py-2 rounded-xl transition-colors cursor-pointer shadow-3xs"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${syncingSheets ? "animate-spin" : ""}`} />
-                <span>{syncingSheets ? "Proses..." : "Sinkron"}</span>
+                <span>{syncingSheets ? "Memuat..." : "Muat Data Sheet"}</span>
               </button>
             )}
 
