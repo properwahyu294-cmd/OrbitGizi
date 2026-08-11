@@ -511,6 +511,16 @@ app.get("/api/ibu-hamil", (req, res) => {
   res.json({ success: true, list: ibuHamil });
 });
 
+// API: Batch update ibu hamil
+app.post("/api/ibu-hamil/batch", (req, res) => {
+  const { ibuHamil: newList } = req.body;
+  if (Array.isArray(newList)) {
+    ibuHamil = newList;
+    saveStoreToDisk();
+  }
+  res.json({ success: true });
+});
+
 // API: Save or Update Ibu Hamil
 app.post("/api/ibu-hamil/save", (req, res) => {
   const item = req.body;
@@ -541,6 +551,16 @@ app.post("/api/ibu-hamil/delete", (req, res) => {
 // API: Get Ibu Menyusui List
 app.get("/api/ibu-menyusui", (req, res) => {
   res.json({ success: true, list: ibuMenyusui });
+});
+
+// API: Batch update ibu menyusui
+app.post("/api/ibu-menyusui/batch", (req, res) => {
+  const { ibuMenyusui: newList } = req.body;
+  if (Array.isArray(newList)) {
+    ibuMenyusui = newList;
+    saveStoreToDisk();
+  }
+  res.json({ success: true });
 });
 
 // API: Save or Update Ibu Menyusui

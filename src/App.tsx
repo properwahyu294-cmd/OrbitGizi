@@ -510,6 +510,7 @@ export default function App() {
       if (result.spreadsheetUrl) {
         await updateAdminSheetConfigApi(result.spreadsheetUrl);
       }
+      setRefreshTrigger(prev => prev + 1);
       setSyncSuccess(true);
       setTimeout(() => setSyncSuccess(false), 5000);
     } catch (err: any) {
