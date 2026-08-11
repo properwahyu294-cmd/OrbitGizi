@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import cors from "cors";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
@@ -10,6 +11,7 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
+app.use(cors());
 app.use(express.json());
 
 // File path for persistent database store
@@ -173,11 +175,10 @@ async function autoImportFromGoogleSheet() {
     const mbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG`);
     if (mbgRes.ok) {
       const csvText = await mbgRes.text();
-      console.log('MBG CSV Sample:', csvText.substring(0, 100));
+      console.log('MBG CSV Response (first 200 chars):', csvText.substring(0, 200));
       const rows = parseCsv(csvText);
-      console.log('MBG Headers:', rows[0]);
-      console.log('MBG Row 1:', rows[1]);
-      console.log('MBG Row 2:', rows[2]);
+      console.log('MBG Full Headers:', rows[0]);
+      console.log('MBG Data Rows count:', rows.length - 1);
       const dataRows = rows.slice(1).filter(r => r.length > 0 && r.some(c => c !== ""));
       if (dataRows.length > 0) {
         const sheetBens = dataRows.map((row, idx) => ({
