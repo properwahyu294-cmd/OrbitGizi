@@ -24,28 +24,17 @@ export const AdminManagementModal: React.FC<AdminManagementModalProps> = ({
 
   if (!isOpen) return null;
 
+  const isSuperAdmin = currentUserEmail?.toLowerCase() === "properwahyu294@gmail.com";
   const isCurrentUserAdmin = currentUserEmail
-    ? registeredAdmins.some(a => a.toLowerCase() === currentUserEmail.toLowerCase())
+    ? registeredAdmins.some(a => a.toLowerCase() === currentUserEmail.toLowerCase()) || isSuperAdmin
     : false;
-
-  const handleRegisterCurrentEmail = async () => {
-    if (!currentUserEmail) return;
-    setLoading(true);
-    setError(null);
-    setSuccessMsg(null);
-    try {
-      const res = await registerAdminEmailApi(currentUserEmail);
-      onAdminsUpdated(res.registeredAdmins);
-      setSuccessMsg(`Email ${currentUserEmail} berhasil didaftarkan sebagai Admin / Nakes!`);
-    } catch (err: any) {
-      setError(err.message || "Gagal mendaftarkan email.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleRegisterNewEmail = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isCurrentUserAdmin) {
+      setError("Hanya Admin Terdaftar atau Super Admin (properwahyu294@gmail.com) yang berhak menambah admin baru.");
+      return;
+    }
     if (!newEmail || !newEmail.includes("@")) {
       setError("Masukkan alamat email yang valid.");
       return;
@@ -66,6 +55,10 @@ export const AdminManagementModal: React.FC<AdminManagementModalProps> = ({
   };
 
   const handleDeleteAdmin = async (emailToDelete: string) => {
+    if (!isCurrentUserAdmin) {
+      setError("Hanya Admin Terdaftar atau Super Admin yang dapat menghapus email admin.");
+      return;
+    }
     if (registeredAdmins.length <= 1) {
       alert("Harus menyisakan setidaknya 1 email Admin terdaftar.");
       return;
@@ -131,14 +124,15 @@ export const AdminManagementModal: React.FC<AdminManagementModalProps> = ({
             </div>
 
             {currentUserEmail && !isCurrentUserAdmin && (
-              <button
-                onClick={handleRegisterCurrentEmail}
-                disabled={loading}
-                className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
-              >
-                <UserPlus className="h-4 w-4" />
-                <span>Daftarkan Email Saya ({currentUserEmail}) Sebagai Admin</span>
-              </button>
+              <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-xs space-y-1">
+                <div className="font-bold flex items-center space-x-1.5">
+                  <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+                  <span>Akses Pendaftaran Dibatasi</span>
+                </div>
+                <p className="text-[11px] leading-relaxed">
+                  Email Anda belum terdaftar sebagai Admin. Hanya Admin Utama (<strong>properwahyu294@gmail.com</strong>) atau Admin yang sudah terdaftar yang berhak mendaftarkan email Anda ke dalam sistem.
+                </p>
+              </div>
             )}
           </div>
 
@@ -157,32 +151,38 @@ export const AdminManagementModal: React.FC<AdminManagementModalProps> = ({
             </div>
           )}
 
-          {/* Add New Admin Form */}
-          <form onSubmit={handleRegisterNewEmail} className="space-y-3">
-            <label className="block text-xs font-bold text-slate-700">
-              Tambah Email Admin / Petugas Nakes Lainnya:
-            </label>
-            <div className="flex items-center space-x-2">
-              <div className="relative flex-1">
-                <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-3" />
-                <input
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="contoh: petugas.puskesmas@gmail.com"
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none"
-                />
+          {/* Add New Admin Form (Only for Admin / Super Admin) */}
+          {isCurrentUserAdmin ? (
+            <form onSubmit={handleRegisterNewEmail} className="space-y-3">
+              <label className="block text-xs font-bold text-slate-700">
+                Tambah Email Admin / Petugas Nakes Lainnya:
+              </label>
+              <div className="flex items-center space-x-2">
+                <div className="relative flex-1">
+                  <Mail className="h-4 w-4 text-slate-400 absolute left-3 top-3" />
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="contoh: petugas.puskesmas@gmail.com"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="py-2 px-4 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Tambah</span>
+                </button>
               </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="py-2 px-4 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 shrink-0"
-              >
-                <UserPlus className="h-4 w-4" />
-                <span>Tambah</span>
-              </button>
+            </form>
+          ) : (
+            <div className="p-3.5 bg-slate-100/80 rounded-xl border border-slate-200 text-xs text-slate-600 font-medium">
+              Form pendaftaran admin baru hanya dapat diakses oleh Admin Terdaftar & Super Admin (properwahyu294@gmail.com).
             </div>
-          </form>
+          )}
 
           {/* List of Registered Admin Emails */}
           <div className="space-y-3 pt-2 border-t border-slate-200">
@@ -210,14 +210,16 @@ export const AdminManagementModal: React.FC<AdminManagementModalProps> = ({
                         </span>
                       )}
                     </div>
-                    <button
-                      onClick={() => handleDeleteAdmin(adminEmail)}
-                      disabled={loading}
-                      title="Hapus dari Admin"
-                      className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    {isCurrentUserAdmin && (
+                      <button
+                        onClick={() => handleDeleteAdmin(adminEmail)}
+                        disabled={loading}
+                        title="Hapus dari Admin"
+                        className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
                 );
               })}
