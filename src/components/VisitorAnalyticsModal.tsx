@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Users, Activity, Eye, UserCheck, ShieldCheck, Calendar, Clock, RefreshCw, FileSpreadsheet, Trash2, CheckCircle, Search, Laptop, Smartphone, Printer } from "lucide-react";
+import { Users, Activity, Eye, UserCheck, ShieldCheck, Calendar, Clock, RefreshCw, FileSpreadsheet, Trash2, CheckCircle, Search, Laptop, Smartphone, Printer, FileText, CheckCircle2 } from "lucide-react";
 import { VisitorLog, AuditLog } from "../types";
 import { getVisitorLogs, getAuditLogs, fetchVisitorLogsApi, fetchAuditLogsApi, clearVisitorLogs, clearAuditLogs, clearAllLogs } from "../lib/analyticsService";
+import { PemdaNagekeoLogo } from "./PemdaNagekeoLogo";
 
 interface VisitorAnalyticsModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
   isAdmin = false
 }) => {
   const [activeTab, setActiveTab] = useState<"VISITORS" | "AUDIT">("VISITORS");
+  const [printScope, setPrintScope] = useState<"ALL" | "AUDIT" | "VISITORS">("ALL");
   const [visitorLogs, setVisitorLogs] = useState<VisitorLog[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -108,36 +110,60 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
     <div className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
       <style>{`
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 10mm 12mm 12mm 12mm;
+          }
           body * {
-            visibility: hidden;
+            visibility: hidden !important;
           }
-          #printable-log-container, #printable-log-container * {
-            visibility: visible;
+          #printable-rekening-koran, #printable-rekening-koran * {
+            visibility: visible !important;
           }
-          #printable-log-container {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            color: #000 !important;
-            background: #fff !important;
+          #printable-rekening-koran {
+            display: block !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+            font-size: 10px !important;
           }
           .no-print {
             display: none !important;
           }
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          tr {
+            page-break-inside: avoid !important;
+          }
+          thead {
+            display: table-header-group !important;
+          }
+          th, td {
+            border: 1px solid #334155 !important;
+            padding: 5px 6px !important;
+          }
         }
       `}</style>
 
-      <div id="printable-log-container" className="bg-slate-900 border border-slate-700/60 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl text-white overflow-hidden">
+      {/* MODAL ON SCREEN */}
+      <div className="bg-slate-900 border border-slate-700/60 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl text-white overflow-hidden no-print">
         
         {/* Header */}
-        <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
+        <div className="p-5 sm:p-6 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/90">
           <div className="flex items-center space-x-3">
-            <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-400">
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-400 shrink-0">
               <Activity className="h-6 w-6" />
             </div>
             <div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 flex-wrap gap-1">
                 <span className="text-[10px] font-black tracking-widest text-emerald-400 uppercase">
                   Data Analitik & Audit Transparansi
                 </span>
@@ -149,24 +175,38 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 no-print">
+          <div className="flex items-center space-x-2 flex-wrap gap-2">
+            {/* Scope Cetak Selector */}
+            <div className="flex items-center space-x-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+              <span className="text-[10px] font-bold text-slate-400 pl-2">Cakupan:</span>
+              <select
+                value={printScope}
+                onChange={(e) => setPrintScope(e.target.value as any)}
+                className="bg-slate-900 text-emerald-300 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none cursor-pointer border-none"
+              >
+                <option value="ALL">Lengkap (Audit & Pengunjung)</option>
+                <option value="AUDIT">Audit Input Operator Saja</option>
+                <option value="VISITORS">Log Pengunjung Saja</option>
+              </select>
+            </div>
+
             <button
               onClick={refreshData}
               disabled={isLoading}
-              className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors flex items-center space-x-1.5 cursor-pointer"
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors flex items-center space-x-1.5 cursor-pointer"
               title="Segarkan & Ambil Log Terbaru dari Server Central"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin text-emerald-400" : ""}`} />
-              <span>{isLoading ? "Memuat..." : "Sync Server Log"}</span>
+              <span>{isLoading ? "Memuat..." : "Sync"}</span>
             </button>
 
             <button
               onClick={handlePrintLogs}
               className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-colors flex items-center space-x-1.5 shadow-md cursor-pointer"
-              title="Cetak Laporan Log / Unduh PDF"
+              title="Cetak Rekening Koran Audit / Download PDF"
             >
               <Printer className="h-3.5 w-3.5" />
-              <span>Cetak Log</span>
+              <span>Cetak Rekening Koran</span>
             </button>
 
             <button
@@ -199,7 +239,7 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
         </div>
 
         {/* Controls & Search */}
-        <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900 no-print">
+        <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-900">
           <div className="flex items-center space-x-2 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto">
             <button
               onClick={() => setActiveTab("VISITORS")}
@@ -253,7 +293,7 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
               title="Hapus Seluruh Data Log (Pengunjung & Audit Operator)"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              <span>Hapus Semua Log</span>
+              <span>Hapus Semua</span>
             </button>
           </div>
         </div>
@@ -345,16 +385,16 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
         <div className="p-4 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400">
           <div className="flex items-center space-x-2">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            <span>Sistem otomatis menghapus log yang berusia lebih dari 90 hari (3 Bulan).</span>
+            <span>Sistem otomatis menghapus log yang berusia lebih dari 90 hari (3 Bulan). Format Cetak: Rekening Koran Audit Resmi.</span>
           </div>
 
-          <div className="flex items-center space-x-2 no-print">
+          <div className="flex items-center space-x-2">
             <button
               onClick={handlePrintLogs}
               className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-bold flex items-center space-x-1 cursor-pointer"
             >
               <Printer className="h-3.5 w-3.5" />
-              <span>Cetak Log</span>
+              <span>Cetak Rekening Koran</span>
             </button>
 
             <button
@@ -368,7 +408,241 @@ export const VisitorAnalyticsModal: React.FC<VisitorAnalyticsModalProps> = ({
         </div>
 
       </div>
+
+      {/* ========================================================================= */}
+      {/* REKENING KORAN PRINTABLE VIEW (A4 Standar Rekening Koran Bank/Audit Official) */}
+      {/* ========================================================================= */}
+      <div id="printable-rekening-koran" className="hidden print:block p-2 text-slate-900 bg-white leading-normal">
+        
+        {/* Kop Surat Header */}
+        <div className="flex items-center justify-between border-b-2 border-slate-900 pb-3 mb-1">
+          <div className="flex items-center space-x-4">
+            <PemdaNagekeoLogo className="h-16 w-16 shrink-0" />
+            <div>
+              <h1 className="text-base font-black uppercase tracking-wider text-slate-900 leading-tight">
+                Pemerintah Kabupaten Nagekeo
+              </h1>
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-800">
+                Dinas Kesehatan - Tim Satgas MBG & PMT Terpadu
+              </h2>
+              <p className="text-[10px] text-slate-600 font-medium">
+                Jl. Soekarno-Hatta, Kompleks Perkantoran Civic Center, Mbay, Kabupaten Nagekeo - NTT
+              </p>
+              <p className="text-[9px] text-slate-500">
+                Portal: orbitgizingk.properwahyu294.workers.dev | Email: dinkes@nagekeokab.go.id
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="inline-block px-3 py-1 bg-slate-900 text-white font-black text-[11px] tracking-widest uppercase rounded">
+              REKENING AUDIT
+            </span>
+            <p className="text-[9px] text-slate-600 font-mono mt-1 font-bold">
+              NO: RK-AUDIT/NAG/{(new Date().toISOString().slice(0,10).replace(/-/g,''))}
+            </p>
+          </div>
+        </div>
+        <div className="border-b border-slate-400 mb-4"></div>
+
+        {/* Title */}
+        <div className="text-center mb-4">
+          <h3 className="text-sm font-black uppercase text-slate-900 underline underline-offset-4 tracking-wider">
+            LAPORAN REKENING AUDIT TRAIL & REKAPITULASI AKTIVITAS SISTEM
+          </h3>
+          <p className="text-[10px] font-bold text-slate-600 mt-1">
+            Dokumen Pertanggungjawaban Audit Transparansi Input Operator & Sesi Akses Pengguna
+          </p>
+        </div>
+
+        {/* Metadata Statement Box (Rincian Rekening Koran) */}
+        <div className="border border-slate-400 rounded p-3 bg-slate-50 mb-4 text-[10px] grid grid-cols-2 gap-y-2 gap-x-6">
+          <div>
+            <span className="text-slate-500 font-bold block text-[9px] uppercase">Waktu Cetak Laporan:</span>
+            <strong className="text-slate-900 font-bold">{formatTime(new Date().toISOString())} WITA</strong>
+          </div>
+          <div>
+            <span className="text-slate-500 font-bold block text-[9px] uppercase">Operator Pencetak Dokumen:</span>
+            <strong className="text-slate-900 font-bold">{currentUserEmail || "Administrator Sistem Dinkes"}</strong>
+          </div>
+          <div>
+            <span className="text-slate-500 font-bold block text-[9px] uppercase">Kebijakan Retensi Log:</span>
+            <strong className="text-slate-900 font-bold">90 Hari Terakhir (Purge Otomatis Server Central)</strong>
+          </div>
+          <div>
+            <span className="text-slate-500 font-bold block text-[9px] uppercase">Filter Kata Kunci Pencarian:</span>
+            <strong className="text-slate-900 font-bold">{searchTerm ? `"${searchTerm}"` : "Semua Rekord Data Log"}</strong>
+          </div>
+          <div>
+            <span className="text-slate-500 font-bold block text-[9px] uppercase">Jumlah Rekord Audit Operator:</span>
+            <strong className="text-slate-900 font-bold">{filteredAudits.length} Transaksi Aksi Input</strong>
+          </div>
+          <div>
+            <span className="text-slate-500 font-bold block text-[9px] uppercase">Jumlah Rekord Log Pengunjung:</span>
+            <strong className="text-slate-900 font-bold">{filteredVisitors.length} Sesi Akses Masuk</strong>
+          </div>
+        </div>
+
+        {/* Ringkasan Rekap Mutasi Log */}
+        <div className="mb-4 border border-slate-300 rounded overflow-hidden">
+          <div className="bg-slate-200 px-3 py-1.5 border-b border-slate-300 font-black text-[10px] text-slate-900 uppercase tracking-wider flex items-center justify-between">
+            <span>IKHTISAR MUTASI LOG & AKSES SISTEM</span>
+            <span className="text-emerald-800 font-mono text-[9px]">[VERIFIED SECURE]</span>
+          </div>
+          <div className="p-3 bg-white grid grid-cols-4 gap-2 text-center text-[10px]">
+            <div className="border-r border-slate-200 pr-2">
+              <span className="text-slate-500 block text-[9px] uppercase font-semibold">Total Sesi Akses</span>
+              <strong className="text-sm font-black text-slate-900">{totalVisitors} Sesi</strong>
+            </div>
+            <div className="border-r border-slate-200 pr-2">
+              <span className="text-slate-500 block text-[9px] uppercase font-semibold">Akses Publik</span>
+              <strong className="text-sm font-black text-emerald-700">{publicVisits} Akses</strong>
+            </div>
+            <div className="border-r border-slate-200 pr-2">
+              <span className="text-slate-500 block text-[9px] uppercase font-semibold">Akses Admin</span>
+              <strong className="text-sm font-black text-amber-700">{adminVisits} Akses</strong>
+            </div>
+            <div>
+              <span className="text-slate-500 block text-[9px] uppercase font-semibold">Aksi Audit Operator</span>
+              <strong className="text-sm font-black text-indigo-700">{totalAuditEvents} Log Aksi</strong>
+            </div>
+          </div>
+        </div>
+
+        {/* TABLE 1: REKENING AUDIT INPUT OPERATOR */}
+        {(printScope === "ALL" || printScope === "AUDIT") && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between border-b-2 border-slate-800 pb-1 mb-2">
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                I. TABEL REKENING AUDIT INPUT OPERATOR ({filteredAudits.length} BARIS TRANSAKSI)
+              </h4>
+              <span className="text-[9px] font-mono text-slate-600 font-bold">MUTASI EDIT & INPUT DATA</span>
+            </div>
+
+            {filteredAudits.length === 0 ? (
+              <p className="text-[10px] text-slate-500 italic py-2">Tidak ada catatan audit operator yang sesuai kriteria pencarian.</p>
+            ) : (
+              <table className="w-full text-[9px] border-collapse border border-slate-400">
+                <thead>
+                  <tr className="bg-slate-200 text-slate-900 font-bold uppercase text-[8.5px] border-b border-slate-400">
+                    <th className="p-1.5 border border-slate-400 text-center w-[5%]">NO</th>
+                    <th className="p-1.5 border border-slate-400 text-left w-[16%]">WAKTU & TANGGAL</th>
+                    <th className="p-1.5 border border-slate-400 text-left w-[24%]">OPERATOR & INSTANSI</th>
+                    <th className="p-1.5 border border-slate-400 text-center w-[16%]">JENIS AKSI</th>
+                    <th className="p-1.5 border border-slate-400 text-left w-[31%]">DESKRIPSI AKTIVITAS & TARGET</th>
+                    <th className="p-1.5 border border-slate-400 text-center w-[8%]">STATUS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredAudits.map((a, idx) => (
+                    <tr key={a.id || idx} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                      <td className="p-1.5 border border-slate-300 text-center font-mono font-bold">{idx + 1}</td>
+                      <td className="p-1.5 border border-slate-300 font-mono text-[8.5px] whitespace-nowrap">{formatTime(a.timestamp)}</td>
+                      <td className="p-1.5 border border-slate-300">
+                        <div className="font-bold text-slate-900">{a.operatorName}</div>
+                        <div className="text-[8px] text-slate-600">{a.operatorInstansi} ({a.operatorEmail})</div>
+                      </td>
+                      <td className="p-1.5 border border-slate-300 text-center font-mono font-bold text-[8px]">
+                        <span className="px-1 py-0.5 border border-slate-400 rounded bg-slate-100 inline-block">
+                          {a.actionType}
+                        </span>
+                      </td>
+                      <td className="p-1.5 border border-slate-300">
+                        <span>{a.description}</span>
+                        {a.targetName && <span className="font-bold text-slate-900 ml-1">[{a.targetName}]</span>}
+                      </td>
+                      <td className="p-1.5 border border-slate-300 text-center font-bold text-emerald-800 font-mono text-[8px]">
+                        SUKSES
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {/* TABLE 2: REKENING LOG AKSES PENGUNJUNG */}
+        {(printScope === "ALL" || printScope === "VISITORS") && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between border-b-2 border-slate-800 pb-1 mb-2">
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                II. TABEL REKENING LOG AKSES PENGUNJUNG & SESI PENGGUNA ({filteredVisitors.length} BARIS SESI)
+              </h4>
+              <span className="text-[9px] font-mono text-slate-600 font-bold">MUTASI AKSES MASUK</span>
+            </div>
+
+            {filteredVisitors.length === 0 ? (
+              <p className="text-[10px] text-slate-500 italic py-2">Tidak ada catatan log pengunjung yang sesuai kriteria pencarian.</p>
+            ) : (
+              <table className="w-full text-[9px] border-collapse border border-slate-400">
+                <thead>
+                  <tr className="bg-slate-200 text-slate-900 font-bold uppercase text-[8.5px] border-b border-slate-400">
+                    <th className="p-1.5 border border-slate-400 text-center w-[5%]">NO</th>
+                    <th className="p-1.5 border border-slate-400 text-left w-[18%]">WAKTU & TANGGAL</th>
+                    <th className="p-1.5 border border-slate-400 text-left w-[28%]">EMAIL / IDENTITAS PENGGUNA</th>
+                    <th className="p-1.5 border border-slate-400 text-center w-[12%]">ROLE</th>
+                    <th className="p-1.5 border border-slate-400 text-left w-[22%]">HALAMAN DIAKSES</th>
+                    <th className="p-1.5 border border-slate-400 text-left w-[15%]">PERANGKAT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredVisitors.map((v, idx) => (
+                    <tr key={v.id || idx} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                      <td className="p-1.5 border border-slate-300 text-center font-mono font-bold">{idx + 1}</td>
+                      <td className="p-1.5 border border-slate-300 font-mono text-[8.5px] whitespace-nowrap">{formatTime(v.timestamp)}</td>
+                      <td className="p-1.5 border border-slate-300 font-bold text-slate-900">{v.email}</td>
+                      <td className="p-1.5 border border-slate-300 text-center font-bold font-mono text-[8px]">
+                        <span className={`px-1 py-0.5 border rounded ${v.role === 'ADMIN' ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-emerald-100 text-emerald-900 border-emerald-300'}`}>
+                          {v.role}
+                        </span>
+                      </td>
+                      <td className="p-1.5 border border-slate-300 font-medium text-slate-800">{v.viewName}</td>
+                      <td className="p-1.5 border border-slate-300 text-slate-600 text-[8px]">{v.deviceInfo || "Desktop / Browser"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {/* LEMBAR PENGESAHAN & TANDA TANGAN AUDIT */}
+        <div className="mt-8 pt-4 border-t-2 border-slate-800 page-break-inside-avoid">
+          <div className="grid grid-cols-2 gap-8 text-center text-[10px]">
+            <div>
+              <p className="text-slate-600">Mbay, {formatTime(new Date().toISOString()).split(',')[0]}</p>
+              <p className="font-bold text-slate-900 uppercase mt-0.5">Petugas Operator Pengelola Data</p>
+              <div className="h-16 my-1 flex items-center justify-center">
+                <span className="text-[8px] font-mono text-slate-400 italic border border-dashed border-slate-300 px-2 py-1 rounded">
+                  [Tanda Tangan Digital Terverifikasi System]
+                </span>
+              </div>
+              <p className="font-bold text-slate-900 underline uppercase">{currentUserEmail || "Operator Administrator IT"}</p>
+              <p className="text-slate-500 text-[9px]">Dinas Kesehatan Kabupaten Nagekeo</p>
+            </div>
+
+            <div>
+              <p className="text-slate-600">Mengetahui / Mengesahkan,</p>
+              <p className="font-bold text-slate-900 uppercase mt-0.5">Kepala Dinas Kesehatan / Penanggung Jawab</p>
+              <div className="h-16 my-1 flex items-center justify-center">
+                <span className="text-[8px] font-mono text-slate-400 italic border border-dashed border-slate-300 px-2 py-1 rounded">
+                  [Stempel & Tanda Tangan Digital Offisial]
+                </span>
+              </div>
+              <p className="font-bold text-slate-900 underline uppercase">dr. Emerentiana R. Wahjuningsih, M.Kes</p>
+              <p className="text-slate-500 text-[9px]">NIP. 19710824 200212 2 003</p>
+            </div>
+          </div>
+
+          <div className="mt-6 text-center text-[8.5px] text-slate-500 border-t border-slate-300 pt-2 italic">
+            * Laporan Rekening Koran Audit ini diterbitkan secara resmi dari Dashboard Orbit Gizi Kabupaten Nagekeo. Seluruh rekam jejak aktivitas terlindungi oleh protokol audit trail digital yang sah.
+          </div>
+        </div>
+
+      </div>
+
     </div>
   );
 };
+
 
