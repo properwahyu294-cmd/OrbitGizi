@@ -1177,43 +1177,103 @@ export async function saveBannersApi(type: "landing" | "dashboard", images: any[
   }
 }
 
+function getLocalAdmins(): string[] {
+  try {
+    const raw = localStorage.getItem("orbit_gizi_registered_admins");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return ["properwahyu294@gmail.com"];
+}
+
+function saveLocalAdmins(list: string[]) {
+  try {
+    localStorage.setItem("orbit_gizi_registered_admins", JSON.stringify(list));
+  } catch (e) {}
+}
+
 export async function getRegisteredAdminsApi(): Promise<{ registeredAdmins: string[] }> {
+  const localList = getLocalAdmins();
   try {
     const res = await fetch("/api/admins");
     if (res.ok) {
-      const json = await res.json();
-      return { registeredAdmins: json.registeredAdmins || ["properwahyu294@gmail.com"] };
+      const text = await res.text();
+      if (text) {
+        const json = JSON.parse(text);
+        if (Array.isArray(json.registeredAdmins) && json.registeredAdmins.length > 0) {
+          const merged = Array.from(new Set([...json.registeredAdmins, ...localList]));
+          saveLocalAdmins(merged);
+          return { registeredAdmins: merged };
+        }
+      }
     }
   } catch (e) {
     console.warn("Failed to fetch registered admins from API:", e);
   }
-  return { registeredAdmins: ["properwahyu294@gmail.com"] };
+  return { registeredAdmins: localList };
 }
 
 export async function registerAdminEmailApi(email: string): Promise<{ registeredAdmins: string[] }> {
-  const res = await fetch("/api/admins/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email })
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error || "Gagal mendaftarkan email admin.");
+  const cleanEmail = email.trim().toLowerCase();
+  const currentList = getLocalAdmins();
+  if (!currentList.some(e => e.toLowerCase() === cleanEmail)) {
+    currentList.push(cleanEmail);
   }
-  return await res.json();
+  saveLocalAdmins(currentList);
+
+  try {
+    const res = await fetch("/api/admins/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: cleanEmail })
+    });
+    if (res.ok) {
+      const text = await res.text();
+      if (text) {
+        const json = JSON.parse(text);
+        if (Array.isArray(json.registeredAdmins)) {
+          const merged = Array.from(new Set([...json.registeredAdmins, ...currentList]));
+          saveLocalAdmins(merged);
+          return { registeredAdmins: merged };
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Server admin register failed, using local storage:", e);
+  }
+
+  return { registeredAdmins: currentList };
 }
 
 export async function deleteAdminEmailApi(email: string): Promise<{ registeredAdmins: string[] }> {
-  const res = await fetch("/api/admins/delete", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email })
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error || "Gagal menghapus email admin.");
+  const cleanEmail = email.trim().toLowerCase();
+  let currentList = getLocalAdmins();
+  currentList = currentList.filter(e => e.toLowerCase() !== cleanEmail);
+  saveLocalAdmins(currentList);
+
+  try {
+    const res = await fetch("/api/admins/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: cleanEmail })
+    });
+    if (res.ok) {
+      const text = await res.text();
+      if (text) {
+        const json = JSON.parse(text);
+        if (Array.isArray(json.registeredAdmins)) {
+          saveLocalAdmins(json.registeredAdmins);
+          return { registeredAdmins: json.registeredAdmins };
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Server admin delete failed, using local storage:", e);
   }
-  return await res.json();
+
+  return { registeredAdmins: currentList };
 }
 
 
