@@ -2,7 +2,7 @@
   "adminSheetUrl": "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115",
   "adminSheetId": "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE",
   "kabupatenName": "Kabupaten Nagekeo",
-  "lastUpdated": "2026-08-11T00:23:21.630Z",
+  "lastUpdated": "2026-08-11T05:31:09.286Z",
   "weights": {
     "pilar1": 0.1,
     "pilar2": 0.3,
@@ -11,12 +11,122 @@
     "pilar5": 0.25
   },
   "villages": [],
-  "beneficiaries": [],
+  "beneficiaries": [
+    {
+      "id": "ben_1786162554268",
+      "name": "GUBERTA SURYATI",
+      "parentName": "YOLENTA SENA",
+      "nik": "5207228911",
+      "gender": "Perempuan",
+      "age": 4,
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "Desa Nangateke",
+        "dusun": "Dusun Nangateke",
+        "posyandu": "Posyandu Nangateke"
+      },
+      "attendanceStatus": "Mengunjungi Posyandu",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "-",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786162078860",
+      "name": "FEBRIANTI OTI",
+      "parentName": "ignasus dobo",
+      "nik": "5318604102221543",
+      "gender": "Perempuan",
+      "age": 4,
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "Desa Nangateke",
+        "dusun": "Dusun Nangateke",
+        "posyandu": "Posyandu Nangateke"
+      },
+      "attendanceStatus": "Tidak Mengunjungi",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "-",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786161824333",
+      "name": "ADRIANUS SA.A",
+      "parentName": "MERSIANA ERE",
+      "nik": "5318603011224585",
+      "gender": "Laki-laki",
+      "age": 4,
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "Desa Nangateke",
+        "dusun": "Dusun Nangateke",
+        "posyandu": "Posyandu Nangateke"
+      },
+      "attendanceStatus": "Mengunjungi Posyandu",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "-",
+      "weightRecords": []
+    }
+  ],
   "ibuHamil": [],
   "ibuMenyusui": [],
   "bannerImages": [],
   "dashboardBannerImages": [],
   "visitorLogs": [
+    {
+      "id": "v_1786425983485_v025",
+      "timestamp": "2026-08-11T05:26:23.485Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786425983312_hwn6",
+      "timestamp": "2026-08-11T05:26:23.312Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
     {
       "id": "v_1786407803350_0l9x",
       "timestamp": "2026-08-11T00:23:23.350Z",

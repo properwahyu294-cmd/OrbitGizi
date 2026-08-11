@@ -4,6 +4,7 @@ import fs from "fs";
 import cors from "cors";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import { parse } from 'csv-parse/sync';
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -144,41 +145,24 @@ function saveStoreToDisk() {
 loadStoreFromDisk();
 
 function parseCsv(text: string): string[][] {
-  const lines = text.split(/\r?\n/);
-  return lines.map(line => {
-    const row: string[] = [];
-    let inQuotes = false;
-    let entry = "";
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (char === '"') {
-        if (inQuotes && line[i + 1] === '"') {
-          entry += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (char === ',' && !inQuotes) {
-        row.push(entry.trim());
-        entry = "";
-      } else {
-        entry += char;
-      }
-    }
-    row.push(entry.trim());
-    return row;
+  return parse(text, {
+    skip_empty_lines: true,
   });
 }
 
 async function autoImportFromGoogleSheet() {
   try {
-    const mbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG`);
+    const mbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${adminSheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    console.error('MBG Res Status:', mbgRes.status, mbgRes.statusText);
     if (mbgRes.ok) {
       const csvText = await mbgRes.text();
-      console.log('MBG CSV Response (first 200 chars):', csvText.substring(0, 200));
+      console.error('MBG CSV Response (first 200 chars):', csvText.substring(0, 200));
       const rows = parseCsv(csvText);
-      console.log('MBG Full Headers:', rows[0]);
-      console.log('MBG Data Rows count:', rows.length - 1);
+      (global as any).lastMbgRowsLength = rows.length;
       const dataRows = rows.slice(1).filter(r => r.length > 0 && r.some(c => c !== ""));
       if (dataRows.length > 0) {
         const sheetBens = dataRows.map((row, idx) => ({
@@ -615,7 +599,7 @@ function buildAppData() {
 app.get("/api/data", async (req, res) => {
   await autoImportFromGoogleSheet();
   const aggregatedData = buildAppData();
-  res.json(aggregatedData);
+  res.json({ ...aggregatedData, debug_rows_length: (global as any).lastMbgRowsLength });
 });
 
 // API: Get Beneficiaries List
