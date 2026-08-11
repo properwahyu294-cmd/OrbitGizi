@@ -200,6 +200,14 @@ export default function App() {
   const [syncError, setSyncError] = useState<string | null>(null);
   const [syncSuccess, setSyncSuccess] = useState<boolean>(false);
 
+  // Publish Permission Trigger States
+  const [isPublicPublished, setIsPublicPublished] = useState<boolean>(() => {
+    return localStorage.getItem("orbit_gizi_is_public_published") !== "false";
+  });
+  const [lastPublishedAt, setLastPublishedAt] = useState<string>(() => {
+    return localStorage.getItem("orbit_gizi_last_published") || new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) + " WITA";
+  });
+
   // Form states for Weights config
   const [weightP1, setWeightP1] = useState<number>(10);
   const [weightP2, setWeightP2] = useState<number>(30);
@@ -603,6 +611,33 @@ export default function App() {
     }
   };
 
+  // Auto-sync public sheet data when public dashboard is active or for non-admin visitors
+  useEffect(() => {
+    if (showPublicDashboard || !isAdmin) {
+      handleSyncSheetsDirect("");
+    }
+  }, [showPublicDashboard, isAdmin]);
+
+  const handleRefreshPublicSheet = async () => {
+    await handleSyncSheetsDirect("");
+  };
+
+  const handlePublishToPublic = async () => {
+    setIsPublicPublished(true);
+    const nowStr = new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) + " WITA";
+    setLastPublishedAt(nowStr);
+    localStorage.setItem("orbit_gizi_last_published", nowStr);
+    localStorage.setItem("orbit_gizi_is_public_published", "true");
+
+    await handleSyncSheets();
+    setSyncSuccess(true);
+  };
+
+  const handleTogglePublishPermission = (active: boolean) => {
+    setIsPublicPublished(active);
+    localStorage.setItem("orbit_gizi_is_public_published", active ? "true" : "false");
+  };
+
   // Handle indicator scores changes
   const handleIndicatorUpdate = async (pilarId: string, indicatorId: string, newScore: number) => {
     // Indicator score is recalculated automatically on the client side from the village data.
@@ -753,6 +788,12 @@ export default function App() {
         beneficiaries={beneficiaries}
         villages={data?.villages || []}
         adminSheetUrl={sheetsSyncUrl || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316"}
+        isPublicPublished={isPublicPublished}
+        lastPublishedAt={lastPublishedAt}
+        onRefreshPublicSheet={handleRefreshPublicSheet}
+        isRefreshingSheet={syncingSheets}
+        onPublishData={handlePublishToPublic}
+        onTogglePublishPermission={handleTogglePublishPermission}
         onBackToLauncher={() => {
           setShowPublicDashboard(false);
           setShowLauncher(true);
@@ -807,6 +848,12 @@ export default function App() {
         beneficiaries={beneficiaries}
         villages={data?.villages || []}
         adminSheetUrl={sheetsSyncUrl || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316"}
+        isPublicPublished={isPublicPublished}
+        lastPublishedAt={lastPublishedAt}
+        onRefreshPublicSheet={handleRefreshPublicSheet}
+        isRefreshingSheet={syncingSheets}
+        onPublishData={handlePublishToPublic}
+        onTogglePublishPermission={handleTogglePublishPermission}
         onBackToLauncher={() => {
           setShowPublicDashboard(false);
           setShowLauncher(true);
@@ -908,6 +955,16 @@ export default function App() {
             >
               <Trash2 className="h-4 w-4 text-rose-600" />
               <span>Manajemen / Reset Data</span>
+            </button>
+
+            <button
+              onClick={handlePublishToPublic}
+              disabled={syncingSheets}
+              className="flex items-center justify-center space-x-1.5 text-xs font-black text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border border-emerald-500/30 px-3.5 py-2 rounded-xl transition-all shadow-md cursor-pointer disabled:opacity-50"
+              title="Pemicu Publikasi: Sinkronkan seluruh data ke Google Sheet & Izinkan Akses Dashboard Publik"
+            >
+              <Sparkles className="h-4 w-4 text-emerald-200" />
+              <span>{syncingSheets ? "Mempublikasikan..." : "🚀 Pemicu Publikasi ke Publik"}</span>
             </button>
 
             <button

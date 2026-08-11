@@ -39,6 +39,12 @@ interface PublicDashboardViewProps {
   beneficiaries?: MBGBeneficiary[];
   villages?: any[];
   adminSheetUrl?: string;
+  isPublicPublished?: boolean;
+  lastPublishedAt?: string;
+  onRefreshPublicSheet?: () => Promise<void>;
+  isRefreshingSheet?: boolean;
+  onPublishData?: () => void;
+  onTogglePublishPermission?: (active: boolean) => void;
 }
 
 export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
@@ -52,13 +58,34 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   orbitGiziData,
   beneficiaries: propBeneficiaries,
   villages: propVillages,
-  adminSheetUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316"
+  adminSheetUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316",
+  isPublicPublished = true,
+  lastPublishedAt,
+  onRefreshPublicSheet,
+  isRefreshingSheet = false,
+  onPublishData,
+  onTogglePublishPermission
 }) => {
   const [activeTab, setActiveTab] = useState<"SUMMARY" | "SHEET_LIVE" | "BENEFICIARIES" | "GALLERY" | "VILLAGES">("SUMMARY");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState<string>("ALL");
   const [iframeKey, setIframeKey] = useState<number>(0);
   const [showVisitorModal, setShowVisitorModal] = useState<boolean>(false);
+  const [isSyncingSheetLocal, setIsSyncingSheetLocal] = useState<boolean>(false);
+
+  const handleManualRefreshSheet = async () => {
+    setIsSyncingSheetLocal(true);
+    try {
+      if (onRefreshPublicSheet) {
+        await onRefreshPublicSheet();
+      }
+      setIframeKey(prev => prev + 1);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSyncingSheetLocal(false);
+    }
+  };
 
   const currentEmail = currentUserEmail || visitorEmail || "Set Email Pengunjung";
   const isAdminEmail = !!currentUserEmail;
@@ -279,6 +306,74 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
           </button>
         </div>
       </header>
+
+      {/* BANNER KONTROL PEMICU & HAK IZIN PUBLIKASI DATA SHEET */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-y border-emerald-500/30 px-4 sm:px-8 py-3.5 shadow-md">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          
+          {/* Status Indicator */}
+          <div className="flex items-center space-x-3">
+            <div className={`p-2 rounded-xl shrink-0 ${isPublicPublished ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40" : "bg-amber-500/20 text-amber-400 border border-amber-500/40"}`}>
+              <Sparkles className="h-5 w-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${isPublicPublished ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" : "bg-amber-500/20 text-amber-300 border-amber-500/40"}`}>
+                  {isPublicPublished ? "HAK IZIN PUBLIKASI: AKTIF (TERHUBUNG OTOMATIS)" : "HAK IZIN PUBLIKASI: MODE DRAFT"}
+                </span>
+                <span className="text-[11px] text-slate-300 font-medium">
+                  Status: <strong className="text-white font-mono">{lastPublishedAt || "Otomatis Ter-update"}</strong>
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 font-normal mt-0.5">
+                {isPublicPublished 
+                  ? "Data Google Sheet & Database Publik dimuat secara otomatis & real-time untuk akses transparansi masyarakat." 
+                  : "Data publik ditampilkan dalam mode terproteksi. Menunggu pemicu publikasi resmi dari Admin."}
+              </p>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2 self-stretch md:self-auto justify-end">
+            <button
+              onClick={handleManualRefreshSheet}
+              disabled={isSyncingSheetLocal || isRefreshingSheet}
+              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all shadow-sm flex items-center space-x-2 cursor-pointer disabled:opacity-50"
+              title="Tarik dan muat ulang data dari Google Sheet Publik"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isSyncingSheetLocal || isRefreshingSheet ? "animate-spin" : ""}`} />
+              <span>{isSyncingSheetLocal || isRefreshingSheet ? "Memuat Data Sheet..." : "Tarik Data Sheet Publik"}</span>
+            </button>
+
+            {/* ADMIN EXCLUSIVE PUBLISH TRIGGER CONTROLS */}
+            {isAdmin && (
+              <>
+                <button
+                  onClick={onPublishData}
+                  className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black text-xs rounded-xl transition-all shadow-md flex items-center space-x-1.5 cursor-pointer"
+                  title="Pemicu Admin: Publikasikan & sinkronkan seluruh data terkini ke Google Sheet & Dashboard Publik"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>🚀 Pemicu Publikasikan Data</span>
+                </button>
+
+                <button
+                  onClick={() => onTogglePublishPermission?.(!isPublicPublished)}
+                  className={`px-3.5 py-2 font-extrabold text-xs rounded-xl border transition-all cursor-pointer ${
+                    isPublicPublished 
+                      ? "bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30" 
+                      : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
+                  }`}
+                  title="Ubah izin publikasi publik"
+                >
+                  <span>{isPublicPublished ? "Non-aktifkan Izin Publik" : "Aktifkan Izin Publik"}</span>
+                </button>
+              </>
+            )}
+          </div>
+
+        </div>
+      </div>
 
       {/* SUB-NAV TABS */}
       <div className="bg-white/70 backdrop-blur-md border-b border-slate-200 px-4 sm:px-8 py-3">
