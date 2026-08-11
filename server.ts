@@ -656,7 +656,18 @@ app.post("/api/beneficiaries/delete", (req, res) => {
 app.post("/api/beneficiaries/batch", (req, res) => {
   const { beneficiaries: newList } = req.body;
   if (Array.isArray(newList)) {
-    beneficiaries = newList;
+    newList.forEach(item => {
+      const idx = beneficiaries.findIndex(b => b.id === item.id || (item.nik && b.nik === item.nik));
+      if (idx !== -1) {
+        beneficiaries[idx] = {
+          ...beneficiaries[idx],
+          ...item,
+          weightRecords: (item.weightRecords && item.weightRecords.length > 0) ? item.weightRecords : beneficiaries[idx].weightRecords
+        };
+      } else {
+        beneficiaries.push(item);
+      }
+    });
     saveStoreToDisk();
   }
   res.json({
@@ -676,7 +687,14 @@ app.get("/api/ibu-hamil", (req, res) => {
 app.post("/api/ibu-hamil/batch", (req, res) => {
   const { ibuHamil: newList } = req.body;
   if (Array.isArray(newList)) {
-    ibuHamil = newList;
+    newList.forEach(item => {
+      const idx = ibuHamil.findIndex(i => i.id === item.id || (item.nik && i.nik === item.nik));
+      if (idx !== -1) {
+        ibuHamil[idx] = { ...ibuHamil[idx], ...item };
+      } else {
+        ibuHamil.push(item);
+      }
+    });
     saveStoreToDisk();
   }
   res.json({ success: true });
@@ -718,7 +736,14 @@ app.get("/api/ibu-menyusui", (req, res) => {
 app.post("/api/ibu-menyusui/batch", (req, res) => {
   const { ibuMenyusui: newList } = req.body;
   if (Array.isArray(newList)) {
-    ibuMenyusui = newList;
+    newList.forEach(item => {
+      const idx = ibuMenyusui.findIndex(i => i.id === item.id || (item.nik && i.nik === item.nik));
+      if (idx !== -1) {
+        ibuMenyusui[idx] = { ...ibuMenyusui[idx], ...item };
+      } else {
+        ibuMenyusui.push(item);
+      }
+    });
     saveStoreToDisk();
   }
   res.json({ success: true });

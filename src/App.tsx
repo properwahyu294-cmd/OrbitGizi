@@ -483,23 +483,7 @@ export default function App() {
   };
 
   const handlePullFromSheets = async () => {
-    try {
-      setSyncingSheets(true);
-      setSyncError(null);
-      const res = await fetch("/api/sheets/pull", { method: "POST" });
-      const json = await res.json();
-      if (json.success) {
-        setSyncSuccess(true);
-        setRefreshTrigger(prev => prev + 1);
-        setTimeout(() => setSyncSuccess(false), 4000);
-      } else {
-        setSyncError("Gagal menarik data dari Google Sheet.");
-      }
-    } catch (e: any) {
-      setSyncError("Gagal menarik data dari Google Sheet: " + e.message);
-    } finally {
-      setSyncingSheets(false);
-    }
+    await handleSyncSheets();
   };
 
 
