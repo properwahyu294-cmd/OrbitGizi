@@ -506,7 +506,7 @@ export async function syncToGoogleSheets(
 
 export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: string) {
   try {
-    const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z`, {
+    const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z&valueRenderOption=UNFORMATTED_VALUE`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     });
     if (fetchRes.ok) {
@@ -516,6 +516,8 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
       const sheetMbg = valueRanges[0]?.values || [];
       const sheetIbuHamil = valueRanges[1]?.values || [];
       const sheetIbuMenyusui = valueRanges[2]?.values || [];
+
+      console.error('DEBUG: sheetMbg (first 2 rows):', JSON.stringify(sheetMbg.slice(0, 2)));
 
       const parsedMbg = sheetMbg.filter((r: any[]) => r && r[1]).map((row: any[]) => ({
         id: (row[0] && row[0] !== "-") ? row[0] : `ben_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
