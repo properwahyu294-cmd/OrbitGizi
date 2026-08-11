@@ -967,7 +967,7 @@ export async function deleteBeneficiaryApi(id: string): Promise<any[]> {
  * ADMIN GOOGLE SHEET CONFIG HELPERS
  */
 export async function getAdminSheetConfigApi(): Promise<{ adminSheetUrl: string; adminSheetId: string }> {
-  const defaultUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115";
+  const defaultUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
   const defaultId = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
 
   try {

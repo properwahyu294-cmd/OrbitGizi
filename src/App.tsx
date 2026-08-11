@@ -171,7 +171,7 @@ export default function App() {
 
   // Firebase & Google Sheets integration state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const isAdmin = currentUser?.email?.toLowerCase().trim() === "properwahyu294@gmail.com";
+  const isAdmin = !!currentUser;
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [syncingSheets, setSyncingSheets] = useState<boolean>(false);
   const [sheetsSyncUrl, setSheetsSyncUrl] = useState<string | null>(null);
@@ -248,7 +248,7 @@ export default function App() {
     }
 
     const email = currentUser?.email || visitorEmail || "pengunjung@public.go.id";
-    const role = (isAdmin || currentUser?.email === "properwahyu294@gmail.com") ? "ADMIN" : "PENGUNJUNG";
+    const role = isAdmin ? "ADMIN" : "PENGUNJUNG";
 
     recordVisitorAccess(email, role, viewName);
   }, [showLauncher, showPublicDashboard, activeTab, currentUser, isAdmin, visitorEmail]);
@@ -442,7 +442,7 @@ export default function App() {
       }
     }
     const globalSaved = localStorage.getItem("orbit_gizi_spreadsheet_url");
-    setSheetsSyncUrl(globalSaved || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115");
+    setSheetsSyncUrl(globalSaved || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316");
   }, [currentUser]);
 
   const handleGoogleLogin = async () => {
@@ -672,7 +672,7 @@ export default function App() {
         orbitGiziData={data}
         beneficiaries={beneficiaries}
         villages={data?.villages || []}
-        adminSheetUrl={sheetsSyncUrl || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115"}
+        adminSheetUrl={sheetsSyncUrl || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316"}
         onBackToLauncher={() => {
           setShowPublicDashboard(false);
           setShowLauncher(true);
@@ -683,8 +683,6 @@ export default function App() {
           } else if (isAdmin) {
             setShowPublicDashboard(false);
             setShowLauncher(false);
-          } else {
-            alert(`Email Anda (${currentUser.email}) masuk sebagai Pengunjung. Akses Admin khusus untuk properwahyu294@gmail.com.`);
           }
         }}
         selectedKabupaten={data?.kabupatenName || "Kabupaten Nagekeo"}
@@ -699,15 +697,6 @@ export default function App() {
           if (isAdmin) {
             setShowLauncher(false);
             setShowPublicDashboard(false);
-          } else if (currentUser) {
-            // Give option to switch to admin Google account or proceed to public dashboard
-            const wantLoginAdmin = window.confirm(`Email Anda (${currentUser.email}) terdaftar sebagai Pengunjung. Apakah Anda ingin login / ganti ke akun Google Admin (properwahyu294@gmail.com)?\n\nKlik OK untuk Ganti Akun Admin, atau Cancel untuk lanjut ke Dashboard Publik.`);
-            if (wantLoginAdmin) {
-              handleGoogleLogin();
-            } else {
-              setShowLauncher(false);
-              setShowPublicDashboard(true);
-            }
           } else {
             handleGoogleLogin();
           }
@@ -735,7 +724,7 @@ export default function App() {
         orbitGiziData={data}
         beneficiaries={beneficiaries}
         villages={data?.villages || []}
-        adminSheetUrl={sheetsSyncUrl || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115"}
+        adminSheetUrl={sheetsSyncUrl || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316"}
         onBackToLauncher={() => {
           setShowPublicDashboard(false);
           setShowLauncher(true);

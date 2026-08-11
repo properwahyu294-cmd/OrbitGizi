@@ -54,7 +54,7 @@ interface Village {
   pilar5_target_accuracy: number;
 }
 
-const DEFAULT_ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115";
+const DEFAULT_ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
 const DEFAULT_ADMIN_SHEET_ID = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
 
 const SEED_VILLAGES: Village[] = [];

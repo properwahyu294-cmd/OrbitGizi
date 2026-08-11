@@ -52,7 +52,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   orbitGiziData,
   beneficiaries: propBeneficiaries,
   villages: propVillages,
-  adminSheetUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115"
+  adminSheetUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316"
 }) => {
   const [activeTab, setActiveTab] = useState<"SUMMARY" | "SHEET_LIVE" | "BENEFICIARIES" | "GALLERY" | "VILLAGES">("SUMMARY");
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,7 +61,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   const [showVisitorModal, setShowVisitorModal] = useState<boolean>(false);
 
   const currentEmail = currentUserEmail || visitorEmail || "Set Email Pengunjung";
-  const isAdminEmail = currentUserEmail?.toLowerCase().trim() === "properwahyu294@gmail.com";
+  const isAdminEmail = !!currentUserEmail;
 
   // Beneficiary detail modal state
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<MBGBeneficiary | null>(null);
@@ -124,7 +124,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
 
   // Derive Google Sheet Embed URL
   const getEmbedUrl = (rawUrl: string, mode: "preview" | "htmlembed" | "pubhtml") => {
-    if (!rawUrl) rawUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115";
+    if (!rawUrl) rawUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
     const match = rawUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
     const sheetId = match && match[1] ? match[1] : "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
 

@@ -30,10 +30,10 @@ export const OperatorIdentityModal: React.FC<OperatorIdentityModalProps> = ({
         setName(existing.name || "");
         setRole(existing.role || "Petugas Ahli Gizi / Nakes");
         setInstansi(existing.instansi || "Puskesmas Boawae / Dinkes Nagekeo");
-        setEmail(existing.email || currentUserEmail || "properwahyu294@gmail.com");
+        setEmail(existing.email || currentUserEmail || "");
         setPhone(existing.phone || "");
       } else {
-        setEmail(currentUserEmail || "properwahyu294@gmail.com");
+        setEmail(currentUserEmail || "");
       }
     }
   }, [isOpen, currentUserEmail]);
