@@ -176,6 +176,8 @@ async function autoImportFromGoogleSheet() {
       console.log('MBG CSV Sample:', csvText.substring(0, 100));
       const rows = parseCsv(csvText);
       console.log('MBG Headers:', rows[0]);
+      console.log('MBG Row 1:', rows[1]);
+      console.log('MBG Row 2:', rows[2]);
       const dataRows = rows.slice(1).filter(r => r.length > 0 && r.some(c => c !== ""));
       if (dataRows.length > 0) {
         const sheetBens = dataRows.map((row, idx) => ({
