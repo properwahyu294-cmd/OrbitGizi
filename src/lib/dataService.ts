@@ -1177,3 +1177,43 @@ export async function saveBannersApi(type: "landing" | "dashboard", images: any[
   }
 }
 
+export async function getRegisteredAdminsApi(): Promise<{ registeredAdmins: string[] }> {
+  try {
+    const res = await fetch("/api/admins");
+    if (res.ok) {
+      const json = await res.json();
+      return { registeredAdmins: json.registeredAdmins || ["properwahyu294@gmail.com"] };
+    }
+  } catch (e) {
+    console.warn("Failed to fetch registered admins from API:", e);
+  }
+  return { registeredAdmins: ["properwahyu294@gmail.com"] };
+}
+
+export async function registerAdminEmailApi(email: string): Promise<{ registeredAdmins: string[] }> {
+  const res = await fetch("/api/admins/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || "Gagal mendaftarkan email admin.");
+  }
+  return await res.json();
+}
+
+export async function deleteAdminEmailApi(email: string): Promise<{ registeredAdmins: string[] }> {
+  const res = await fetch("/api/admins/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || "Gagal menghapus email admin.");
+  }
+  return await res.json();
+}
+
+

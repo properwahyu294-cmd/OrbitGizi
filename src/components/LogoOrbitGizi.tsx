@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Heart, LogOut, User as UserIcon, FileSpreadsheet, RefreshCw, Building, Upload, RotateCcw, Info, Camera, Edit3, Mail } from "lucide-react";
+import { Heart, LogOut, User as UserIcon, FileSpreadsheet, RefreshCw, Building, Upload, RotateCcw, Info, Camera, Edit3, Mail, ShieldCheck } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import logoPemdaFile from "../assets/images/LOGOPEMDA (1).png";
 import { PemdaNagekeoLogo } from "./PemdaNagekeoLogo";
@@ -16,6 +16,7 @@ interface LogoOrbitGiziProps {
   sheetsSyncUrl?: string | null;
   onOpenLauncher?: () => void;
   onOpenAnalytics?: () => void;
+  onOpenAdminManagement?: () => void;
 }
 
 export default function LogoOrbitGizi({ 
@@ -28,7 +29,8 @@ export default function LogoOrbitGizi({
   syncingSheets,
   sheetsSyncUrl,
   onOpenLauncher,
-  onOpenAnalytics
+  onOpenAnalytics,
+  onOpenAdminManagement
 }: LogoOrbitGiziProps) {
   const [customLogo, setCustomLogo] = useState<string | null>(() => {
     return localStorage.getItem("orbit_gizi_custom_logo") || null;
@@ -207,6 +209,18 @@ export default function LogoOrbitGizi({
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${syncingSheets ? "animate-spin" : ""}`} />
                 <span>{syncingSheets ? "Memuat..." : "Muat Data Sheet"}</span>
+              </button>
+            )}
+
+            {/* Admin Management Button */}
+            {onOpenAdminManagement && (
+              <button
+                onClick={onOpenAdminManagement}
+                className="flex items-center space-x-1.5 text-xs font-bold text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-2 rounded-xl transition-colors cursor-pointer shadow-3xs"
+                title="Kelola & Daftarkan Email Admin / Operator Nakes"
+              >
+                <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" />
+                <span>Kelola Admin</span>
               </button>
             )}
 

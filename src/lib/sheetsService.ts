@@ -690,7 +690,7 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
       }));
 
       // Post back to API to save to server
-      const baseUrl = window.location.origin;
+      const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
       await fetch(`${baseUrl}/api/beneficiaries/batch`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ beneficiaries: parsedMbg })
@@ -713,11 +713,32 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
         ibuMenyusui: parsedIbuMenyusui
       };
     } else {
-      const errText = await fetchRes.text();
-      throw new Error(`Akses ke Google Sheet ditolak (Status ${fetchRes.status}). Pastikan spreadsheet Google Anda disetel "Anyone with the link can view/edit" di Google Drive agar dapat diakses oleh semua akun operator.`);
+      console.warn(`Direct OAuth Sheet pull returned status ${fetchRes.status}. Falling back to server-side pull...`);
     }
   } catch (err) {
-    console.error("Error saat pull data dari Google Sheets:", err);
-    throw err;
+    console.warn("Direct OAuth Sheet fetch error, falling back to server-side pull:", err);
   }
+
+  // Fallback to server-side autoImport endpoint
+  try {
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+    const serverRes = await fetch(`${baseUrl}/api/sheets/pull`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (serverRes.ok) {
+      const serverJson = await serverRes.json();
+      return {
+        success: true,
+        beneficiaries: serverJson.beneficiaries || [],
+        ibuHamil: serverJson.ibuHamil || [],
+        ibuMenyusui: serverJson.ibuMenyusui || [],
+        isFallback: true
+      };
+    }
+  } catch (serverErr) {
+    console.error("Server-side pull fallback error:", serverErr);
+  }
+
+  throw new Error(`Akses ke Google Sheet ditolak / gagal. Pastikan spreadsheet Google Anda disetel "Anyone with the link can view/edit" di Google Drive agar dapat diakses oleh semua akun operator.`);
 }

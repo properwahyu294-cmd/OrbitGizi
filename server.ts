@@ -88,6 +88,7 @@ let bannerImages: any[] = [];
 let dashboardBannerImages: any[] = [];
 let visitorLogs: any[] = [];
 let auditLogs: any[] = [];
+let registeredAdmins: string[] = ["properwahyu294@gmail.com"];
 
 // Load data store from disk or initialize with seeds
 function loadStoreFromDisk() {
@@ -107,16 +108,21 @@ function loadStoreFromDisk() {
       dashboardBannerImages = Array.isArray(parsed.dashboardBannerImages) ? parsed.dashboardBannerImages : [];
       visitorLogs = Array.isArray(parsed.visitorLogs) ? parsed.visitorLogs : [];
       auditLogs = Array.isArray(parsed.auditLogs) ? parsed.auditLogs : [];
+      registeredAdmins = Array.isArray(parsed.registeredAdmins) && parsed.registeredAdmins.length > 0 
+        ? parsed.registeredAdmins 
+        : ["properwahyu294@gmail.com"];
       lastUpdated = parsed.lastUpdated || new Date().toISOString();
     } else {
       villages = [...SEED_VILLAGES];
       beneficiaries = [...SEED_BENEFICIARIES];
+      registeredAdmins = ["properwahyu294@gmail.com"];
       saveStoreToDisk();
     }
   } catch (e) {
     console.error("Gagal membaca data_store.json, menggunakan seed awal:", e);
     villages = [...SEED_VILLAGES];
     beneficiaries = [...SEED_BENEFICIARIES];
+    registeredAdmins = ["properwahyu294@gmail.com"];
     saveStoreToDisk();
   }
 }
@@ -138,7 +144,8 @@ function saveStoreToDisk() {
       bannerImages,
       dashboardBannerImages,
       visitorLogs,
-      auditLogs
+      auditLogs,
+      registeredAdmins
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(payload, null, 2), "utf-8");
   } catch (e) {
@@ -917,6 +924,35 @@ app.post("/api/analytics/audit-logs/clear", (req, res) => {
   auditLogs = [];
   saveStoreToDisk();
   res.json({ success: true, list: [] });
+});
+
+// API: Get Registered Admin Emails
+app.get("/api/admins", (req, res) => {
+  res.json({ success: true, registeredAdmins });
+});
+
+// API: Register New Admin Email
+app.post("/api/admins/register", (req, res) => {
+  const { email } = req.body;
+  if (!email || typeof email !== "string" || !email.includes("@")) {
+    return res.status(400).json({ error: "Email tidak valid." });
+  }
+  const cleanEmail = email.trim().toLowerCase();
+  if (!registeredAdmins.some(e => e.toLowerCase() === cleanEmail)) {
+    registeredAdmins.push(cleanEmail);
+    saveStoreToDisk();
+  }
+  res.json({ success: true, registeredAdmins });
+});
+
+// API: Delete Registered Admin Email
+app.post("/api/admins/delete", (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "Email required." });
+  const cleanEmail = email.trim().toLowerCase();
+  registeredAdmins = registeredAdmins.filter(e => e.toLowerCase() !== cleanEmail);
+  saveStoreToDisk();
+  res.json({ success: true, registeredAdmins });
 });
 
 // API: Get Admin Sheet Config

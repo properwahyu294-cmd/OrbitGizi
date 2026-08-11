@@ -57,6 +57,9 @@ import {
   saveBannersApi,
   getIbuHamilApi,
   getIbuMenyusuiApi,
+  getRegisteredAdminsApi,
+  registerAdminEmailApi,
+  deleteAdminEmailApi,
   isUsingLocalFallback
 } from "./lib/dataService";
 
@@ -85,6 +88,7 @@ import { PublicDashboardView } from "./components/PublicDashboardView";
 import { AdminNutritionCharts } from "./components/AdminNutritionCharts";
 import { OperatorIdentityModal } from "./components/OperatorIdentityModal";
 import { VisitorAnalyticsModal } from "./components/VisitorAnalyticsModal";
+import { AdminManagementModal } from "./components/AdminManagementModal";
 import { recordVisitorAccess, recordAuditAction, getOperatorProfile, fetchVisitorLogsApi, fetchAuditLogsApi } from "./lib/analyticsService";
 import { OperatorProfile } from "./types";
 
@@ -170,9 +174,26 @@ export default function App() {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  // Registered Admins state
+  const [registeredAdmins, setRegisteredAdmins] = useState<string[]>(["properwahyu294@gmail.com"]);
+  const [showAdminManagementModal, setShowAdminManagementModal] = useState<boolean>(false);
+
+  useEffect(() => {
+    getRegisteredAdminsApi().then(res => {
+      if (res && Array.isArray(res.registeredAdmins)) {
+        setRegisteredAdmins(res.registeredAdmins);
+      }
+    });
+  }, []);
+
   // Firebase & Google Sheets integration state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const isAdmin = !!currentUser;
+  const currentUserEmail = currentUser?.email?.toLowerCase() || "";
+  const isAdmin = !!currentUser && (
+    registeredAdmins.length === 0 ||
+    registeredAdmins.some(adm => adm.toLowerCase() === currentUserEmail) ||
+    currentUserEmail === "properwahyu294@gmail.com"
+  );
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [syncingSheets, setSyncingSheets] = useState<boolean>(false);
   const [sheetsSyncUrl, setSheetsSyncUrl] = useState<string | null>(null);
@@ -459,6 +480,19 @@ export default function App() {
       if (res) {
         setCurrentUser(res.user);
         setGoogleToken(res.accessToken);
+
+        // Auto-register email as admin so other emails can seamlessly sync and act as admin
+        if (res.user.email) {
+          const emailClean = res.user.email.toLowerCase();
+          if (!registeredAdmins.some(a => a.toLowerCase() === emailClean)) {
+            registerAdminEmailApi(emailClean)
+              .then(upd => {
+                if (upd?.registeredAdmins) setRegisteredAdmins(upd.registeredAdmins);
+              })
+              .catch(e => console.warn("Auto-register admin failed:", e));
+          }
+        }
+
         // After successful login, auto sync to make user experience amazing!
         setTimeout(() => {
           handleSyncSheetsDirect(res.accessToken, res.user);
@@ -791,6 +825,7 @@ export default function App() {
         sheetsSyncUrl={sheetsSyncUrl}
         onOpenLauncher={() => setShowLauncher(true)}
         onOpenAnalytics={() => setShowAnalyticsModal(true)}
+        onOpenAdminManagement={() => setShowAdminManagementModal(true)}
       />
 
       <main className="flex-1 max-w-[1400px] w-full mx-auto p-4 sm:p-6 space-y-6">
@@ -1617,6 +1652,15 @@ export default function App() {
           onCloseModal={() => setShowDataInputModal(false)}
         />
       )}
+
+      {/* Admin Management Modal */}
+      <AdminManagementModal
+        isOpen={showAdminManagementModal}
+        onClose={() => setShowAdminManagementModal(false)}
+        currentUserEmail={currentUser?.email || null}
+        registeredAdmins={registeredAdmins}
+        onAdminsUpdated={setRegisteredAdmins}
+      />
 
     </div>
   );
