@@ -172,6 +172,7 @@ export default function App() {
       setDashboardBannerImages(DEFAULT_NUTRITION_IMAGES);
     }
     setRefreshTrigger(prev => prev + 1);
+    handlePushToSheetsBackground();
   };
 
   // Registered Admins state

@@ -374,43 +374,6 @@ export async function syncToGoogleSheets(
         b?.notes || "-"
       ]);
     });
-
-    // 2. Add existing rows from Google Sheets that are NOT in local state
-    existingBeneficiaries.forEach((row: any[], idx: number) => {
-      const parsed = parseMbgRow(row, idx);
-      if (!parsed || !parsed.name) return;
-      if (localIds.has(parsed.id) || (parsed.nik && localNiks.has(parsed.nik))) {
-        return; // Already present in local state
-      }
-
-      const attendance = parsed.attendanceStatus || "Mengunjungi Posyandu";
-      const needsVisit = attendance === "Tidak Mengunjungi" ? "YA (WAJIB KUNJUNGAN RUMAH)" : "TIDAK";
-
-      mbgValues.push([
-        parsed.id,
-        parsed.name,
-        parsed.parentName,
-        parsed.nik,
-        parsed.gender,
-        parsed.age,
-        parsed.birthDate,
-        parsed.category,
-        parsed.location.propinsi,
-        parsed.location.kabupaten,
-        parsed.location.puskesmas,
-        parsed.location.kelurahan,
-        parsed.location.dusun,
-        parsed.location.posyandu,
-        attendance,
-        needsVisit,
-        parsed.isReceivedMBG ? "YA" : "TIDAK",
-        parsed.isReceivedPMT ? "YA" : "TIDAK",
-        parsed.isPetugasDesaHadir ? "YA" : "TIDAK",
-        parsed.isPetugasPosyanduHadir ? "YA" : "TIDAK",
-        parsed.stakeholdersHadir.join(", "),
-        parsed.notes
-      ]);
-    });
   } catch (e) {
     console.error(e);
   }
@@ -419,17 +382,13 @@ export async function syncToGoogleSheets(
   const ibuHamilValues = [
     ["ID", "Nama Ibu", "Umur", "NIK", "Alamat", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Usia Kehamilan", "Catatan"]
   ];
-  ibuHamilValues.push(...existingIbuHamil);
   try {
     let ibuHamilData = (data && Array.isArray(data.ibuHamil))
       ? data.ibuHamil
       : JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
     if (!Array.isArray(ibuHamilData)) ibuHamilData = [];
-    
-    const existingIds = new Set(existingIbuHamil.map((r: any[]) => r[0]));
 
     ibuHamilData.forEach((b: any) => {
-      if (existingIds.has(b?.id)) return;
       ibuHamilValues.push([
         b?.id || "-",
         b?.namaIbu || "-",
@@ -452,17 +411,13 @@ export async function syncToGoogleSheets(
   const ibuMenyusuiValues = [
     ["ID", "Nama Ibu", "Umur", "NIK", "Alamat", "Puskesmas", "Kelurahan", "Dusun", "Posyandu", "Nama Bayi", "Catatan"]
   ];
-  ibuMenyusuiValues.push(...existingIbuMenyusui);
   try {
     let ibuMenyusuiData = (data && Array.isArray(data.ibuMenyusui))
       ? data.ibuMenyusui
       : JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
     if (!Array.isArray(ibuMenyusuiData)) ibuMenyusuiData = [];
-    
-    const existingIds = new Set(existingIbuMenyusui.map((r: any[]) => r[0]));
 
     ibuMenyusuiData.forEach((b: any) => {
-      if (existingIds.has(b?.id)) return;
       ibuMenyusuiValues.push([
         b?.id || "-",
         b?.namaIbu || "-",
@@ -581,6 +536,31 @@ export async function syncToGoogleSheets(
     });
   } catch (e) {
     console.error("Error reading audit logs for sheet sync:", e);
+  }
+
+  // Clear spreadsheet ranges before writing updated values to ensure deleted rows are completely removed
+  try {
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchClear`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ranges: [
+          "'Ringkasan Indeks'!A1:Z500",
+          "'Data Desa'!A1:Z2000",
+          "'Penerima MBG'!A1:Z10000",
+          "'Ibu Hamil'!A1:Z5000",
+          "'Ibu Menyusui'!A1:Z5000",
+          "'Catatan Timbang'!A1:Z20000",
+          "'Analitik Pengunjung'!A1:Z10000",
+          "'Audit Log Operator'!A1:Z10000"
+        ]
+      })
+    });
+  } catch (clearErr) {
+    console.warn("Batch clear warning (ignorable):", clearErr);
   }
 
   // Batch update spreadsheet values

@@ -107,6 +107,7 @@ export default function IbuMenyusuiView({ onDataChange }: { onDataChange?: () =>
     if (window.confirm("Apakah Anda yakin ingin menghapus data Ibu Menyusui ini?")) {
       const newList = await deleteIbuMenyusuiApi(id);
       setBeneficiaries(newList);
+      if (onDataChange) onDataChange();
       setSuccessMessage("Data Ibu Menyusui berhasil dihapus.");
       setTimeout(() => setSuccessMessage(null), 3000);
     }
@@ -135,6 +136,7 @@ export default function IbuMenyusuiView({ onDataChange }: { onDataChange?: () =>
 
     const newList = await saveIbuMenyusuiApi(newItem);
     setBeneficiaries(newList);
+    if (onDataChange) onDataChange();
     if (editingId) {
       setSuccessMessage("Data Ibu Menyusui berhasil diperbarui.");
     } else {

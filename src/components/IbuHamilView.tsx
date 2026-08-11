@@ -107,6 +107,7 @@ export default function IbuHamilView({ onDataChange }: { onDataChange?: () => vo
     if (window.confirm("Apakah Anda yakin ingin menghapus data Ibu Hamil ini?")) {
       const newList = await deleteIbuHamilApi(id);
       setBeneficiaries(newList);
+      if (onDataChange) onDataChange();
       setSuccessMessage("Data Ibu Hamil berhasil dihapus.");
       setTimeout(() => setSuccessMessage(null), 3000);
     }
@@ -135,6 +136,7 @@ export default function IbuHamilView({ onDataChange }: { onDataChange?: () => vo
 
     const newList = await saveIbuHamilApi(newItem);
     setBeneficiaries(newList);
+    if (onDataChange) onDataChange();
     if (editingId) {
       setSuccessMessage("Data Ibu Hamil berhasil diperbarui.");
     } else {
