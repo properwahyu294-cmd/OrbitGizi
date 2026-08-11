@@ -121,35 +121,13 @@ export async function syncToGoogleSheets(
   let spreadsheetId = data?.adminSheetId || localStorage.getItem('orbit_gizi_spreadsheet_id_global') || "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
   let spreadsheetUrl = data?.adminSheetUrl || localStorage.getItem('orbit_gizi_spreadsheet_url_global') || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
 
-  // Helper to create sheet and save to local storage
-  const initNewSpreadsheet = async () => {
-    const newSheet = await createSpreadsheet(accessToken, kabupatenName);
-    spreadsheetId = newSheet.spreadsheetId;
-    spreadsheetUrl = newSheet.spreadsheetUrl;
-    localStorage.setItem('orbit_gizi_spreadsheet_id_global', spreadsheetId);
-    localStorage.setItem('orbit_gizi_spreadsheet_url_global', spreadsheetUrl);
-  };
-
-  // If we don't have a spreadsheet id or it was cleared, create a new one
-  if (!spreadsheetId) {
-    await initNewSpreadsheet();
-  }
-
-  // Ensure all tabs exist
-
+  // Ensure all tabs exist and clear sheets using the shared master spreadsheet
   await ensureSheetTabsExist(accessToken, spreadsheetId!);
 
   try {
     await clearSheets(accessToken, spreadsheetId!);
   } catch (err) {
-    console.warn("Mencoba membuat spreadsheet baru karena spreadsheet lama mungkin telah dihapus di Drive atau tidak dapat diakses.");
-    await initNewSpreadsheet();
-    try {
-      await ensureSheetTabsExist(accessToken, spreadsheetId!);
-      await clearSheets(accessToken, spreadsheetId!);
-    } catch (innerErr) {
-      console.error("Gagal melakukan pembersihan kedua pada spreadsheet baru:", innerErr);
-    }
+    console.warn("Pembersihan sheet menggunakan spreadsheet bersama utama:", err);
   }
 
   // Prepare Ringkasan Indeks data

@@ -432,19 +432,21 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Synchronize sheetsSyncUrl state when currentUser changes or logs in/out
+  // Synchronize sheetsSyncUrl state using global server admin sheet config
   useEffect(() => {
-    if (currentUser?.email) {
-      const emailSuffix = `_${currentUser.email.toLowerCase().trim()}`;
-      const urlKey = `orbit_gizi_spreadsheet_url${emailSuffix}`;
-      const savedUrl = localStorage.getItem(urlKey);
-      if (savedUrl) {
-        setSheetsSyncUrl(savedUrl);
-        return;
+    const fetchGlobalConfig = async () => {
+      try {
+        const config = await getAdminSheetConfigApi();
+        if (config?.adminSheetUrl) {
+           setSheetsSyncUrl(config.adminSheetUrl);
+        } else {
+           setSheetsSyncUrl("https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316");
+        }
+      } catch (e) {
+        setSheetsSyncUrl("https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316");
       }
-    }
-    const globalSaved = localStorage.getItem("orbit_gizi_spreadsheet_url");
-    setSheetsSyncUrl(globalSaved || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316");
+    };
+    fetchGlobalConfig();
   }, [currentUser]);
 
   const handleGoogleLogin = async () => {
