@@ -188,8 +188,12 @@ export async function syncToGoogleSheets(
   data: any,
   userEmail?: string
 ): Promise<SheetsSyncResult> {
-  let spreadsheetId = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
   let spreadsheetUrl = data?.adminSheetUrl || localStorage.getItem('orbit_gizi_spreadsheet_url_global') || "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
+  let spreadsheetId = data?.adminSheetId || "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
+  const urlMatch = spreadsheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (urlMatch && urlMatch[1]) {
+    spreadsheetId = urlMatch[1];
+  }
 
   // Ensure all tabs exist
   await ensureSheetTabsExist(accessToken, spreadsheetId!);

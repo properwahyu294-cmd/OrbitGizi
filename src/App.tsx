@@ -35,7 +35,8 @@ import {
   FileText,
   BookOpen,
   Trash2,
-  DownloadCloud
+  DownloadCloud,
+  UploadCloud
 } from "lucide-react";
 
 // Types
@@ -541,8 +542,22 @@ export default function App() {
   };
 
 
-  const handlePushToSheetsBackground = async () => {
-    if (!googleToken || !data) return;
+  const handlePushToSheetsBackground = async (showFeedback: boolean = false) => {
+    let token = googleToken;
+    if (!token) {
+      token = await getAccessToken();
+    }
+
+    if (!data) return;
+
+    if (!token) {
+      if (showFeedback) {
+        setSyncError("⚠️ AKSES GOOGLE SHEETS BELUM TERHUBUNG: Silakan klik 'Masuk Google' di bilah kanan atas agar data tersimpan otomatis ke Google Sheet.");
+      }
+      return;
+    }
+
+    if (showFeedback) setSyncingSheets(true);
     try {
       const activeUser = currentUser;
       const [latestBens, sheetConfig, latestHamil, latestMenyusui, latestVisitors, latestAudits] = await Promise.all([
@@ -564,13 +579,21 @@ export default function App() {
         adminSheetId: sheetConfig?.adminSheetId || data.adminSheetId
       };
       
-      const result = await syncToGoogleSheets(googleToken, data.kabupatenName, fullData, activeUser?.email || undefined);
+      const result = await syncToGoogleSheets(token, data.kabupatenName, fullData, activeUser?.email || undefined);
       if (result.spreadsheetUrl && result.spreadsheetUrl !== sheetsSyncUrl) {
         setSheetsSyncUrl(result.spreadsheetUrl);
         await updateAdminSheetConfigApi(result.spreadsheetUrl);
       }
-    } catch (e) {
-      console.error("Background push failed", e);
+      setSyncError(null);
+      if (showFeedback) {
+        setSyncSuccess(true);
+        setTimeout(() => setSyncSuccess(false), 5000);
+      }
+    } catch (e: any) {
+      console.error("Push to Google Sheets error:", e);
+      setSyncError("⚠️ GAGAL SINKRON KE GOOGLE SHEET: " + (e.message || "Akses ditolak / token kedaluwarsa") + ". Silakan klik 'Masuk Google' di bilah kanan atas untuk memperbarui token Google Sheets Anda.");
+    } finally {
+      if (showFeedback) setSyncingSheets(false);
     }
   };
 
@@ -633,8 +656,7 @@ export default function App() {
     localStorage.setItem("orbit_gizi_last_published", nowStr);
     localStorage.setItem("orbit_gizi_is_public_published", "true");
 
-    await handleSyncSheets();
-    setSyncSuccess(true);
+    await handlePushToSheetsBackground(true);
   };
 
   const handleTogglePublishPermission = (active: boolean) => {
@@ -972,13 +994,23 @@ export default function App() {
             </button>
 
             <button
+              onClick={() => handlePushToSheetsBackground(true)}
+              disabled={syncingSheets}
+              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 border border-blue-500 px-3.5 py-2 rounded-xl transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
+              title="Dorong & Simpan Seluruh Data Aplikasi ke Google Sheets"
+            >
+              <UploadCloud className="h-4 w-4 text-white" />
+              <span>{syncingSheets ? "Menyimpan..." : "⬆️ Dorong Data ke Sheet"}</span>
+            </button>
+
+            <button
               onClick={handlePullFromSheets}
               disabled={syncingSheets}
               className="flex items-center justify-center space-x-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-xl hover:bg-emerald-100 transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
               title="Tarik & Muat Data Terbaru dari Google Sheets"
             >
               <DownloadCloud className="h-4 w-4 text-emerald-600" />
-              <span>{syncingSheets ? "Memuat..." : "Tarik Data dari Sheet"}</span>
+              <span>{syncingSheets ? "Memuat..." : "⬇️ Tarik Data dari Sheet"}</span>
             </button>
             
             <button
