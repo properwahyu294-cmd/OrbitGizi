@@ -93,6 +93,45 @@ const STAKEHOLDER_OPTIONS = [
   "Tokoh Masyarakat / Agama"
 ];
 
+export function calculateAgeFromBirthDate(birthDateStr?: string, fallbackAge?: string): string {
+  if (!birthDateStr) return fallbackAge || "";
+  const birthDate = new Date(birthDateStr);
+  const today = new Date();
+  if (isNaN(birthDate.getTime())) return fallbackAge || "";
+  
+  let years = today.getFullYear() - birthDate.getFullYear();
+  let months = today.getMonth() - birthDate.getMonth();
+  
+  if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) {
+    years--;
+    months += 12;
+  }
+  
+  if (today.getDate() < birthDate.getDate()) {
+    months--;
+    if (months < 0) {
+      months += 12;
+    }
+  }
+
+  if (years < 0) return fallbackAge || ""; 
+
+  let ageStr = "";
+  if (years > 0) ageStr += `${years} Tahun`;
+  if (months > 0) {
+    if (ageStr) ageStr += " ";
+    ageStr += `${months} Bulan`;
+  }
+  
+  if (years === 0 && months === 0) {
+    const diffTime = Math.abs(today.getTime() - birthDate.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    ageStr = `${diffDays} Hari`;
+  }
+  
+  return ageStr || fallbackAge || "";
+}
+
 export default function DataInputCenter({
   villages,
   beneficiaries,
@@ -1320,7 +1359,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                                 {b.gender === "Laki-laki" ? "👦 L" : "👧 P"}
                               </span>
                             )}
-                            {b.age && <span className="text-[10px] font-bold text-slate-600">{b.age}</span>}
+                            {calculateAgeFromBirthDate(b.birthDate, b.age) && <span className="text-[10px] font-bold text-slate-600">{calculateAgeFromBirthDate(b.birthDate, b.age)}</span>}
                             {b.birthDate && (
                               <span className="text-[9px] font-mono font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
                                 📅 {b.birthDate}
@@ -2325,7 +2364,13 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                   <input
                     type="date"
                     value={benBirthDate}
-                    onChange={(e) => setBenBirthDate(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setBenBirthDate(val);
+                      if (val) {
+                        setBenAge(calculateAgeFromBirthDate(val, benAge));
+                      }
+                    }}
                     className="w-full border border-indigo-200 rounded-xl p-2 font-medium bg-white focus:ring-2 focus:ring-indigo-500/20 focus:outline-none text-xs"
                   />
                 </div>
@@ -2857,9 +2902,9 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                   {selectedDetailBen.gender === "Laki-laki" ? "👦 Laki-laki" : "👧 Perempuan"}
                 </span>
               )}
-              {selectedDetailBen.age && (
+              {calculateAgeFromBirthDate(selectedDetailBen.birthDate, selectedDetailBen.age) && (
                 <span className="px-2.5 py-1 rounded-lg text-xs font-black bg-slate-200/70 text-slate-700 border border-slate-300">
-                  🎂 Usia: {selectedDetailBen.age}
+                  🎂 Usia: {calculateAgeFromBirthDate(selectedDetailBen.birthDate, selectedDetailBen.age)}
                 </span>
               )}
               <span className={`px-2.5 py-1 rounded-lg text-xs font-black border ${
