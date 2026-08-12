@@ -621,7 +621,7 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
             </div>
 
             {/* NUTRITION CHARTS (RECHARTS) */}
-            <AdminNutritionCharts beneficiariesCount={beneficiaries.length} />
+            <AdminNutritionCharts beneficiaries={beneficiaries} beneficiariesCount={beneficiaries.length} />
 
           </div>
         )}

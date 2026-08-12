@@ -1266,7 +1266,7 @@ export default function App() {
                 />
 
                 {/* Admin Nutrition Analytics & State Charts */}
-                <AdminNutritionCharts beneficiariesCount={beneficiaries.length} />
+                <AdminNutritionCharts beneficiaries={beneficiaries} beneficiariesCount={beneficiaries.length} />
                 
                 {/* Zona Sebaran Unit & Wilayah Cards */}
                 <div className="space-y-3">
