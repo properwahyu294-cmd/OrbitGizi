@@ -198,13 +198,14 @@ export async function syncToGoogleSheets(
   // Ensure all tabs exist
   await ensureSheetTabsExist(accessToken, spreadsheetId!);
 
-  // Fetch current sheet data to merge
-  const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z&valueRenderOption=FORMATTED_VALUE`, {
+  // Fetch current sheet data to merge so we never delete existing sheet entries
+  const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z&ranges=Catatan%20Timbang!A2:Z&valueRenderOption=FORMATTED_VALUE`, {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
   let existingBeneficiaries: any[] = [];
   let existingIbuHamil: any[] = [];
   let existingIbuMenyusui: any[] = [];
+  let existingCatatanTimbang: any[] = [];
   
   if (fetchRes.ok) {
     const fetchJson = await fetchRes.json();
@@ -212,6 +213,7 @@ export async function syncToGoogleSheets(
     existingBeneficiaries = valueRanges[0]?.values || [];
     existingIbuHamil = valueRanges[1]?.values || [];
     existingIbuMenyusui = valueRanges[2]?.values || [];
+    existingCatatanTimbang = valueRanges[3]?.values || [];
   }
 
   // Helper to merge: simple approach is to trust incoming ID and overwrite or append.
@@ -378,6 +380,18 @@ export async function syncToGoogleSheets(
         b?.notes || "-"
       ]);
     });
+    // 2. Merge any existing entries in Google Sheet that are not in local data
+    if (Array.isArray(existingBeneficiaries)) {
+      existingBeneficiaries.forEach((row: any[]) => {
+        if (!Array.isArray(row) || row.length < 2) return;
+        const rowId = row[0] ? String(row[0]).trim() : "";
+        const rowNik = row[3] ? String(row[3]).trim() : "";
+        const isLocallyPresent = (rowId && localIds.has(rowId)) || (rowNik && rowNik !== "-" && localNiks.has(rowNik));
+        if (!isLocallyPresent && row[1] && row[1] !== "Nama Beneficiary" && row[1] !== "-") {
+          mbgValues.push(row);
+        }
+      });
+    }
   } catch (e) {
     console.error(e);
   }
@@ -391,6 +405,9 @@ export async function syncToGoogleSheets(
       ? data.ibuHamil
       : JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
     if (!Array.isArray(ibuHamilData)) ibuHamilData = [];
+
+    const localHamilIds = new Set(ibuHamilData.map((b: any) => String(b?.id)));
+    const localHamilNiks = new Set(ibuHamilData.map((b: any) => String(b?.nik)).filter(nik => nik && nik !== "-"));
 
     ibuHamilData.forEach((b: any) => {
       ibuHamilValues.push([
@@ -407,6 +424,19 @@ export async function syncToGoogleSheets(
         b?.catatan || "-"
       ]);
     });
+
+    // Merge existing Ibu Hamil from Sheet
+    if (Array.isArray(existingIbuHamil)) {
+      existingIbuHamil.forEach((row: any[]) => {
+        if (!Array.isArray(row) || row.length < 2) return;
+        const rowId = row[0] ? String(row[0]).trim() : "";
+        const rowNik = row[3] ? String(row[3]).trim() : "";
+        const isLocallyPresent = (rowId && localHamilIds.has(rowId)) || (rowNik && rowNik !== "-" && localHamilNiks.has(rowNik));
+        if (!isLocallyPresent && row[1] && row[1] !== "Nama Ibu" && row[1] !== "-") {
+          ibuHamilValues.push(row);
+        }
+      });
+    }
   } catch (e) {
     console.error(e);
   }
@@ -420,6 +450,9 @@ export async function syncToGoogleSheets(
       ? data.ibuMenyusui
       : JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
     if (!Array.isArray(ibuMenyusuiData)) ibuMenyusuiData = [];
+
+    const localMenyusuiIds = new Set(ibuMenyusuiData.map((b: any) => String(b?.id)));
+    const localMenyusuiNiks = new Set(ibuMenyusuiData.map((b: any) => String(b?.nik)).filter(nik => nik && nik !== "-"));
 
     ibuMenyusuiData.forEach((b: any) => {
       ibuMenyusuiValues.push([
@@ -436,6 +469,19 @@ export async function syncToGoogleSheets(
         b?.catatan || "-"
       ]);
     });
+
+    // Merge existing Ibu Menyusui from Sheet
+    if (Array.isArray(existingIbuMenyusui)) {
+      existingIbuMenyusui.forEach((row: any[]) => {
+        if (!Array.isArray(row) || row.length < 2) return;
+        const rowId = row[0] ? String(row[0]).trim() : "";
+        const rowNik = row[3] ? String(row[3]).trim() : "";
+        const isLocallyPresent = (rowId && localMenyusuiIds.has(rowId)) || (rowNik && rowNik !== "-" && localMenyusuiNiks.has(rowNik));
+        if (!isLocallyPresent && row[1] && row[1] !== "Nama Ibu" && row[1] !== "-") {
+          ibuMenyusuiValues.push(row);
+        }
+      });
+    }
   } catch (e) {
     console.error(e);
   }
@@ -483,6 +529,18 @@ export async function syncToGoogleSheets(
       : JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
     if (!Array.isArray(ibuMenyusuiData)) ibuMenyusuiData = [];
     processRecords(ibuMenyusuiData, "Ibu Menyusui");
+
+    // Merge existing Catatan Timbang from Sheet if not already present
+    const writtenKeys = new Set(catatanTimbangValues.slice(1).map(r => `${r[0]}_${r[3]}`));
+    if (Array.isArray(existingCatatanTimbang)) {
+      existingCatatanTimbang.forEach((row: any[]) => {
+        if (!Array.isArray(row) || row.length < 4) return;
+        const key = `${row[0]}_${row[3]}`;
+        if (!writtenKeys.has(key) && row[1] && row[1] !== "Nama" && row[1] !== "-") {
+          catatanTimbangValues.push(row);
+        }
+      });
+    }
   } catch (e) {
     console.error(e);
   }
