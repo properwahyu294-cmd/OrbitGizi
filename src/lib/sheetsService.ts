@@ -90,6 +90,7 @@ async function createSpreadsheet(accessToken: string, kabupatenName: string): Pr
       sheets: [
         { properties: { title: "Ringkasan Indeks" } },
         { properties: { title: "Data Desa" } },
+        { properties: { title: "Daftar Wilayah" } },
         { properties: { title: "Penerima MBG" } },
         { properties: { title: "Ibu Hamil" } },
         { properties: { title: "Ibu Menyusui" } },
@@ -119,6 +120,7 @@ async function ensureSheetTabsExist(accessToken: string, spreadsheetId: string):
   const requiredTitles = [
     "Ringkasan Indeks",
     "Data Desa",
+    "Daftar Wilayah",
     "Penerima MBG",
     "Ibu Hamil",
     "Ibu Menyusui",
@@ -486,21 +488,30 @@ export async function syncToGoogleSheets(
     console.error(e);
   }
 
-  // Prepare Catatan Timbang values
+  // Prepare Catatan Timbang values with full location details
   const catatanTimbangValues = [
-    ["ID Penerima", "Nama", "Kategori", "Periode", "Berat (kg)", "Tinggi (cm)", "Status Gizi", "Waktu Pengukuran"]
+    ["ID Penerima", "Nama", "Kategori", "Puskesmas", "Desa / Kelurahan", "Dusun", "Posyandu", "Periode", "Berat (kg)", "Tinggi (cm)", "Status Gizi", "Waktu Pengukuran"]
   ];
     
   try {
-    const processRecords = (data: any[], categoryStr: string | null = null) => {
-      if (!Array.isArray(data)) return;
-      data.forEach(b => {
+    const processRecords = (records: any[], categoryStr: string | null = null) => {
+      if (!Array.isArray(records)) return;
+      records.forEach(b => {
         if (b && b.weightRecords && Array.isArray(b.weightRecords)) {
+          const puskesmas = b?.location?.puskesmas || b?.puskesmas || "-";
+          const kelurahan = b?.location?.kelurahan || b?.kelurahan || "-";
+          const dusun = b?.location?.dusun || b?.dusun || "-";
+          const posyandu = b?.location?.posyandu || b?.posyandu || "-";
+
           b.weightRecords.forEach((record: any) => {
             catatanTimbangValues.push([
               b?.id || "-",
               b?.name || b?.namaIbu || "-",
               categoryStr || b?.category || "-",
+              puskesmas,
+              kelurahan,
+              dusun,
+              posyandu,
               record?.period || "-",
               record?.weightKg != null ? record.weightKg : "-",
               record?.heightCm != null ? record.heightCm : "-",
@@ -531,11 +542,12 @@ export async function syncToGoogleSheets(
     processRecords(ibuMenyusuiData, "Ibu Menyusui");
 
     // Merge existing Catatan Timbang from Sheet if not already present
-    const writtenKeys = new Set(catatanTimbangValues.slice(1).map(r => `${r[0]}_${r[3]}`));
+    const writtenKeys = new Set(catatanTimbangValues.slice(1).map(r => `${r[0]}_${r[7] || r[3]}`));
     if (Array.isArray(existingCatatanTimbang)) {
       existingCatatanTimbang.forEach((row: any[]) => {
         if (!Array.isArray(row) || row.length < 4) return;
-        const key = `${row[0]}_${row[3]}`;
+        const periodVal = row.length >= 12 ? row[7] : row[3];
+        const key = `${row[0]}_${periodVal}`;
         if (!writtenKeys.has(key) && row[1] && row[1] !== "Nama" && row[1] !== "-") {
           catatanTimbangValues.push(row);
         }
@@ -543,6 +555,59 @@ export async function syncToGoogleSheets(
     }
   } catch (e) {
     console.error(e);
+  }
+
+  // Prepare Daftar Wilayah (Summary list of all registered Desa, Dusun, and Posyandu)
+  const wilayahValues = [
+    ["Tipe Wilayah", "Nama Wilayah / Tempat", "Puskesmas Induk", "Desa / Kelurahan Induk", "Jumlah Sasaran Terdaftar"]
+  ];
+
+  try {
+    const desaMap = new Map<string, number>();
+    const dusunMap = new Map<string, { count: number; desa: string; puskesmas: string }>();
+    const posyanduMap = new Map<string, { count: number; desa: string; puskesmas: string }>();
+
+    const processBeneficiaryLocations = (list: any[]) => {
+      if (!Array.isArray(list)) return;
+      list.forEach(item => {
+        const pusk = item?.location?.puskesmas || item?.puskesmas || "-";
+        const desa = item?.location?.kelurahan || item?.kelurahan || "-";
+        const dusun = item?.location?.dusun || item?.dusun || "-";
+        const posy = item?.location?.posyandu || item?.posyandu || "-";
+
+        if (desa && desa !== "-") {
+          desaMap.set(desa, (desaMap.get(desa) || 0) + 1);
+        }
+        if (dusun && dusun !== "-") {
+          const curr = dusunMap.get(dusun) || { count: 0, desa, puskesmas: pusk };
+          dusunMap.set(dusun, { count: curr.count + 1, desa: curr.desa || desa, puskesmas: curr.puskesmas || pusk });
+        }
+        if (posy && posy !== "-") {
+          const curr = posyanduMap.get(posy) || { count: 0, desa, puskesmas: pusk };
+          posyanduMap.set(posy, { count: curr.count + 1, desa: curr.desa || desa, puskesmas: curr.puskesmas || pusk });
+        }
+      });
+    };
+
+    let mbgData = (data && Array.isArray(data.beneficiaries)) ? data.beneficiaries : JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
+    let ibuHamilData = (data && Array.isArray(data.ibuHamil)) ? data.ibuHamil : JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
+    let ibuMenyusuiData = (data && Array.isArray(data.ibuMenyusui)) ? data.ibuMenyusui : JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
+
+    processBeneficiaryLocations(mbgData);
+    processBeneficiaryLocations(ibuHamilData);
+    processBeneficiaryLocations(ibuMenyusuiData);
+
+    desaMap.forEach((count, desa) => {
+      wilayahValues.push(["DESA / KELURAHAN", desa, "-", "-", count.toString()]);
+    });
+    dusunMap.forEach((info, dusun) => {
+      wilayahValues.push(["DUSUN", dusun, info.puskesmas, info.desa, info.count.toString()]);
+    });
+    posyanduMap.forEach((info, posyandu) => {
+      wilayahValues.push(["POSYANDU", posyandu, info.puskesmas, info.desa, info.count.toString()]);
+    });
+  } catch (e) {
+    console.error("Error preparing Daftar Wilayah:", e);
   }
 
   // Prepare Analitik Pengunjung values
@@ -612,6 +677,7 @@ export async function syncToGoogleSheets(
         ranges: [
           "'Ringkasan Indeks'!A1:Z500",
           "'Data Desa'!A1:Z2000",
+          "'Daftar Wilayah'!A1:Z2000",
           "'Penerima MBG'!A1:Z10000",
           "'Ibu Hamil'!A1:Z5000",
           "'Ibu Menyusui'!A1:Z5000",
@@ -642,6 +708,10 @@ export async function syncToGoogleSheets(
         {
           range: "'Data Desa'!A1",
           values: villageValues,
+        },
+        {
+          range: "'Daftar Wilayah'!A1",
+          values: wilayahValues,
         },
         {
           range: "'Penerima MBG'!A1",

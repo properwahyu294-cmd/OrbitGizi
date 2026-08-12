@@ -182,12 +182,43 @@ export default function DataInputCenter({
     } catch { return []; }
   });
 
+  // Blacklist state for deleted location options
+  const [deletedPuskesmasList, setDeletedPuskesmasList] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("orbit_deleted_puskesmas");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [deletedKelurahanList, setDeletedKelurahanList] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("orbit_deleted_kelurahan");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [deletedDusunList, setDeletedDusunList] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("orbit_deleted_dusun");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [deletedPosyanduList, setDeletedPosyanduList] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("orbit_deleted_posyandu");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
   const handleSaveCustomPuskesmas = (val: string) => {
     if (!val) return;
     setCustomPuskesmasList(prev => {
       if (prev.includes(val)) return prev;
       const updated = [...prev, val];
       localStorage.setItem("orbit_custom_puskesmas", JSON.stringify(updated));
+      return updated;
+    });
+    setDeletedPuskesmasList(prev => {
+      const updated = prev.filter(i => i !== val);
+      localStorage.setItem("orbit_deleted_puskesmas", JSON.stringify(updated));
       return updated;
     });
     setSelectedPuskesmas(val);
@@ -201,6 +232,11 @@ export default function DataInputCenter({
       localStorage.setItem("orbit_custom_kelurahan", JSON.stringify(updated));
       return updated;
     });
+    setDeletedKelurahanList(prev => {
+      const updated = prev.filter(i => i !== val);
+      localStorage.setItem("orbit_deleted_kelurahan", JSON.stringify(updated));
+      return updated;
+    });
     setSelectedKelurahan(val);
   };
 
@@ -210,6 +246,11 @@ export default function DataInputCenter({
       if (prev.includes(val)) return prev;
       const updated = [...prev, val];
       localStorage.setItem("orbit_custom_dusun", JSON.stringify(updated));
+      return updated;
+    });
+    setDeletedDusunList(prev => {
+      const updated = prev.filter(i => i !== val);
+      localStorage.setItem("orbit_deleted_dusun", JSON.stringify(updated));
       return updated;
     });
     setSelectedDusun(val);
@@ -223,47 +264,204 @@ export default function DataInputCenter({
       localStorage.setItem("orbit_custom_posyandu", JSON.stringify(updated));
       return updated;
     });
+    setDeletedPosyanduList(prev => {
+      const updated = prev.filter(i => i !== val);
+      localStorage.setItem("orbit_deleted_posyandu", JSON.stringify(updated));
+      return updated;
+    });
     setSelectedPosyandu(val);
   };
 
   const handleDeleteCustomPuskesmas = (val: string) => {
     if (!val) return;
+    setDeletedPuskesmasList(prev => {
+      const updated = Array.from(new Set([...prev, val]));
+      localStorage.setItem("orbit_deleted_puskesmas", JSON.stringify(updated));
+      return updated;
+    });
     setCustomPuskesmasList(prev => {
       const updated = prev.filter(item => item !== val);
       localStorage.setItem("orbit_custom_puskesmas", JSON.stringify(updated));
       return updated;
     });
     if (selectedPuskesmas === val) setSelectedPuskesmas("");
+
+    // Clean up matching beneficiaries
+    if (Array.isArray(beneficiaries)) {
+      beneficiaries.forEach(b => {
+        if (b.location?.puskesmas === val) {
+          onSaveBeneficiary({ ...b, location: { ...b.location, puskesmas: "" } });
+        }
+      });
+      try {
+        const updatedArr = beneficiaries.map(b => b.location?.puskesmas === val ? { ...b, location: { ...b.location, puskesmas: "" } } : b);
+        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updatedArr));
+      } catch (e) {}
+    }
+
+    // Clean up in Ibu Hamil & Ibu Menyusui localStorage
+    try {
+      const rawHamil = localStorage.getItem("orbit_gizi_ibu_hamil") || "[]";
+      const hArr = JSON.parse(rawHamil);
+      if (Array.isArray(hArr)) {
+        const uHamil = hArr.map((h: any) => h.puskesmas === val ? { ...h, puskesmas: "" } : h);
+        localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(uHamil));
+        localStorage.setItem("orbit_gizi_local_ibu_hamil", JSON.stringify(uHamil));
+      }
+    } catch (e) {}
+    try {
+      const rawMenyusui = localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]";
+      const mArr = JSON.parse(rawMenyusui);
+      if (Array.isArray(mArr)) {
+        const uMenyusui = mArr.map((m: any) => m.puskesmas === val ? { ...m, puskesmas: "" } : m);
+        localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(uMenyusui));
+        localStorage.setItem("orbit_gizi_local_ibu_menyusui", JSON.stringify(uMenyusui));
+      }
+    } catch (e) {}
   };
 
   const handleDeleteCustomKelurahan = (val: string) => {
     if (!val) return;
+    setDeletedKelurahanList(prev => {
+      const updated = Array.from(new Set([...prev, val]));
+      localStorage.setItem("orbit_deleted_kelurahan", JSON.stringify(updated));
+      return updated;
+    });
     setCustomKelurahanList(prev => {
       const updated = prev.filter(item => item !== val);
       localStorage.setItem("orbit_custom_kelurahan", JSON.stringify(updated));
       return updated;
     });
     if (selectedKelurahan === val) setSelectedKelurahan("");
+
+    // Clean up matching beneficiaries
+    if (Array.isArray(beneficiaries)) {
+      beneficiaries.forEach(b => {
+        if (b.location?.kelurahan === val) {
+          onSaveBeneficiary({ ...b, location: { ...b.location, kelurahan: "" } });
+        }
+      });
+      try {
+        const updatedArr = beneficiaries.map(b => b.location?.kelurahan === val ? { ...b, location: { ...b.location, kelurahan: "" } } : b);
+        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updatedArr));
+      } catch (e) {}
+    }
+
+    // Clean up in Ibu Hamil & Ibu Menyusui localStorage
+    try {
+      const rawHamil = localStorage.getItem("orbit_gizi_ibu_hamil") || "[]";
+      const hArr = JSON.parse(rawHamil);
+      if (Array.isArray(hArr)) {
+        const uHamil = hArr.map((h: any) => h.kelurahan === val ? { ...h, kelurahan: "" } : h);
+        localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(uHamil));
+        localStorage.setItem("orbit_gizi_local_ibu_hamil", JSON.stringify(uHamil));
+      }
+    } catch (e) {}
+    try {
+      const rawMenyusui = localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]";
+      const mArr = JSON.parse(rawMenyusui);
+      if (Array.isArray(mArr)) {
+        const uMenyusui = mArr.map((m: any) => m.kelurahan === val ? { ...m, kelurahan: "" } : m);
+        localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(uMenyusui));
+        localStorage.setItem("orbit_gizi_local_ibu_menyusui", JSON.stringify(uMenyusui));
+      }
+    } catch (e) {}
   };
 
   const handleDeleteCustomDusun = (val: string) => {
     if (!val) return;
+    setDeletedDusunList(prev => {
+      const updated = Array.from(new Set([...prev, val]));
+      localStorage.setItem("orbit_deleted_dusun", JSON.stringify(updated));
+      return updated;
+    });
     setCustomDusunList(prev => {
       const updated = prev.filter(item => item !== val);
       localStorage.setItem("orbit_custom_dusun", JSON.stringify(updated));
       return updated;
     });
     if (selectedDusun === val) setSelectedDusun("");
+
+    // Clean up matching beneficiaries
+    if (Array.isArray(beneficiaries)) {
+      beneficiaries.forEach(b => {
+        if (b.location?.dusun === val) {
+          onSaveBeneficiary({ ...b, location: { ...b.location, dusun: "" } });
+        }
+      });
+      try {
+        const updatedArr = beneficiaries.map(b => b.location?.dusun === val ? { ...b, location: { ...b.location, dusun: "" } } : b);
+        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updatedArr));
+      } catch (e) {}
+    }
+
+    // Clean up in Ibu Hamil & Ibu Menyusui localStorage
+    try {
+      const rawHamil = localStorage.getItem("orbit_gizi_ibu_hamil") || "[]";
+      const hArr = JSON.parse(rawHamil);
+      if (Array.isArray(hArr)) {
+        const uHamil = hArr.map((h: any) => h.dusun === val ? { ...h, dusun: "" } : h);
+        localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(uHamil));
+        localStorage.setItem("orbit_gizi_local_ibu_hamil", JSON.stringify(uHamil));
+      }
+    } catch (e) {}
+    try {
+      const rawMenyusui = localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]";
+      const mArr = JSON.parse(rawMenyusui);
+      if (Array.isArray(mArr)) {
+        const uMenyusui = mArr.map((m: any) => m.dusun === val ? { ...m, dusun: "" } : m);
+        localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(uMenyusui));
+        localStorage.setItem("orbit_gizi_local_ibu_menyusui", JSON.stringify(uMenyusui));
+      }
+    } catch (e) {}
   };
 
   const handleDeleteCustomPosyandu = (val: string) => {
     if (!val) return;
+    setDeletedPosyanduList(prev => {
+      const updated = Array.from(new Set([...prev, val]));
+      localStorage.setItem("orbit_deleted_posyandu", JSON.stringify(updated));
+      return updated;
+    });
     setCustomPosyanduList(prev => {
       const updated = prev.filter(item => item !== val);
       localStorage.setItem("orbit_custom_posyandu", JSON.stringify(updated));
       return updated;
     });
     if (selectedPosyandu === val) setSelectedPosyandu("");
+
+    // Clean up matching beneficiaries
+    if (Array.isArray(beneficiaries)) {
+      beneficiaries.forEach(b => {
+        if (b.location?.posyandu === val) {
+          onSaveBeneficiary({ ...b, location: { ...b.location, posyandu: "" } });
+        }
+      });
+      try {
+        const updatedArr = beneficiaries.map(b => b.location?.posyandu === val ? { ...b, location: { ...b.location, posyandu: "" } } : b);
+        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updatedArr));
+      } catch (e) {}
+    }
+
+    // Clean up in Ibu Hamil & Ibu Menyusui localStorage
+    try {
+      const rawHamil = localStorage.getItem("orbit_gizi_ibu_hamil") || "[]";
+      const hArr = JSON.parse(rawHamil);
+      if (Array.isArray(hArr)) {
+        const uHamil = hArr.map((h: any) => h.posyandu === val ? { ...h, posyandu: "" } : h);
+        localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(uHamil));
+        localStorage.setItem("orbit_gizi_local_ibu_hamil", JSON.stringify(uHamil));
+      }
+    } catch (e) {}
+    try {
+      const rawMenyusui = localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]";
+      const mArr = JSON.parse(rawMenyusui);
+      if (Array.isArray(mArr)) {
+        const uMenyusui = mArr.map((m: any) => m.posyandu === val ? { ...m, posyandu: "" } : m);
+        localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(uMenyusui));
+        localStorage.setItem("orbit_gizi_local_ibu_menyusui", JSON.stringify(uMenyusui));
+      }
+    } catch (e) {}
   };
 
   // Dynamic Options derived from data & saved master data
@@ -273,8 +471,8 @@ export default function DataInputCenter({
     customPuskesmasList.forEach(p => set.add(p));
     villages.forEach(v => v.locationHierarchy?.puskesmas && set.add(v.locationHierarchy.puskesmas));
     beneficiaries.forEach(b => b.location?.puskesmas && set.add(b.location.puskesmas));
-    return Array.from(set).filter(Boolean);
-  }, [villages, beneficiaries, selectedPuskesmas, customPuskesmasList]);
+    return Array.from(set).filter(name => Boolean(name) && !deletedPuskesmasList.includes(name));
+  }, [villages, beneficiaries, selectedPuskesmas, customPuskesmasList, deletedPuskesmasList]);
 
   const villageOptions = useMemo(() => {
     const set = new Set<string>();
@@ -282,8 +480,8 @@ export default function DataInputCenter({
     customKelurahanList.forEach(k => set.add(k));
     villages.forEach(v => v.name && set.add(v.name));
     beneficiaries.forEach(b => b.location?.kelurahan && set.add(b.location.kelurahan));
-    return Array.from(set).filter(Boolean);
-  }, [villages, beneficiaries, selectedKelurahan, customKelurahanList]);
+    return Array.from(set).filter(name => Boolean(name) && !deletedKelurahanList.includes(name));
+  }, [villages, beneficiaries, selectedKelurahan, customKelurahanList, deletedKelurahanList]);
 
   const dusunOptions = useMemo(() => {
     const set = new Set<string>();
@@ -291,8 +489,8 @@ export default function DataInputCenter({
     customDusunList.forEach(d => set.add(d));
     villages.forEach(v => v.locationHierarchy?.dusun && set.add(v.locationHierarchy.dusun));
     beneficiaries.forEach(b => b.location?.dusun && set.add(b.location.dusun));
-    return Array.from(set).filter(Boolean);
-  }, [villages, beneficiaries, selectedDusun, customDusunList]);
+    return Array.from(set).filter(name => Boolean(name) && !deletedDusunList.includes(name));
+  }, [villages, beneficiaries, selectedDusun, customDusunList, deletedDusunList]);
 
   const posyanduOptions = useMemo(() => {
     const set = new Set<string>();
@@ -300,8 +498,8 @@ export default function DataInputCenter({
     customPosyanduList.forEach(p => set.add(p));
     villages.forEach(v => v.locationHierarchy?.posyandu && set.add(v.locationHierarchy.posyandu));
     beneficiaries.forEach(b => b.location?.posyandu && set.add(b.location.posyandu));
-    return Array.from(set).filter(Boolean);
-  }, [villages, beneficiaries, selectedPosyandu, customPosyanduList]);
+    return Array.from(set).filter(name => Boolean(name) && !deletedPosyanduList.includes(name));
+  }, [villages, beneficiaries, selectedPosyandu, customPosyanduList, deletedPosyanduList]);
 
   // Beneficiary Search & Filters
   const [searchTerm, setSearchTerm] = useState<string>("");
