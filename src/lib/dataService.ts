@@ -1185,7 +1185,7 @@ function getLocalAdmins(): string[] {
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
   } catch (e) {}
-  return ["properwahyu294@gmail.com"];
+  return ["properwahyu294@gmail.com", "bidangplp71@gmail.com", "ociendema@gmail.com"];
 }
 
 function saveLocalAdmins(list: string[]) {

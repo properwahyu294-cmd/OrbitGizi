@@ -88,7 +88,7 @@ let bannerImages: any[] = [];
 let dashboardBannerImages: any[] = [];
 let visitorLogs: any[] = [];
 let auditLogs: any[] = [];
-let registeredAdmins: string[] = ["properwahyu294@gmail.com"];
+let registeredAdmins: string[] = ["properwahyu294@gmail.com", "bidangplp71@gmail.com", "ociendema@gmail.com"];
 
 // Load data store from disk or initialize with seeds
 function loadStoreFromDisk() {
@@ -109,20 +109,20 @@ function loadStoreFromDisk() {
       visitorLogs = Array.isArray(parsed.visitorLogs) ? parsed.visitorLogs : [];
       auditLogs = Array.isArray(parsed.auditLogs) ? parsed.auditLogs : [];
       registeredAdmins = Array.isArray(parsed.registeredAdmins) && parsed.registeredAdmins.length > 0 
-        ? parsed.registeredAdmins 
-        : ["properwahyu294@gmail.com"];
+        ? Array.from(new Set([...parsed.registeredAdmins, "properwahyu294@gmail.com", "bidangplp71@gmail.com", "ociendema@gmail.com"]))
+        : ["properwahyu294@gmail.com", "bidangplp71@gmail.com", "ociendema@gmail.com"];
       lastUpdated = parsed.lastUpdated || new Date().toISOString();
     } else {
       villages = [...SEED_VILLAGES];
       beneficiaries = [...SEED_BENEFICIARIES];
-      registeredAdmins = ["properwahyu294@gmail.com"];
+      registeredAdmins = ["properwahyu294@gmail.com", "bidangplp71@gmail.com", "ociendema@gmail.com"];
       saveStoreToDisk();
     }
   } catch (e) {
     console.error("Gagal membaca data_store.json, menggunakan seed awal:", e);
     villages = [...SEED_VILLAGES];
     beneficiaries = [...SEED_BENEFICIARIES];
-    registeredAdmins = ["properwahyu294@gmail.com"];
+    registeredAdmins = ["properwahyu294@gmail.com", "bidangplp71@gmail.com", "ociendema@gmail.com"];
     saveStoreToDisk();
   }
 }

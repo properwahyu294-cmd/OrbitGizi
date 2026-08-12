@@ -2,7 +2,7 @@
   "adminSheetUrl": "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115",
   "adminSheetId": "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE",
   "kabupatenName": "Kabupaten Nagekeo",
-  "lastUpdated": "2026-08-11T13:17:28.469Z",
+  "lastUpdated": "2026-08-12T07:27:15.966Z",
   "weights": {
     "pilar1": 0.1,
     "pilar2": 0.3,
@@ -546,6 +546,355 @@
       ],
       "notes": "",
       "weightRecords": []
+    },
+    {
+      "id": "ben_1786252081747",
+      "name": "DELCIELO A.K.JUNIOR",
+      "parentName": "YULIANA ASUMTA WOGO",
+      "nik": "5318600608248857",
+      "gender": "Laki-laki",
+      "age": "2 TAHUN",
+      "birthDate": "2024-08-06",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "AERAMO",
+        "dusun": "LEGO",
+        "posyandu": "LEGO"
+      },
+      "attendanceStatus": "Mengunjungi Posyandu",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786251920833",
+      "name": "CRAVING KOLLE",
+      "parentName": "ALICIA R.PI",
+      "nik": "5318601403247307",
+      "gender": "Laki-laki",
+      "age": "2 TAHUN 5 BULAN",
+      "birthDate": "2024-03-14",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "AERAMO",
+        "dusun": "LEGO",
+        "posyandu": "LEGO"
+      },
+      "attendanceStatus": "Mengunjungi Posyandu",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786251767431",
+      "name": "BRIGIT MEGA",
+      "parentName": "ANJELINA TEKU NOY",
+      "nik": "5318601905252496",
+      "gender": "Laki-laki",
+      "age": "1 TAHUN 3 BULAN",
+      "birthDate": "2025-05-19",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "AERAMO",
+        "dusun": "LEGO",
+        "posyandu": "LEGO"
+      },
+      "attendanceStatus": "Mengunjungi Posyandu",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786251397248",
+      "name": "ATLAND ANDRIO A.MOLA",
+      "parentName": "ROSWITA TEA",
+      "nik": "5318602101251346",
+      "gender": "Laki-laki",
+      "age": "1 TAHUN 9 BULAN",
+      "birthDate": "2025-01-21",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "AERAMO",
+        "dusun": "LEGO",
+        "posyandu": "LEGO"
+      },
+      "attendanceStatus": "Tidak Mengunjungi",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "PINDAH BOAWAE",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786251248165",
+      "name": "ARKADIUS MITE",
+      "parentName": "MARTA LAMA",
+      "nik": "5318602111252697",
+      "gender": "Laki-laki",
+      "age": "1 TAHUN 9 BULAN",
+      "birthDate": "2025-11-21",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "AERAMO",
+        "dusun": "LEGO",
+        "posyandu": "LEGO"
+      },
+      "attendanceStatus": "Tidak Mengunjungi",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786251118929",
+      "name": "ARETAS HARVEN BEN",
+      "parentName": "MARIA Y BEN",
+      "nik": "",
+      "gender": "Laki-laki",
+      "age": "3 TAHUN 10 BULAN",
+      "birthDate": "2023-10-20",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "AERAMO",
+        "dusun": "LEGO",
+        "posyandu": "LEGO"
+      },
+      "attendanceStatus": "Tidak Mengunjungi",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786250993453",
+      "name": "ANTONIUS PADREPIO DHELO",
+      "parentName": "MARSELINA KEDHI",
+      "nik": "5318601701221607",
+      "gender": "Laki-laki",
+      "age": "4 TAHUN 7 BULAN",
+      "birthDate": "2022-01-17",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "AERAMO",
+        "dusun": "LEGO",
+        "posyandu": "LEGO"
+      },
+      "attendanceStatus": "Mengunjungi Posyandu",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786250736754",
+      "name": "ALJAILANI",
+      "parentName": "SUSILOWATI",
+      "nik": "5315937202882737",
+      "gender": "Laki-laki",
+      "age": "1 TAHUN 7 BULAN",
+      "birthDate": "2025-02-24",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "AERAMO",
+        "dusun": "LEGO",
+        "posyandu": "LEGO"
+      },
+      "attendanceStatus": "Tidak Mengunjungi",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": true,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786250219138",
+      "name": "ALEXANDER J. LEBA",
+      "parentName": "MARIA SOFIANA PEHAN KELEN",
+      "nik": "531802502236511",
+      "gender": "Laki-laki",
+      "age": "3 TAHUN 8 BULAN",
+      "birthDate": "2023-02-25",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "AERAMO",
+        "dusun": "LEGO",
+        "posyandu": "LEGO"
+      },
+      "attendanceStatus": "Mengunjungi Posyandu",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786250072021",
+      "name": "ALEXANDRIA KONSITA TEA",
+      "parentName": "ortin ia jogo",
+      "nik": "5318606012247683",
+      "gender": "Perempuan",
+      "age": "2 tahun 8 bulan",
+      "birthDate": "2024-12-20",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "AERAMO",
+        "dusun": "LEGO",
+        "posyandu": "LEGO"
+      },
+      "attendanceStatus": "Mengunjungi Posyandu",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
+    },
+    {
+      "id": "ben_1786249670844",
+      "name": "ALEXANDER M BABO",
+      "parentName": "mersiana ere",
+      "nik": "5318602202229653",
+      "gender": "Laki-laki",
+      "age": "4 tahun 6 bulan",
+      "birthDate": "2022-02-02",
+      "category": "Balita",
+      "location": {
+        "propinsi": "Nusa Tenggara Timur",
+        "kabupaten": "Kabupaten Nagekeo",
+        "puskesmas": "KOTA",
+        "kelurahan": "AERAMO",
+        "dusun": "LEGO",
+        "posyandu": "LEGO"
+      },
+      "attendanceStatus": "Tidak Mengunjungi",
+      "isReceivedMBG": true,
+      "isReceivedPMT": true,
+      "isPetugasDesaHadir": false,
+      "isPetugasPosyanduHadir": true,
+      "stakeholdersHadir": [
+        "Petugas Desa / Pemdes",
+        "Kader Posyandu",
+        "Petugas Puskesmas",
+        "Petugas Dinkes / Dinas Kesehatan",
+        "Ahli Gizi Puskesmas/Desa"
+      ],
+      "notes": "",
+      "weightRecords": []
     }
   ],
   "ibuHamil": [],
@@ -553,6 +902,142 @@
   "bannerImages": [],
   "dashboardBannerImages": [],
   "visitorLogs": [
+    {
+      "id": "v_1786518682206_zrej",
+      "timestamp": "2026-08-12T07:11:22.206Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786518680277_aiwx",
+      "timestamp": "2026-08-12T07:11:20.277Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786518680259_lcg6",
+      "timestamp": "2026-08-12T07:11:20.259Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786518088291_cro1",
+      "timestamp": "2026-08-12T07:01:28.291Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Pusat Input & Sinkronisasi MBG",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786518079757_ybhi",
+      "timestamp": "2026-08-12T07:01:19.757Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Admin (overview)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786517720793_0vuk",
+      "timestamp": "2026-08-12T06:55:20.793Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786517719007_ta2d",
+      "timestamp": "2026-08-12T06:55:19.007Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786517718997_m9jl",
+      "timestamp": "2026-08-12T06:55:18.997Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786517398173_frr3",
+      "timestamp": "2026-08-12T06:49:58.173Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786517396919_wyp7",
+      "timestamp": "2026-08-12T06:49:56.919Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786517396906_q2hc",
+      "timestamp": "2026-08-12T06:49:56.906Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786517273358_xesj",
+      "timestamp": "2026-08-12T06:47:53.358Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786517272450_53rc",
+      "timestamp": "2026-08-12T06:47:52.450Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786517272443_hqky",
+      "timestamp": "2026-08-12T06:47:52.444Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786516861532_qi77",
+      "timestamp": "2026-08-12T06:41:01.532Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786516859823_zl9c",
+      "timestamp": "2026-08-12T06:40:59.823Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786516859820_njpu",
+      "timestamp": "2026-08-12T06:40:59.820Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
     {
       "id": "v_1786453862954_spcs",
       "timestamp": "2026-08-11T13:11:02.954Z",
@@ -1284,6 +1769,8 @@
   ],
   "auditLogs": [],
   "registeredAdmins": [
-    "properwahyu294@gmail.com"
+    "properwahyu294@gmail.com",
+    "bidangplp71@gmail.com",
+    "ociendema@gmail.com"
   ]
 }

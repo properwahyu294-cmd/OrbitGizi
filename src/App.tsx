@@ -176,7 +176,7 @@ export default function App() {
   };
 
   // Registered Admins state
-  const [registeredAdmins, setRegisteredAdmins] = useState<string[]>(["properwahyu294@gmail.com"]);
+  const [registeredAdmins, setRegisteredAdmins] = useState<string[]>(["properwahyu294@gmail.com", "bidangplp71@gmail.com", "ociendema@gmail.com"]);
   const [showAdminManagementModal, setShowAdminManagementModal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -192,7 +192,9 @@ export default function App() {
   const currentUserEmail = currentUser?.email?.toLowerCase() || "";
   const isAdmin = !!currentUser && (
     registeredAdmins.some(adm => adm.toLowerCase() === currentUserEmail) ||
-    currentUserEmail === "properwahyu294@gmail.com"
+    currentUserEmail === "properwahyu294@gmail.com" ||
+    currentUserEmail === "bidangplp71@gmail.com" ||
+    currentUserEmail === "ociendema@gmail.com"
   );
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [syncingSheets, setSyncingSheets] = useState<boolean>(false);
@@ -500,7 +502,9 @@ export default function App() {
 
         const isUserAuthorized = emailClean && (
           latestAdmins.some(a => a.toLowerCase() === emailClean) ||
-          emailClean === "properwahyu294@gmail.com"
+          emailClean === "properwahyu294@gmail.com" ||
+          emailClean === "bidangplp71@gmail.com" ||
+          emailClean === "ociendema@gmail.com"
         );
 
         if (!isUserAuthorized) {
