@@ -809,23 +809,6 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
           console.warn("Error saving to localStorage cache:", e);
         }
 
-        // Post back to API server if available (e.g., Cloud Run / Express mode)
-        const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-        fetch(`${baseUrl}/api/beneficiaries/batch`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ beneficiaries: parsedMbg })
-        }).catch(() => {});
-        
-        fetch(`${baseUrl}/api/ibu-hamil/batch`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ibuHamil: parsedIbuHamil })
-        }).catch(() => {});
-        
-        fetch(`${baseUrl}/api/ibu-menyusui/batch`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ibuMenyusui: parsedIbuMenyusui })
-        }).catch(() => {});
-
         return {
           success: true,
           beneficiaries: parsedMbg,
