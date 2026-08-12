@@ -1,29 +1,90 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
 import { Activity, PieChart as PieIcon, BarChart3, TrendingUp } from "lucide-react";
+import { MBGBeneficiary } from "../types";
 
 interface AdminNutritionChartsProps {
-  beneficiariesCount: number;
+  beneficiaries: MBGBeneficiary[];
 }
 
-export const AdminNutritionCharts: React.FC<AdminNutritionChartsProps> = ({ beneficiariesCount }) => {
-  // Nutritional status breakdown data
-  const nutritionStatusData = [
-    { name: "Normal / Sehat", count: Math.max(120, beneficiariesCount * 3), color: "#10b981" }, // Emerald
-    { name: "Rentan Stunting", count: Math.max(25, Math.floor(beneficiariesCount * 0.6)), color: "#f59e0b" }, // Amber
-    { name: "Gizi Kurang (Wasting)", count: Math.max(15, Math.floor(beneficiariesCount * 0.35)), color: "#ef4444" }, // Rose
-    { name: "KEK (Ibu Hamil)", count: Math.max(10, Math.floor(beneficiariesCount * 0.25)), color: "#8b5cf6" }, // Purple
-  ];
+export const AdminNutritionCharts: React.FC<AdminNutritionChartsProps> = ({ beneficiaries }) => {
+  // Calculate real nutritional status data
+  const nutritionStatusData = useMemo(() => {
+    let normal = 0, rentan = 0, giziKurang = 0, kek = 0;
+    
+    beneficiaries.forEach(b => {
+      let status = b.initialStatusGizi;
+      if (b.weightRecords && b.weightRecords.length > 0) {
+        status = b.weightRecords[b.weightRecords.length - 1].statusGizi || status;
+      }
+      
+      if (status === "Normal") normal++;
+      else if (status === "Risiko Stunting") rentan++;
+      else if (status === "Gizi Kurang" || status === "Stunting") giziKurang++;
+      else if (b.category === "Ibu Hamil" && status !== "Normal") kek++;
+      else if (!status) normal++; // default to normal if not set
+    });
+
+    return [
+      { name: "Normal / Sehat", count: normal, color: "#10b981" },
+      { name: "Rentan Stunting", count: rentan, color: "#f59e0b" },
+      { name: "Gizi Kurang (Wasting)", count: giziKurang, color: "#ef4444" },
+      { name: "KEK (Ibu Hamil)", count: kek, color: "#8b5cf6" },
+    ];
+  }, [beneficiaries]);
 
   // Monthly intervention & distribution trend data
-  const monthlyTrendData = [
-    { month: "Jan", mbg: 320, pmt: 210, posyandu: 110 },
-    { month: "Feb", mbg: 380, pmt: 240, posyandu: 125 },
-    { month: "Mar", mbg: 420, pmt: 290, posyandu: 132 },
-    { month: "Apr", mbg: 490, pmt: 310, posyandu: 138 },
-    { month: "Mei", mbg: 540, pmt: 350, posyandu: 140 },
-    { month: "Jun", mbg: 610, pmt: 390, posyandu: 142 },
-  ];
+  const { monthlyTrendData, totalMBG, totalPMT, totalPosyandu, lastTrendLabel } = useMemo(() => {
+    const periodMap = new Map();
+    let currentMbg = 0, currentPmt = 0;
+    const currentPosyandus = new Set();
+    
+    beneficiaries.forEach(b => {
+      if (b.isReceivedMBG !== false) currentMbg++;
+      if (b.isReceivedPMT !== false) currentPmt++;
+      if (b.location.posyandu) currentPosyandus.add(b.location.posyandu);
+
+      if (b.weightRecords && b.weightRecords.length > 0) {
+        b.weightRecords.forEach(r => {
+          if (!periodMap.has(r.period)) {
+            periodMap.set(r.period, { month: r.period, mbg: 0, pmt: 0, posyandu: new Set() });
+          }
+          const p = periodMap.get(r.period);
+          if (b.isReceivedMBG !== false) p.mbg++;
+          if (b.isReceivedPMT !== false) p.pmt++;
+          if (b.location.posyandu) p.posyandu.add(b.location.posyandu);
+        });
+      }
+    });
+
+    let trendData = Array.from(periodMap.values()).map(p => ({
+      month: p.month.replace("2026", "").trim().substring(0, 3),
+      mbg: p.mbg,
+      pmt: p.pmt,
+      posyandu: p.posyandu.size,
+      originalMonth: p.month
+    })).slice(-6); // Get last 6 months
+
+    if (trendData.length === 0) {
+      trendData = [{
+        month: "Saat Ini",
+        mbg: currentMbg,
+        pmt: currentPmt,
+        posyandu: currentPosyandus.size,
+        originalMonth: "Saat Ini"
+      }];
+    }
+
+    const lastTrend = trendData[trendData.length - 1];
+
+    return {
+      monthlyTrendData: trendData,
+      totalMBG: lastTrend.mbg,
+      totalPMT: lastTrend.pmt,
+      totalPosyandu: lastTrend.posyandu,
+      lastTrendLabel: lastTrend.originalMonth || lastTrend.month
+    };
+  }, [beneficiaries]);
 
   const COLORS = ["#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
@@ -124,16 +185,16 @@ export const AdminNutritionCharts: React.FC<AdminNutritionChartsProps> = ({ bene
 
         <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-center">
           <div className="bg-blue-50/60 p-2.5 rounded-xl border border-blue-100">
-            <span className="text-[10px] text-blue-700 font-bold block">Total MBG Juni</span>
-            <span className="text-sm font-black text-blue-900">610 Jiwa</span>
+            <span className="text-[10px] text-blue-700 font-bold block">{`Total MBG ${lastTrendLabel}`}</span>
+            <span className="text-sm font-black text-blue-900">{totalMBG} Jiwa</span>
           </div>
           <div className="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100">
-            <span className="text-[10px] text-emerald-700 font-bold block">Total PMT Juni</span>
-            <span className="text-sm font-black text-emerald-900">390 Jiwa</span>
+            <span className="text-[10px] text-emerald-700 font-bold block">{`Total PMT ${lastTrendLabel}`}</span>
+            <span className="text-sm font-black text-emerald-900">{totalPMT} Jiwa</span>
           </div>
           <div className="bg-indigo-50/60 p-2.5 rounded-xl border border-indigo-100">
             <span className="text-[10px] text-indigo-700 font-bold block">Posyandu Aktif</span>
-            <span className="text-sm font-black text-indigo-900">142 Pos</span>
+            <span className="text-sm font-black text-indigo-900">{totalPosyandu} Pos</span>
           </div>
         </div>
       </div>
