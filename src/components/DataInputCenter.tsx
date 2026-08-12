@@ -321,7 +321,7 @@ export default function DataInputCenter({
     setBenAge(b.age || "");
     setBenBirthDate(b.birthDate || "");
     setBenCategory(b.category);
-    setBenReceivedMBG(b.isReceivedMBG);
+    setBenReceivedMBG(b.isReceivedMBG !== false);
     setBenReceivedPMT(b.isReceivedPMT !== false);
     setBenAttendanceStatus(b.attendanceStatus || "Mengunjungi Posyandu");
     setBenPetugasDesaHadir(b.isPetugasDesaHadir !== false);
@@ -2650,6 +2650,61 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     isDark={false}
                     onSaveOption={handleSaveCustomPuskesmas}
                   />
+                </div>
+              </div>
+
+              {/* Program Penerimaan */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
+                  <label className="font-bold text-emerald-800 block mb-2 text-xs">STATUS PENERIMA MBG</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="mbg_status" 
+                        checked={benReceivedMBG === true} 
+                        onChange={() => setBenReceivedMBG(true)}
+                        className="text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="text-sm font-semibold text-slate-700">Menerima MBG</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="mbg_status" 
+                        checked={benReceivedMBG === false} 
+                        onChange={() => setBenReceivedMBG(false)}
+                        className="text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <span className="text-sm font-semibold text-slate-700">Tidak Menerima</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="bg-purple-50/50 p-3 rounded-xl border border-purple-100">
+                  <label className="font-bold text-purple-800 block mb-2 text-xs">STATUS PENERIMA PMT</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="pmt_status" 
+                        checked={benReceivedPMT === true} 
+                        onChange={() => setBenReceivedPMT(true)}
+                        className="text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-sm font-semibold text-slate-700">Menerima PMT</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="pmt_status" 
+                        checked={benReceivedPMT === false} 
+                        onChange={() => setBenReceivedPMT(false)}
+                        className="text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-sm font-semibold text-slate-700">Tidak Menerima</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 

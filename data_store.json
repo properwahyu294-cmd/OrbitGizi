@@ -2,7 +2,7 @@
   "adminSheetUrl": "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=434705115#gid=434705115",
   "adminSheetId": "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE",
   "kabupatenName": "Kabupaten Nagekeo",
-  "lastUpdated": "2026-08-12T07:27:15.966Z",
+  "lastUpdated": "2026-08-12T07:39:46.837Z",
   "weights": {
     "pilar1": 0.1,
     "pilar2": 0.3,
@@ -902,6 +902,30 @@
   "bannerImages": [],
   "dashboardBannerImages": [],
   "visitorLogs": [
+    {
+      "id": "v_1786519675480_cnvy",
+      "timestamp": "2026-08-12T07:27:55.480Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786519674752_qmfn",
+      "timestamp": "2026-08-12T07:27:54.752Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1786519674751_w7g2",
+      "timestamp": "2026-08-12T07:27:54.751Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
     {
       "id": "v_1786518682206_zrej",
       "timestamp": "2026-08-12T07:11:22.206Z",
