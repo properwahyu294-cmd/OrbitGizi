@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { IbuMenyusuiBeneficiary } from "../types";
 import { Users, Plus, Edit3, Trash2, Search, Heart, MapPin, CheckCircle2, X, Save, Calendar, Filter } from "lucide-react";
 import { getIbuMenyusuiApi, saveIbuMenyusuiApi, deleteIbuMenyusuiApi } from "../lib/dataService";
+import { Pagination } from "./Pagination";
 
 const DEFAULT_IBU_MENYUSUI: IbuMenyusuiBeneficiary[] = [];
 
@@ -164,6 +165,20 @@ export default function IbuMenyusuiView({ onDataChange }: { onDataChange?: () =>
     });
   }, [beneficiaries, selectedIndividualId, searchTerm]);
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedIndividualId, selectedPeriodFilter]);
+
+  const paginatedList = useMemo(() => {
+    if (itemsPerPage >= 999999) return filteredList;
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredList.slice(start, start + itemsPerPage);
+  }, [filteredList, currentPage, itemsPerPage]);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* HEADER SECTION */}
@@ -300,7 +315,7 @@ export default function IbuMenyusuiView({ onDataChange }: { onDataChange?: () =>
                   </td>
                 </tr>
               ) : (
-                filteredList.map((item, idx) => (
+                paginatedList.map((item, idx) => (
                   <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="p-4 font-mono text-slate-400 font-bold">{idx + 1}</td>
                     <td className="p-4">
@@ -356,6 +371,14 @@ export default function IbuMenyusuiView({ onDataChange }: { onDataChange?: () =>
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredList.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+          label="Ibu Menyusui"
+        />
       </div>
 
       {/* ADD / EDIT MODAL */}

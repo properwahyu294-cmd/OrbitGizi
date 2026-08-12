@@ -49,6 +49,7 @@ import {
 import { Village, MBGBeneficiary, WeightRecord } from "../types";
 import { LocationSelectorField } from "./LocationSelectorField";
 import { AnalyticDataPivotModal } from "./AnalyticDataPivotModal";
+import { Pagination } from "./Pagination";
 import { sanitizeInput, validateBeneficiaryPayload } from "../lib/cyberSecurity";
 
 interface DataInputCenterProps {
@@ -740,6 +741,34 @@ export default function DataInputCenter({
     });
   }, [beneficiaries, searchTerm, categoryFilter, attendanceFilter, posyanduFilter, programFilter, genderFilter]);
 
+  // Pagination states for Beneficiaries table
+  const [benCurrentPage, setBenCurrentPage] = useState<number>(1);
+  const [benItemsPerPage, setBenItemsPerPage] = useState<number>(10);
+
+  // Pagination states for Weight History table
+  const [weightCurrentPage, setWeightCurrentPage] = useState<number>(1);
+  const [weightItemsPerPage, setWeightItemsPerPage] = useState<number>(10);
+
+  useEffect(() => {
+    setBenCurrentPage(1);
+  }, [searchTerm, categoryFilter, attendanceFilter, posyanduFilter, programFilter, genderFilter]);
+
+  useEffect(() => {
+    setWeightCurrentPage(1);
+  }, [histSearchQuery, histCategoryFilter, histPosyanduFilter]);
+
+  const paginatedBeneficiaries = useMemo(() => {
+    if (benItemsPerPage >= 999999) return filteredBeneficiaries;
+    const start = (benCurrentPage - 1) * benItemsPerPage;
+    return filteredBeneficiaries.slice(start, start + benItemsPerPage);
+  }, [filteredBeneficiaries, benCurrentPage, benItemsPerPage]);
+
+  const paginatedWeightHistoryRecords = useMemo(() => {
+    if (weightItemsPerPage >= 999999) return filteredWeightHistoryRecords;
+    const start = (weightCurrentPage - 1) * weightItemsPerPage;
+    return filteredWeightHistoryRecords.slice(start, start + weightItemsPerPage);
+  }, [filteredWeightHistoryRecords, weightCurrentPage, weightItemsPerPage]);
+
   // Calculation of Inter-sectoral Collaboration Rate & Critical Weaknesses
   const collaborationMetrics = useMemo(() => {
     const total = beneficiaries.length;
@@ -1363,7 +1392,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     </td>
                   </tr>
                 ) : (
-                  filteredBeneficiaries.map((b) => {
+                  paginatedBeneficiaries.map((b) => {
                     const latestWeight = b.weightRecords[b.weightRecords.length - 1];
                     const isNeedsHomeVisit = b.attendanceStatus === "Tidak Mengunjungi";
                     return (
@@ -1524,6 +1553,14 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={benCurrentPage}
+            totalItems={filteredBeneficiaries.length}
+            itemsPerPage={benItemsPerPage}
+            onPageChange={setBenCurrentPage}
+            onItemsPerPageChange={setBenItemsPerPage}
+            label="sasaran"
+          />
         </div>
       )}
 
@@ -2058,14 +2095,14 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
-                  {filteredWeightHistoryRecords.length === 0 ? (
+                  {paginatedWeightHistoryRecords.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="p-8 text-center text-slate-400 font-bold text-xs">
                         Tidak ada histori pengukuran yang sesuai dengan filter pencarian.
                       </td>
                     </tr>
                   ) : (
-                    filteredWeightHistoryRecords.map(({ ben, rec, idx }) => (
+                    paginatedWeightHistoryRecords.map(({ ben, rec, idx }) => (
                       <tr key={`${ben.id}-${idx}`} className="hover:bg-slate-50/80 transition-colors">
                         <td className="p-4">
                           <button
@@ -2126,6 +2163,14 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={weightCurrentPage}
+              totalItems={filteredWeightHistoryRecords.length}
+              itemsPerPage={weightItemsPerPage}
+              onPageChange={setWeightCurrentPage}
+              onItemsPerPageChange={setWeightItemsPerPage}
+              label="catatan timbang"
+            />
           </div>
 
         </div>

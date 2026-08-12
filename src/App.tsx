@@ -96,7 +96,7 @@ import { OperatorProfile } from "./types";
 const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [];
 
 // Firebase & Sheets integration
-import { initAuth, googleSignIn, logout } from "./lib/firebase";
+import { initAuth, googleSignIn, logout, getAccessToken } from "./lib/firebase";
 import { syncToGoogleSheets, pullFromGoogleSheets } from "./lib/sheetsService";
 import { User } from "firebase/auth";
 import { FileSpreadsheet, LogOut, CheckCircle, AlertCircle } from "lucide-react";
