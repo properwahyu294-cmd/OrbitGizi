@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { List, Plus, Save, CheckCircle2 } from "lucide-react";
+import { List, Plus, Save, CheckCircle2, Trash2 } from "lucide-react";
 
 interface LocationSelectorFieldProps {
   label: string;
@@ -9,6 +9,7 @@ interface LocationSelectorFieldProps {
   placeholder?: string;
   isDark?: boolean;
   onSaveOption?: (savedVal: string) => void;
+  onDeleteOption?: (valToDelete: string) => void;
 }
 
 export function LocationSelectorField({
@@ -18,7 +19,8 @@ export function LocationSelectorField({
   options,
   placeholder = "Ketik nama baru...",
   isDark = false,
-  onSaveOption
+  onSaveOption,
+  onDeleteOption
 }: LocationSelectorFieldProps) {
   const cleanOptions = useMemo(() => {
     return Array.from(new Set(options.filter(Boolean)));
@@ -125,23 +127,45 @@ export function LocationSelectorField({
         </div>
       ) : (
         <div className="space-y-1">
-          <select
-            value={cleanOptions.includes(value) ? value : (value || "")}
-            onChange={handleSelectChange}
-            className={`w-full rounded-xl text-xs sm:text-sm font-bold px-3 py-2 border focus:ring-2 focus:ring-indigo-500/30 focus:outline-none cursor-pointer transition-all ${
-              isDark ? "bg-slate-950 border-slate-700/80 text-white hover:border-slate-600" : "bg-white border-slate-300 text-slate-800"
-            }`}
-          >
-            {!value && <option value="">-- Pilih {label} --</option>}
-            {cleanOptions.map((opt) => (
-              <option key={opt} value={opt} className={isDark ? "bg-slate-900 text-white" : "bg-white text-slate-900"}>
-                {opt}
+          <div className="flex items-center gap-1.5">
+            <select
+              value={cleanOptions.includes(value) ? value : (value || "")}
+              onChange={handleSelectChange}
+              className={`flex-1 min-w-0 rounded-xl text-xs sm:text-sm font-bold px-3 py-2 border focus:ring-2 focus:ring-indigo-500/30 focus:outline-none cursor-pointer transition-all ${
+                isDark ? "bg-slate-950 border-slate-700/80 text-white hover:border-slate-600" : "bg-white border-slate-300 text-slate-800"
+              }`}
+            >
+              {!value && <option value="">-- Pilih {label} --</option>}
+              {cleanOptions.map((opt) => (
+                <option key={opt} value={opt} className={isDark ? "bg-slate-900 text-white" : "bg-white text-slate-900"}>
+                  {opt}
+                </option>
+              ))}
+              <option value="__CUSTOM_NAME__" className={isDark ? "bg-slate-900 text-indigo-300 font-bold" : "bg-white text-indigo-600 font-bold"}>
+                ✏️ + Ketik & Simpan Manual...
               </option>
-            ))}
-            <option value="__CUSTOM_NAME__" className={isDark ? "bg-slate-900 text-indigo-300 font-bold" : "bg-white text-indigo-600 font-bold"}>
-              ✏️ + Ketik & Simpan Manual...
-            </option>
-          </select>
+            </select>
+            {value && onDeleteOption && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`Hapus nama "${value}" dari daftar ${label}?`)) {
+                    onDeleteOption(value);
+                    onChange("");
+                  }
+                }}
+                className={`px-2.5 py-2 text-rose-500 hover:text-rose-600 rounded-xl transition-all border shrink-0 cursor-pointer flex items-center space-x-1 ${
+                  isDark 
+                    ? "bg-slate-950 border-rose-900/60 hover:bg-rose-950/60" 
+                    : "bg-white border-rose-200 hover:bg-rose-50"
+                }`}
+                title={`Hapus "${value}" dari daftar ${label}`}
+              >
+                <Trash2 className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-[10px] font-bold">Hapus</span>
+              </button>
+            )}
+          </div>
           {savedSuccess && (
             <div className="flex items-center space-x-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-lg animate-in fade-in">
               <CheckCircle2 className="h-3 w-3 text-emerald-400 shrink-0" />

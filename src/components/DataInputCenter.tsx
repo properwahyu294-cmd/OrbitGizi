@@ -226,6 +226,46 @@ export default function DataInputCenter({
     setSelectedPosyandu(val);
   };
 
+  const handleDeleteCustomPuskesmas = (val: string) => {
+    if (!val) return;
+    setCustomPuskesmasList(prev => {
+      const updated = prev.filter(item => item !== val);
+      localStorage.setItem("orbit_custom_puskesmas", JSON.stringify(updated));
+      return updated;
+    });
+    if (selectedPuskesmas === val) setSelectedPuskesmas("");
+  };
+
+  const handleDeleteCustomKelurahan = (val: string) => {
+    if (!val) return;
+    setCustomKelurahanList(prev => {
+      const updated = prev.filter(item => item !== val);
+      localStorage.setItem("orbit_custom_kelurahan", JSON.stringify(updated));
+      return updated;
+    });
+    if (selectedKelurahan === val) setSelectedKelurahan("");
+  };
+
+  const handleDeleteCustomDusun = (val: string) => {
+    if (!val) return;
+    setCustomDusunList(prev => {
+      const updated = prev.filter(item => item !== val);
+      localStorage.setItem("orbit_custom_dusun", JSON.stringify(updated));
+      return updated;
+    });
+    if (selectedDusun === val) setSelectedDusun("");
+  };
+
+  const handleDeleteCustomPosyandu = (val: string) => {
+    if (!val) return;
+    setCustomPosyanduList(prev => {
+      const updated = prev.filter(item => item !== val);
+      localStorage.setItem("orbit_custom_posyandu", JSON.stringify(updated));
+      return updated;
+    });
+    if (selectedPosyandu === val) setSelectedPosyandu("");
+  };
+
   // Dynamic Options derived from data & saved master data
   const puskesmasOptions = useMemo(() => {
     const set = new Set<string>();
@@ -1122,6 +1162,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               placeholder="Puskesmas..."
               isDark={true}
               onSaveOption={handleSaveCustomPuskesmas}
+              onDeleteOption={handleDeleteCustomPuskesmas}
             />
 
             {/* Kelurahan */}
@@ -1133,6 +1174,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               placeholder="Kelurahan..."
               isDark={true}
               onSaveOption={handleSaveCustomKelurahan}
+              onDeleteOption={handleDeleteCustomKelurahan}
             />
 
             {/* Dusun */}
@@ -1144,6 +1186,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               placeholder="Dusun..."
               isDark={true}
               onSaveOption={handleSaveCustomDusun}
+              onDeleteOption={handleDeleteCustomDusun}
             />
 
             {/* Posyandu */}
@@ -1155,6 +1198,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               placeholder="Posyandu..."
               isDark={true}
               onSaveOption={handleSaveCustomPosyandu}
+              onDeleteOption={handleDeleteCustomPosyandu}
             />
           </div>
         </div>
@@ -2858,6 +2902,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     placeholder="Nama Desa..."
                     isDark={false}
                     onSaveOption={handleSaveCustomKelurahan}
+                    onDeleteOption={handleDeleteCustomKelurahan}
                   />
                   <LocationSelectorField
                     label="POSYANDU"
@@ -2867,6 +2912,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     placeholder="Nama Posyandu..."
                     isDark={false}
                     onSaveOption={handleSaveCustomPosyandu}
+                    onDeleteOption={handleDeleteCustomPosyandu}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -2878,6 +2924,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     placeholder="Nama Dusun..."
                     isDark={false}
                     onSaveOption={handleSaveCustomDusun}
+                    onDeleteOption={handleDeleteCustomDusun}
                   />
                   <LocationSelectorField
                     label="PUSKESMAS"
@@ -2887,6 +2934,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     placeholder="Puskesmas..."
                     isDark={false}
                     onSaveOption={handleSaveCustomPuskesmas}
+                    onDeleteOption={handleDeleteCustomPuskesmas}
                   />
                 </div>
               </div>
