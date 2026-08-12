@@ -43,7 +43,8 @@ import {
   Stethoscope,
   HeartHandshake,
   TrendingUp,
-  BadgeCheck
+  BadgeCheck,
+  AlertCircle
 } from "lucide-react";
 import { Village, MBGBeneficiary, WeightRecord } from "../types";
 import { LocationSelectorField } from "./LocationSelectorField";
@@ -309,6 +310,35 @@ export default function DataInputCenter({
   const [benDusun, setBenDusun] = useState<string>(selectedDusun);
   const [benPosyandu, setBenPosyandu] = useState<string>(selectedPosyandu);
   const [benPuskesmas, setBenPuskesmas] = useState<string>(selectedPuskesmas);
+
+  // Real-time Duplicate Beneficiary Detection by Name or NIK
+  const duplicateBeneficiary = useMemo(() => {
+    const trimmedName = benName.trim().toLowerCase();
+    if (!trimmedName || trimmedName.length < 2) return null;
+    return beneficiaries.find(b => {
+      if (editingBenId && b.id === editingBenId) return false;
+      return b.name.trim().toLowerCase() === trimmedName;
+    }) || null;
+  }, [benName, beneficiaries, editingBenId]);
+
+  const similarBeneficiaries = useMemo(() => {
+    const trimmedName = benName.trim().toLowerCase();
+    if (!trimmedName || trimmedName.length < 3 || duplicateBeneficiary) return [];
+    return beneficiaries.filter(b => {
+      if (editingBenId && b.id === editingBenId) return false;
+      const nameLower = b.name.trim().toLowerCase();
+      return nameLower.includes(trimmedName) || trimmedName.includes(nameLower);
+    }).slice(0, 3);
+  }, [benName, beneficiaries, editingBenId, duplicateBeneficiary]);
+
+  const duplicateNikBeneficiary = useMemo(() => {
+    const trimmedNik = benNik.trim();
+    if (!trimmedNik || trimmedNik.length < 5) return null;
+    return beneficiaries.find(b => {
+      if (editingBenId && b.id === editingBenId) return false;
+      return b.nik && b.nik.trim() === trimmedNik;
+    }) || null;
+  }, [benNik, beneficiaries, editingBenId]);
 
   // AI Report State
   const [showAIReportModal, setShowAIReportModal] = useState<boolean>(false);
@@ -2297,40 +2327,158 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               )}
 
               {/* Basic Details */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1 text-xs">NAMA LENGKAP PENERIMA *</label>
-                  <input
-                    type="text"
-                    placeholder="Contoh: ADRIAN SA"
-                    value={benName}
-                    onChange={(e) => setBenName(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none uppercase"
-                    required
-                  />
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="font-bold text-slate-800 block text-xs">NAMA LENGKAP PENERIMA *</label>
+                      {duplicateBeneficiary && (
+                        <span className="text-[10px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                          ⚠️ Nama Sudah Terdaftar
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Contoh: ADRIAN SA"
+                      value={benName}
+                      onChange={(e) => setBenName(e.target.value)}
+                      className={`w-full bg-white border rounded-xl p-2.5 font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none uppercase transition-all ${
+                        duplicateBeneficiary 
+                          ? "border-amber-400 bg-amber-50/20 focus:ring-2 focus:ring-amber-500/30" 
+                          : "border-slate-300 focus:ring-2 focus:ring-indigo-500/20"
+                      }`}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-800 block mb-1 text-xs">NAMA ORANG TUA / WALI</label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: MERSIANA ERE"
+                      value={benParentName}
+                      onChange={(e) => setBenParentName(e.target.value)}
+                      className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none uppercase"
+                    />
+                  </div>
                 </div>
 
+                {/* DUPLICATE NAME WARNING CALLOUT BANNER */}
+                {duplicateBeneficiary && (
+                  <div className="bg-amber-50/95 border-2 border-amber-300 rounded-2xl p-3.5 text-amber-950 space-y-2.5 shadow-xs animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between flex-wrap gap-2 border-b border-amber-200 pb-2">
+                      <div className="flex items-center space-x-2">
+                        <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+                        <div>
+                          <h5 className="font-black text-xs text-amber-900 uppercase tracking-wide">
+                            ⚠️ DETEKSI DATA GANDA: NAMA SUDAH TERDAFTAR!
+                          </h5>
+                          <p className="text-[10px] text-amber-800 font-medium">
+                            Anak dengan nama <strong>"{duplicateBeneficiary.name}"</strong> sudah tersimpan dalam sistem.
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditBenModal(duplicateBeneficiary)}
+                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center space-x-1.5"
+                      >
+                        <Edit3 className="h-3.5 w-3.5" />
+                        <span>Buka & Edit Data Ini</span>
+                      </button>
+                    </div>
+
+                    <div className="text-[11px] bg-white/90 p-2.5 rounded-xl border border-amber-200/90 space-y-1.5 text-slate-800 font-medium">
+                      <div className="font-bold text-slate-900 text-xs flex items-center justify-between border-b border-slate-100 pb-1">
+                        <span>👤 {duplicateBeneficiary.name}</span>
+                        <span className="px-2 py-0.5 bg-amber-100 text-amber-900 rounded text-[10px] font-bold">
+                          {duplicateBeneficiary.category} ({duplicateBeneficiary.gender || "Laki-laki"})
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
+                        <div>👨‍👩‍👧 <strong>Orang Tua:</strong> {duplicateBeneficiary.parentName || "-"}</div>
+                        <div>📍 <strong>Posyandu:</strong> {duplicateBeneficiary.location?.posyandu || "-"}</div>
+                        <div>🏡 <strong>Dusun/Kelurahan:</strong> {duplicateBeneficiary.location?.dusun || "-"}, {duplicateBeneficiary.location?.kelurahan || "-"}</div>
+                        <div>💳 <strong>NIK:</strong> {duplicateBeneficiary.nik || "Belum diisi"}</div>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-amber-800 font-semibold italic">
+                      💡 Petunjuk: Jika ini adalah sasaran yang sama, silakan klik tombol <strong>"Buka & Edit Data Ini"</strong> di atas untuk memperbarui datanya agar tidak tercipta entri ganda.
+                    </p>
+                  </div>
+                )}
+
+                {/* SIMILAR NAMES SUGGESTION LIST */}
+                {!duplicateBeneficiary && similarBeneficiaries.length > 0 && (
+                  <div className="bg-blue-50/90 border border-blue-200 rounded-2xl p-3 text-blue-950 space-y-2">
+                    <div className="flex items-center space-x-1.5 font-bold text-xs text-blue-900">
+                      <Info className="h-4 w-4 text-blue-600 shrink-0" />
+                      <span>Saran Deteksi Nama Mirip yang Sudah Terdaftar:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {similarBeneficiaries.map((sim) => (
+                        <button
+                          key={sim.id}
+                          type="button"
+                          onClick={() => handleOpenEditBenModal(sim)}
+                          className="text-left bg-white border border-blue-300 hover:border-blue-500 rounded-xl p-2 text-blue-900 font-medium hover:bg-blue-100/50 transition-all flex items-center justify-between space-x-3 cursor-pointer shadow-2xs group"
+                        >
+                          <div>
+                            <div className="font-bold text-xs text-slate-900 group-hover:text-blue-900">
+                              👤 {sim.name}
+                            </div>
+                            <div className="text-[10px] text-slate-500 font-medium">
+                              Ortu: {sim.parentName || "-"} • Posyandu: {sim.location?.posyandu || sim.location?.kelurahan}
+                            </div>
+                          </div>
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-[9px] font-bold group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                            Edit Data
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div>
-                  <label className="font-bold text-slate-800 block mb-1 text-xs">NAMA ORANG TUA / WALI</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="font-bold text-slate-800 block text-xs">NIK (NOMOR INDUK KEPENDUDUKAN)</label>
+                    {duplicateNikBeneficiary && (
+                      <span className="text-[10px] font-black text-rose-800 bg-rose-100 border border-rose-300 px-2 py-0.5 rounded-full">
+                        🚨 NIK Sudah Terdaftar
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="text"
-                    placeholder="Contoh: MERSIANA ERE"
-                    value={benParentName}
-                    onChange={(e) => setBenParentName(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none uppercase"
+                    placeholder="Contoh: 5316013011220001"
+                    value={benNik}
+                    onChange={(e) => setBenNik(e.target.value)}
+                    className={`w-full bg-white border rounded-xl p-2.5 font-mono font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all ${
+                      duplicateNikBeneficiary
+                        ? "border-rose-400 bg-rose-50/20 focus:ring-2 focus:ring-rose-500/30"
+                        : "border-slate-300 focus:ring-2 focus:ring-indigo-500/20"
+                    }`}
                   />
+                  {duplicateNikBeneficiary && (
+                    <div className="mt-1.5 bg-rose-50 border border-rose-200 rounded-xl p-2.5 text-rose-900 flex items-center justify-between text-[11px]">
+                      <div className="flex items-center space-x-2">
+                        <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+                        <span>
+                          <strong>NIK Terdaftar:</strong> NIK {duplicateNikBeneficiary.nik} milik <strong>{duplicateNikBeneficiary.name}</strong> ({duplicateNikBeneficiary.location?.posyandu || '-'}).
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditBenModal(duplicateNikBeneficiary)}
+                        className="px-2 py-1 bg-rose-600 text-white rounded-lg text-[10px] font-bold hover:bg-rose-700 transition-colors shadow-xs cursor-pointer shrink-0"
+                      >
+                        ✏️ Edit Data
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-800 block mb-1 text-xs">NIK (NOMOR INDUK KEPENDUDUKAN)</label>
-                <input
-                  type="text"
-                  placeholder="Contoh: 5316013011220001"
-                  value={benNik}
-                  onChange={(e) => setBenNik(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-mono font-bold text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-                />
               </div>
 
               {/* Gender, Age, Birthdate */}
