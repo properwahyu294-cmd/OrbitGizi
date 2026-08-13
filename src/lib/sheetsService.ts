@@ -541,15 +541,64 @@ export async function syncToGoogleSheets(
     if (!Array.isArray(ibuMenyusuiData)) ibuMenyusuiData = [];
     processRecords(ibuMenyusuiData, "Ibu Menyusui");
 
-    // Merge existing Catatan Timbang from Sheet if not already present
-    const writtenKeys = new Set(catatanTimbangValues.slice(1).map(r => `${r[0]}_${r[7] || r[3]}`));
+    // Merge existing Catatan Timbang from Sheet if not already present in local data
+    const writtenKeysByIdPeriod = new Set<string>();
+    const writtenKeysByNamePeriod = new Set<string>();
+
+    catatanTimbangValues.slice(1).forEach(r => {
+      const idStr = String(r[0] || "").trim().toLowerCase();
+      const nameStr = String(r[1] || "").trim().toLowerCase();
+      const periodStr = String(r[7] || "").trim().toLowerCase();
+
+      if (idStr && idStr !== "-") {
+        writtenKeysByIdPeriod.add(`${idStr}_${periodStr}`);
+      }
+      if (nameStr && nameStr !== "-") {
+        writtenKeysByNamePeriod.add(`${nameStr}_${periodStr}`);
+      }
+    });
+
     if (Array.isArray(existingCatatanTimbang)) {
       existingCatatanTimbang.forEach((row: any[]) => {
-        if (!Array.isArray(row) || row.length < 4) return;
-        const periodVal = row.length >= 12 ? row[7] : row[3];
-        const key = `${row[0]}_${periodVal}`;
-        if (!writtenKeys.has(key) && row[1] && row[1] !== "Nama" && row[1] !== "-") {
-          catatanTimbangValues.push(row);
+        if (!Array.isArray(row) || row.length < 2) return;
+        const rowId = row[0] ? String(row[0]).trim() : "";
+        const rowName = row[1] ? String(row[1]).trim() : "";
+
+        if (rowName === "Nama" || rowId === "ID Penerima" || (!rowId && !rowName)) return;
+
+        // Detect 12-column vs 8-column row format
+        const is12Col = row.length >= 10 || (row[3] && !row[3].match(/^\d{4}-\d{2}/) && !row[3].toLowerCase().includes("202"));
+        const periodVal = is12Col ? String(row[7] || "").trim() : String(row[3] || "").trim();
+
+        const idKey = rowId && rowId !== "-" ? `${rowId.toLowerCase()}_${periodVal.toLowerCase()}` : "";
+        const nameKey = rowName && rowName !== "-" ? `${rowName.toLowerCase()}_${periodVal.toLowerCase()}` : "";
+
+        const isAlreadyWritten = 
+          (idKey && writtenKeysByIdPeriod.has(idKey)) || 
+          (nameKey && writtenKeysByNamePeriod.has(nameKey));
+
+        if (!isAlreadyWritten) {
+          if (is12Col) {
+            catatanTimbangValues.push(row);
+          } else {
+            // Convert legacy 8-column row to 12-column row
+            catatanTimbangValues.push([
+              row[0] || "-", // ID
+              row[1] || "-", // Nama
+              row[2] || "-", // Kategori
+              "-",           // Puskesmas
+              "-",           // Desa
+              "-",           // Dusun
+              "-",           // Posyandu
+              row[3] || "-", // Periode
+              row[4] || "-", // Berat
+              row[5] || "-", // Tinggi
+              row[6] || "-", // Status
+              row[7] || "-"  // MeasuredAt
+            ]);
+          }
+          if (idKey) writtenKeysByIdPeriod.add(idKey);
+          if (nameKey) writtenKeysByNamePeriod.add(nameKey);
         }
       });
     }
@@ -812,17 +861,34 @@ export function parseAndMergeCatatanTimbang(
     
     if (!idPenerima && !nama) return;
 
-    const period = (row[3] && row[3] !== "-") ? String(row[3]).trim() : "Agustus 2026";
-    
-    // Convert Indonesian comma decimal "8,6" -> "8.6"
-    const rawWeight = String(row[4] || "").replace(",", ".").trim();
+    const is12Col = row.length >= 10 || (row[3] && !row[3].match(/^\d{4}-\d{2}/) && !row[3].toLowerCase().includes("202"));
+
+    let period = "";
+    let rawWeight = "";
+    let rawHeight = "";
+    let statusGiziStr = "";
+    let measuredAtStr = "";
+
+    if (is12Col) {
+      period = (row[7] && row[7] !== "-") ? String(row[7]).trim() : "";
+      rawWeight = String(row[8] || "").replace(",", ".").trim();
+      rawHeight = String(row[9] || "").replace(",", ".").trim();
+      statusGiziStr = (row[10] && row[10] !== "-") ? String(row[10]).trim() : "";
+      measuredAtStr = (row[11] && row[11] !== "-") ? String(row[11]).trim() : "";
+    } else {
+      period = (row[3] && row[3] !== "-") ? String(row[3]).trim() : "";
+      rawWeight = String(row[4] || "").replace(",", ".").trim();
+      rawHeight = String(row[5] || "").replace(",", ".").trim();
+      statusGiziStr = (row[6] && row[6] !== "-") ? String(row[6]).trim() : "";
+      measuredAtStr = (row[7] && row[7] !== "-") ? String(row[7]).trim() : "";
+    }
+
+    if (!period) period = "Agustus 2026";
+
     const weightKg = parseFloat(rawWeight);
-
-    const rawHeight = String(row[5] || "").replace(",", ".").trim();
     const heightCm = parseFloat(rawHeight);
-
-    const statusGizi = (row[6] && row[6] !== "-") ? String(row[6]).trim() as any : undefined;
-    const measuredAt = (row[7] && row[7] !== "-") ? String(row[7]).trim() : undefined;
+    const statusGizi = (statusGiziStr && statusGiziStr !== "-") ? statusGiziStr as any : undefined;
+    const measuredAt = (measuredAtStr && measuredAtStr !== "-") ? measuredAtStr : undefined;
 
     if (isNaN(weightKg) && (isNaN(heightCm) || heightCm <= 0)) return;
 
