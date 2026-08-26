@@ -200,27 +200,6 @@ export async function syncToGoogleSheets(
   // Ensure all tabs exist
   await ensureSheetTabsExist(accessToken, spreadsheetId!);
 
-  // Fetch current sheet data to merge so we never delete existing sheet entries
-  const fetchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchGet?ranges=Penerima%20MBG!A2:Z&ranges=Ibu%20Hamil!A2:Z&ranges=Ibu%20Menyusui!A2:Z&ranges=Catatan%20Timbang!A2:Z&valueRenderOption=FORMATTED_VALUE`, {
-    headers: { Authorization: `Bearer ${accessToken}` }
-  });
-  let existingBeneficiaries: any[] = [];
-  let existingIbuHamil: any[] = [];
-  let existingIbuMenyusui: any[] = [];
-  let existingCatatanTimbang: any[] = [];
-  
-  if (fetchRes.ok) {
-    const fetchJson = await fetchRes.json();
-    const valueRanges = fetchJson.valueRanges || [];
-    existingBeneficiaries = valueRanges[0]?.values || [];
-    existingIbuHamil = valueRanges[1]?.values || [];
-    existingIbuMenyusui = valueRanges[2]?.values || [];
-    existingCatatanTimbang = valueRanges[3]?.values || [];
-  }
-
-  // Helper to merge: simple approach is to trust incoming ID and overwrite or append.
-  // Given complexity, let's just append new ones for now to avoid accidental deletions.
-  
   // Prepare Ringkasan Indeks data
   const summaryValues = [
     ["LAPORAN INDEKS TRANSFORMASI ORBIT GIZI (TERSINKRONISASI SINKRON)", ""],
@@ -343,10 +322,7 @@ export async function syncToGoogleSheets(
       : JSON.parse(localStorage.getItem("orbit_gizi_local_beneficiaries") || "[]");
     if (!Array.isArray(mbgData)) mbgData = [];
 
-    const localIds = new Set(mbgData.map((b: any) => String(b?.id)));
-    const localNiks = new Set(mbgData.map((b: any) => String(b?.nik)).filter(nik => nik && nik !== "-"));
-
-    // 1. Add all local beneficiaries first
+    // Add all current beneficiaries
     mbgData.forEach((b: any) => {
       const attendance = b?.attendanceStatus || "Mengunjungi Posyandu";
       const needsVisit = attendance === "Tidak Mengunjungi" ? "YA (WAJIB KUNJUNGAN RUMAH)" : "TIDAK";
@@ -382,20 +358,8 @@ export async function syncToGoogleSheets(
         b?.notes || "-"
       ]);
     });
-    // 2. Merge any existing entries in Google Sheet that are not in local data
-    if (Array.isArray(existingBeneficiaries)) {
-      existingBeneficiaries.forEach((row: any[]) => {
-        if (!Array.isArray(row) || row.length < 2) return;
-        const rowId = row[0] ? String(row[0]).trim() : "";
-        const rowNik = row[3] ? String(row[3]).trim() : "";
-        const isLocallyPresent = (rowId && localIds.has(rowId)) || (rowNik && rowNik !== "-" && localNiks.has(rowNik));
-        if (!isLocallyPresent && row[1] && row[1] !== "Nama Beneficiary" && row[1] !== "-") {
-          mbgValues.push(row);
-        }
-      });
-    }
   } catch (e) {
-    console.error(e);
+    console.error("Error preparing mbgValues:", e);
   }
 
   // Prepare Ibu Hamil values
@@ -407,9 +371,6 @@ export async function syncToGoogleSheets(
       ? data.ibuHamil
       : JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]");
     if (!Array.isArray(ibuHamilData)) ibuHamilData = [];
-
-    const localHamilIds = new Set(ibuHamilData.map((b: any) => String(b?.id)));
-    const localHamilNiks = new Set(ibuHamilData.map((b: any) => String(b?.nik)).filter(nik => nik && nik !== "-"));
 
     ibuHamilData.forEach((b: any) => {
       ibuHamilValues.push([
@@ -426,21 +387,8 @@ export async function syncToGoogleSheets(
         b?.catatan || "-"
       ]);
     });
-
-    // Merge existing Ibu Hamil from Sheet
-    if (Array.isArray(existingIbuHamil)) {
-      existingIbuHamil.forEach((row: any[]) => {
-        if (!Array.isArray(row) || row.length < 2) return;
-        const rowId = row[0] ? String(row[0]).trim() : "";
-        const rowNik = row[3] ? String(row[3]).trim() : "";
-        const isLocallyPresent = (rowId && localHamilIds.has(rowId)) || (rowNik && rowNik !== "-" && localHamilNiks.has(rowNik));
-        if (!isLocallyPresent && row[1] && row[1] !== "Nama Ibu" && row[1] !== "-") {
-          ibuHamilValues.push(row);
-        }
-      });
-    }
   } catch (e) {
-    console.error(e);
+    console.error("Error preparing ibuHamilValues:", e);
   }
 
   // Prepare Ibu Menyusui values
@@ -452,9 +400,6 @@ export async function syncToGoogleSheets(
       ? data.ibuMenyusui
       : JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
     if (!Array.isArray(ibuMenyusuiData)) ibuMenyusuiData = [];
-
-    const localMenyusuiIds = new Set(ibuMenyusuiData.map((b: any) => String(b?.id)));
-    const localMenyusuiNiks = new Set(ibuMenyusuiData.map((b: any) => String(b?.nik)).filter(nik => nik && nik !== "-"));
 
     ibuMenyusuiData.forEach((b: any) => {
       ibuMenyusuiValues.push([
@@ -471,21 +416,8 @@ export async function syncToGoogleSheets(
         b?.catatan || "-"
       ]);
     });
-
-    // Merge existing Ibu Menyusui from Sheet
-    if (Array.isArray(existingIbuMenyusui)) {
-      existingIbuMenyusui.forEach((row: any[]) => {
-        if (!Array.isArray(row) || row.length < 2) return;
-        const rowId = row[0] ? String(row[0]).trim() : "";
-        const rowNik = row[3] ? String(row[3]).trim() : "";
-        const isLocallyPresent = (rowId && localMenyusuiIds.has(rowId)) || (rowNik && rowNik !== "-" && localMenyusuiNiks.has(rowNik));
-        if (!isLocallyPresent && row[1] && row[1] !== "Nama Ibu" && row[1] !== "-") {
-          ibuMenyusuiValues.push(row);
-        }
-      });
-    }
   } catch (e) {
-    console.error(e);
+    console.error("Error preparing ibuMenyusuiValues:", e);
   }
 
   // Prepare Catatan Timbang values with full location details
@@ -497,17 +429,22 @@ export async function syncToGoogleSheets(
     const processRecords = (records: any[], categoryStr: string | null = null) => {
       if (!Array.isArray(records)) return;
       records.forEach(b => {
-        if (b && b.weightRecords && Array.isArray(b.weightRecords)) {
-          const puskesmas = b?.location?.puskesmas || b?.puskesmas || "-";
-          const kelurahan = b?.location?.kelurahan || b?.kelurahan || "-";
-          const dusun = b?.location?.dusun || b?.dusun || "-";
-          const posyandu = b?.location?.posyandu || b?.posyandu || "-";
+        if (!b) return;
+        const puskesmas = b?.location?.puskesmas || b?.puskesmas || "-";
+        const kelurahan = b?.location?.kelurahan || b?.kelurahan || "-";
+        const dusun = b?.location?.dusun || b?.dusun || "-";
+        const posyandu = b?.location?.posyandu || b?.posyandu || "-";
+        const benId = b?.id || "-";
+        const benName = b?.name || b?.namaIbu || "-";
+        const cat = categoryStr || b?.category || "Balita";
 
+        if (b.weightRecords && Array.isArray(b.weightRecords) && b.weightRecords.length > 0) {
           b.weightRecords.forEach((record: any) => {
+            if (!record) return;
             catatanTimbangValues.push([
-              b?.id || "-",
-              b?.name || b?.namaIbu || "-",
-              categoryStr || b?.category || "-",
+              benId,
+              benName,
+              cat,
               puskesmas,
               kelurahan,
               dusun,
@@ -519,6 +456,22 @@ export async function syncToGoogleSheets(
               record?.measuredAt || "-"
             ]);
           });
+        } else if (b.initialWeightKg && b.initialWeightKg > 0) {
+          // If no weightRecords array yet, record initial measurement from profile
+          catatanTimbangValues.push([
+            benId,
+            benName,
+            cat,
+            puskesmas,
+            kelurahan,
+            dusun,
+            posyandu,
+            "Maret 2026",
+            b.initialWeightKg,
+            b.initialHeightCm != null ? b.initialHeightCm : "-",
+            b.initialStatusGizi || "Normal",
+            new Date().toISOString().split("T")[0]
+          ]);
         }
       });
     };
@@ -540,70 +493,8 @@ export async function syncToGoogleSheets(
       : JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]");
     if (!Array.isArray(ibuMenyusuiData)) ibuMenyusuiData = [];
     processRecords(ibuMenyusuiData, "Ibu Menyusui");
-
-    // Merge existing Catatan Timbang from Sheet if not already present in local data
-    const writtenKeysByIdPeriod = new Set<string>();
-    const writtenKeysByNamePeriod = new Set<string>();
-
-    catatanTimbangValues.slice(1).forEach(r => {
-      const idStr = String(r[0] || "").trim().toLowerCase();
-      const nameStr = String(r[1] || "").trim().toLowerCase();
-      const periodStr = String(r[7] || "").trim().toLowerCase();
-
-      if (idStr && idStr !== "-") {
-        writtenKeysByIdPeriod.add(`${idStr}_${periodStr}`);
-      }
-      if (nameStr && nameStr !== "-") {
-        writtenKeysByNamePeriod.add(`${nameStr}_${periodStr}`);
-      }
-    });
-
-    if (Array.isArray(existingCatatanTimbang)) {
-      existingCatatanTimbang.forEach((row: any[]) => {
-        if (!Array.isArray(row) || row.length < 2) return;
-        const rowId = row[0] ? String(row[0]).trim() : "";
-        const rowName = row[1] ? String(row[1]).trim() : "";
-
-        if (rowName === "Nama" || rowId === "ID Penerima" || (!rowId && !rowName)) return;
-
-        // Detect 12-column vs 8-column row format
-        const is12Col = row.length >= 10 || (row[3] && !row[3].match(/^\d{4}-\d{2}/) && !row[3].toLowerCase().includes("202"));
-        const periodVal = is12Col ? String(row[7] || "").trim() : String(row[3] || "").trim();
-
-        const idKey = rowId && rowId !== "-" ? `${rowId.toLowerCase()}_${periodVal.toLowerCase()}` : "";
-        const nameKey = rowName && rowName !== "-" ? `${rowName.toLowerCase()}_${periodVal.toLowerCase()}` : "";
-
-        const isAlreadyWritten = 
-          (idKey && writtenKeysByIdPeriod.has(idKey)) || 
-          (nameKey && writtenKeysByNamePeriod.has(nameKey));
-
-        if (!isAlreadyWritten) {
-          if (is12Col) {
-            catatanTimbangValues.push(row);
-          } else {
-            // Convert legacy 8-column row to 12-column row
-            catatanTimbangValues.push([
-              row[0] || "-", // ID
-              row[1] || "-", // Nama
-              row[2] || "-", // Kategori
-              "-",           // Puskesmas
-              "-",           // Desa
-              "-",           // Dusun
-              "-",           // Posyandu
-              row[3] || "-", // Periode
-              row[4] || "-", // Berat
-              row[5] || "-", // Tinggi
-              row[6] || "-", // Status
-              row[7] || "-"  // MeasuredAt
-            ]);
-          }
-          if (idKey) writtenKeysByIdPeriod.add(idKey);
-          if (nameKey) writtenKeysByNamePeriod.add(nameKey);
-        }
-      });
-    }
   } catch (e) {
-    console.error(e);
+    console.error("Error preparing catatanTimbangValues:", e);
   }
 
   // Prepare Daftar Wilayah (Summary list of all registered Desa, Dusun, and Posyandu)

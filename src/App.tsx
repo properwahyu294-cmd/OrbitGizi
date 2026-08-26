@@ -359,7 +359,7 @@ export default function App() {
       const updated = await saveBeneficiaryApi(ben);
       setBeneficiaries(updated);
       setRefreshTrigger(prev => prev + 1);
-      handlePushToSheetsBackground();
+      await handlePushToSheetsBackground(false, updated);
     });
   };
 
@@ -371,7 +371,7 @@ export default function App() {
       const updated = await deleteBeneficiaryApi(id);
       setBeneficiaries(updated);
       setRefreshTrigger(prev => prev + 1);
-      handlePushToSheetsBackground();
+      await handlePushToSheetsBackground(false, updated);
     });
   };
 
@@ -590,41 +590,13 @@ export default function App() {
         fetchAuditLogsApi()
       ]);
 
-      const baseBens = overrideBens || beneficiaries;
-      const mergedBens = baseBens.map(localBen => {
-        const serverBen = Array.isArray(latestBens) ? latestBens.find((s: any) => s.id === localBen.id) : null;
-        if (!serverBen) return localBen;
-
-        // Merge weight records by period to ensure nothing is lost
-        const recMap = new Map<string, WeightRecord>();
-        (serverBen.weightRecords || []).forEach((r: WeightRecord) => {
-          if (r && r.period) recMap.set(r.period, r);
-        });
-        (localBen.weightRecords || []).forEach((r: WeightRecord) => {
-          if (r && r.period) recMap.set(r.period, r);
-        });
-
-        return {
-          ...serverBen,
-          ...localBen,
-          weightRecords: Array.from(recMap.values())
-        };
-      });
-
-      // Include any server beneficiaries not present locally
-      if (Array.isArray(latestBens)) {
-        latestBens.forEach((sb: any) => {
-          if (sb && sb.id && !mergedBens.some(b => b.id === sb.id)) {
-            mergedBens.push(sb);
-          }
-        });
-      }
+      const finalBens = overrideBens || (beneficiaries && beneficiaries.length > 0 ? beneficiaries : (Array.isArray(latestBens) ? latestBens : []));
 
       const fullData = {
         ...data,
-        beneficiaries: mergedBens,
-        ibuHamil: (latestHamil && Array.isArray(latestHamil)) ? latestHamil : [],
-        ibuMenyusui: (latestMenyusui && Array.isArray(latestMenyusui)) ? latestMenyusui : [],
+        beneficiaries: finalBens,
+        ibuHamil: (latestHamil && Array.isArray(latestHamil) && latestHamil.length > 0) ? latestHamil : JSON.parse(localStorage.getItem("orbit_gizi_ibu_hamil") || "[]"),
+        ibuMenyusui: (latestMenyusui && Array.isArray(latestMenyusui) && latestMenyusui.length > 0) ? latestMenyusui : JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]"),
         visitorLogs: (latestVisitors && Array.isArray(latestVisitors)) ? latestVisitors : [],
         auditLogs: (latestAudits && Array.isArray(latestAudits)) ? latestAudits : [],
         adminSheetUrl: sheetConfig?.adminSheetUrl || data.adminSheetUrl,
