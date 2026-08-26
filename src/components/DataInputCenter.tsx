@@ -1153,7 +1153,17 @@ export default function DataInputCenter({
       initialWeightKg: initialWeightVal,
       initialHeightCm: initialHeightVal,
       initialStatusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal),
-      weightRecords: existingBen ? (existingBen.weightRecords || []) : [],
+      weightRecords: existingBen 
+        ? (existingBen.weightRecords || []) 
+        : (!isNaN(initialWeightVal) && initialWeightVal > 0 
+            ? [{
+                period: "Maret 2026",
+                weightKg: initialWeightVal,
+                heightCm: !isNaN(initialHeightVal) && initialHeightVal > 0 ? initialHeightVal : undefined,
+                statusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal),
+                measuredAt: new Date().toISOString().split("T")[0]
+              }] 
+            : []),
       notes: benNotes.trim()
     };
 

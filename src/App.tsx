@@ -375,46 +375,67 @@ export default function App() {
     });
   };
 
-  const handleAddWeightRecord = (beneficiaryId: string, record: WeightRecord) => {
-    setBeneficiaries(prev => {
-      const updated = prev.map(b => {
-        if (b.id === beneficiaryId) {
-          const filtered = b.weightRecords.filter(r => r.period !== record.period);
-          const target = {
-            ...b,
-            weightRecords: [...filtered, record]
-          };
-          saveBeneficiaryApi(target);
-          return target;
-        }
-        return b;
-      });
-      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-      return updated;
+  const handleAddWeightRecord = async (beneficiaryId: string, record: WeightRecord) => {
+    let updatedTarget: MBGBeneficiary | undefined;
+    const updatedList = beneficiaries.map(b => {
+      if (b.id === beneficiaryId) {
+        const filtered = (b.weightRecords || []).filter(r => r.period !== record.period);
+        const target: MBGBeneficiary = {
+          ...b,
+          weightRecords: [...filtered, record],
+          initialWeightKg: record.weightKg > 0 ? record.weightKg : b.initialWeightKg,
+          initialHeightCm: record.heightCm ? record.heightCm : b.initialHeightCm,
+          initialStatusGizi: record.statusGizi || b.initialStatusGizi
+        };
+        updatedTarget = target;
+        return target;
+      }
+      return b;
     });
+
+    setBeneficiaries(updatedList);
+    localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updatedList));
+
+    if (updatedTarget) {
+      try {
+        await saveBeneficiaryApi(updatedTarget);
+      } catch (err) {
+        console.warn("Failed to save beneficiary weight record to API:", err);
+      }
+    }
+
     setRefreshTrigger(prev => prev + 1);
-    handlePushToSheetsBackground();
+    await handlePushToSheetsBackground(false, updatedList);
   };
 
-  const handleDeleteWeightRecord = (beneficiaryId: string, period: string) => {
-    setBeneficiaries(prev => {
-      const updated = prev.map(b => {
-        if (b.id === beneficiaryId) {
-          const filtered = b.weightRecords.filter(r => r.period !== period);
-          const target = {
-            ...b,
-            weightRecords: filtered
-          };
-          saveBeneficiaryApi(target);
-          return target;
-        }
-        return b;
-      });
-      localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updated));
-      return updated;
+  const handleDeleteWeightRecord = async (beneficiaryId: string, period: string) => {
+    let updatedTarget: MBGBeneficiary | undefined;
+    const updatedList = beneficiaries.map(b => {
+      if (b.id === beneficiaryId) {
+        const filtered = (b.weightRecords || []).filter(r => r.period !== period);
+        const target: MBGBeneficiary = {
+          ...b,
+          weightRecords: filtered
+        };
+        updatedTarget = target;
+        return target;
+      }
+      return b;
     });
+
+    setBeneficiaries(updatedList);
+    localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(updatedList));
+
+    if (updatedTarget) {
+      try {
+        await saveBeneficiaryApi(updatedTarget);
+      } catch (err) {
+        console.warn("Failed to delete beneficiary weight record via API:", err);
+      }
+    }
+
     setRefreshTrigger(prev => prev + 1);
-    handlePushToSheetsBackground();
+    await handlePushToSheetsBackground(false, updatedList);
   };
 
   const loadData = async () => {
@@ -542,7 +563,7 @@ export default function App() {
   };
 
 
-  const handlePushToSheetsBackground = async (showFeedback: boolean = false) => {
+  const handlePushToSheetsBackground = async (showFeedback: boolean = false, overrideBens?: MBGBeneficiary[]) => {
     let token = googleToken;
     if (!token) {
       token = await getAccessToken();
@@ -568,9 +589,40 @@ export default function App() {
         fetchVisitorLogsApi(),
         fetchAuditLogsApi()
       ]);
+
+      const baseBens = overrideBens || beneficiaries;
+      const mergedBens = baseBens.map(localBen => {
+        const serverBen = Array.isArray(latestBens) ? latestBens.find((s: any) => s.id === localBen.id) : null;
+        if (!serverBen) return localBen;
+
+        // Merge weight records by period to ensure nothing is lost
+        const recMap = new Map<string, WeightRecord>();
+        (serverBen.weightRecords || []).forEach((r: WeightRecord) => {
+          if (r && r.period) recMap.set(r.period, r);
+        });
+        (localBen.weightRecords || []).forEach((r: WeightRecord) => {
+          if (r && r.period) recMap.set(r.period, r);
+        });
+
+        return {
+          ...serverBen,
+          ...localBen,
+          weightRecords: Array.from(recMap.values())
+        };
+      });
+
+      // Include any server beneficiaries not present locally
+      if (Array.isArray(latestBens)) {
+        latestBens.forEach((sb: any) => {
+          if (sb && sb.id && !mergedBens.some(b => b.id === sb.id)) {
+            mergedBens.push(sb);
+          }
+        });
+      }
+
       const fullData = {
         ...data,
-        beneficiaries: (latestBens && Array.isArray(latestBens)) ? latestBens : beneficiaries,
+        beneficiaries: mergedBens,
         ibuHamil: (latestHamil && Array.isArray(latestHamil)) ? latestHamil : [],
         ibuMenyusui: (latestMenyusui && Array.isArray(latestMenyusui)) ? latestMenyusui : [],
         visitorLogs: (latestVisitors && Array.isArray(latestVisitors)) ? latestVisitors : [],

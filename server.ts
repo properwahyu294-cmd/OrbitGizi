@@ -342,13 +342,30 @@ async function autoImportFromGoogleSheet() {
           const benNama = (row[1] && row[1] !== "-" && row[1] !== "Nama") ? String(row[1]).trim() : "";
           if (!benId && !benNama) return;
 
-          const period = (row[3] && row[3] !== "-") ? String(row[3]).trim() : "Agustus 2026";
-          const rawWeight = String(row[4] || "").replace(",", ".").trim();
+          const is12Col = row.length >= 10 || (row[3] && !row[3].match(/^\d{4}-\d{2}/) && !row[3].toLowerCase().includes("202"));
+
+          let period = "";
+          let rawWeight = "";
+          let rawHeight = "";
+          let statusGizi: string | undefined = undefined;
+          let measuredAt: string | undefined = undefined;
+
+          if (is12Col) {
+            period = (row[7] && row[7] !== "-") ? String(row[7]).trim() : "Agustus 2026";
+            rawWeight = String(row[8] || "").replace(",", ".").trim();
+            rawHeight = String(row[9] || "").replace(",", ".").trim();
+            statusGizi = (row[10] && row[10] !== "-") ? String(row[10]).trim() : undefined;
+            measuredAt = (row[11] && row[11] !== "-") ? String(row[11]).trim() : undefined;
+          } else {
+            period = (row[3] && row[3] !== "-") ? String(row[3]).trim() : "Agustus 2026";
+            rawWeight = String(row[4] || "").replace(",", ".").trim();
+            rawHeight = String(row[5] || "").replace(",", ".").trim();
+            statusGizi = (row[6] && row[6] !== "-") ? String(row[6]).trim() : undefined;
+            measuredAt = (row[7] && row[7] !== "-") ? String(row[7]).trim() : undefined;
+          }
+
           const weightKg = parseFloat(rawWeight);
-          const rawHeight = String(row[5] || "").replace(",", ".").trim();
           const heightCm = parseFloat(rawHeight);
-          const statusGizi = (row[6] && row[6] !== "-") ? String(row[6]).trim() : undefined;
-          const measuredAt = (row[7] && row[7] !== "-") ? String(row[7]).trim() : undefined;
 
           if (isNaN(weightKg) && (isNaN(heightCm) || heightCm <= 0)) return;
 
