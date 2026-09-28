@@ -224,6 +224,22 @@ export const AdminManagementModal: React.FC<AdminManagementModalProps> = ({
                 );
               })}
             </div>
+
+            {/* Google Drive Sharing Permission Guide */}
+            <div className="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3.5 space-y-2 text-xs">
+              <div className="flex items-center space-x-1.5 font-bold text-indigo-900">
+                <ShieldCheck className="h-4 w-4 text-indigo-600 shrink-0" />
+                <span>PENTING: Izin Tulis Google Spreadsheet untuk Admin Baru</span>
+              </div>
+              <p className="text-[11px] text-slate-700 leading-relaxed">
+                Google Sheets mewajibkan pemilik file memberikan izin edit. Agar data yang diinput oleh admin di laptopnya langsung masuk ke Google Sheet:
+              </p>
+              <ol className="list-decimal pl-4 space-y-1 text-[11px] text-slate-700">
+                <li>Buka Spreadsheet di Google Drive akun <strong>properwahyu294@gmail.com</strong>.</li>
+                <li>Klik tombol <strong>"Bagikan" (Share)</strong> di pojok kanan atas.</li>
+                <li>Masukkan email admin (misal: <code>bidangplp71@gmail.com</code>, <code>ociendema@gmail.com</code>) dan pilih peran <strong>"Editor"</strong>.</li>
+              </ol>
+            </div>
           </div>
         </div>
 

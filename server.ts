@@ -740,6 +740,7 @@ function buildAppData() {
     lastUpdated,
     adminSheetUrl,
     adminSheetId,
+    webhookUrl,
     weights,
     pillars: pillarsList,
     villages,

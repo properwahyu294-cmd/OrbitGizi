@@ -659,10 +659,10 @@ function readCatatanTimbang(ss) {
             <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl space-y-2">
               <div className="flex items-center space-x-2 text-emerald-400 text-xs font-black uppercase tracking-wider">
                 <ShieldCheck className="h-4 w-4" />
-                <span>Koneksi Multi-Admin Terpusat</span>
+                <span>Pengaturan Terpusat (Cukup 1 Kali Atur untuk Semua Laptop)</span>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Dengan Webhook Google Apps Script, setiap data yang diinput oleh <strong>Admin mana pun</strong> (baik properwahyu294@gmail.com, bidangplp71@gmail.com, atau ociendema@gmail.com) akan <strong>langsung masuk ke Google Sheet yang sama</strong> secara otomatis di latar belakang melalui fungsi <code className="text-emerald-300 font-mono">doPost</code>.
+                Anda hanya perlu memasukkan Webhook URL <strong>satu kali saja</strong> di sini. Sistem akan otomatis menyimpannya secara terpusat di server database, sehingga <strong>semua laptop dan email admin lain</strong> (seperti <code className="text-emerald-300">bidangplp71@gmail.com</code> atau <code className="text-emerald-300">ociendema@gmail.com</code>) otomatis langsung terhubung tanpa perlu mendaftarkan ulang.
               </p>
             </div>
 

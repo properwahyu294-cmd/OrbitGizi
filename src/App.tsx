@@ -41,7 +41,17 @@ import {
   CheckCircle,
   AlertCircle,
   Zap,
-  Webhook
+  Webhook,
+  ChevronDown,
+  SlidersHorizontal,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  Minimize2,
+  Maximize2
 } from "lucide-react";
 
 // Types
@@ -102,7 +112,7 @@ import { OperatorIdentityModal } from "./components/OperatorIdentityModal";
 import { VisitorAnalyticsModal } from "./components/VisitorAnalyticsModal";
 import { AdminManagementModal } from "./components/AdminManagementModal";
 import { WebhookIntegrationModal } from "./components/WebhookIntegrationModal";
-import { recordVisitorAccess, recordAuditAction, getOperatorProfile, fetchVisitorLogsApi, fetchAuditLogsApi } from "./lib/analyticsService";
+import { recordVisitorAccess, recordAuditAction, getOperatorProfile, saveOperatorProfile, fetchVisitorLogsApi, fetchAuditLogsApi } from "./lib/analyticsService";
 import { OperatorProfile } from "./types";
 
 // Firebase & Sheets integration
@@ -129,7 +139,26 @@ export default function App() {
   const [showAnalyticsModal, setShowAnalyticsModal] = useState<boolean>(false);
   const [showDataInputModal, setShowDataInputModal] = useState<boolean>(false);
   const [showWebhookModal, setShowWebhookModal] = useState<boolean>(false);
+  const [showActionDropdown, setShowActionDropdown] = useState<boolean>(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => localStorage.getItem("orbit_gizi_sidebar_collapsed") === "true");
+  const [isMenuHidden, setIsMenuHidden] = useState<boolean>(() => localStorage.getItem("orbit_gizi_menu_hidden") === "true");
   const [showOperatorModal, setShowOperatorModal] = useState<boolean>(false);
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem("orbit_gizi_sidebar_collapsed", String(next));
+      return next;
+    });
+  };
+
+  const toggleMenuHidden = () => {
+    setIsMenuHidden(prev => {
+      const next = !prev;
+      localStorage.setItem("orbit_gizi_menu_hidden", String(next));
+      return next;
+    });
+  };
   const [pendingOperatorAction, setPendingOperatorAction] = useState<((profile: OperatorProfile) => void) | null>(null);
   const [visitorEmail, setVisitorEmail] = useState<string>(() => localStorage.getItem("orbit_gizi_visitor_email") || "");
 
@@ -194,6 +223,11 @@ export default function App() {
     getRegisteredAdminsApi().then(res => {
       if (res && Array.isArray(res.registeredAdmins)) {
         setRegisteredAdmins(res.registeredAdmins);
+      }
+    });
+    getWebhookConfigApi().then(cfg => {
+      if (cfg?.webhookUrl) {
+        localStorage.setItem("orbit_gizi_webhook_url", cfg.webhookUrl);
       }
     });
   }, []);
@@ -349,13 +383,24 @@ export default function App() {
     targetName: string | undefined,
     callback: () => void
   ) => {
-    const existing = getOperatorProfile();
+    let existing = getOperatorProfile();
+    if (!existing && currentUser) {
+      existing = {
+        name: currentUser.displayName || currentUser.email?.split("@")[0] || "Admin Nakes",
+        email: currentUser.email || "",
+        role: "Admin Dinkes / Nakes",
+        instansi: "Dinas Kesehatan / Puskesmas Kab. Nagekeo"
+      };
+      saveOperatorProfile(existing);
+    }
+
+    // Always execute the save callback immediately to guarantee data is saved to DB and Sheet
+    callback();
+
     if (existing) {
-      callback();
       recordAuditAction(existing, actionType, description, targetName);
     } else {
       setPendingOperatorAction(() => (profile: OperatorProfile) => {
-        callback();
         recordAuditAction(profile, actionType, description, targetName);
       });
       setShowOperatorModal(true);
@@ -619,10 +664,19 @@ export default function App() {
         adminSheetId: MASTER_SPREADSHEET_ID
       };
 
-      // 1. Always trigger Webhook doPost automatically in background
+      // 1. Always save full updated beneficiaries list to server database as well
+      if (Array.isArray(finalBens) && finalBens.length > 0) {
+        fetch("/api/beneficiaries/batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ beneficiaries: finalBens, replace: true })
+        }).catch(err => console.warn("Background batch save to server:", err));
+      }
+
+      // 2. Always trigger Webhook doPost automatically in background
       sendWebhookApi(fullData).catch(hookErr => console.warn("Webhook background sync info:", hookErr));
 
-      // 2. Direct Google Sheets API sync if user is connected via OAuth token
+      // 3. Direct Google Sheets API sync if user is connected via OAuth token
       let token = googleToken;
       if (!token) {
         token = await getAccessToken();
@@ -643,8 +697,17 @@ export default function App() {
       }
     } catch (e: any) {
       console.error("Push to Google Sheets error:", e);
-      if (showFeedback) {
-        setSyncError("⚠️ Catatan Sinkronisasi: Data telah disimpan di server & Webhook. Jika ingin sinkronisasi langsung Google API, pastikan telah login Google.");
+      const errMsg = e?.message || "";
+      if (errMsg.includes("403") || errMsg.includes("permission") || errMsg.includes("caller does not have permission")) {
+        setSyncError(`⚠️ Akses Google Drive: Akun ${currentUser?.email || ""} belum diberikan izin 'Editor' pada Google Spreadsheet oleh pemilik (properwahyu294@gmail.com). Data tetap tersimpan aman di server database. Mohon minta pemilik membuka Sheet di Google Drive lalu klik 'Bagikan / Share' dan beri hak akses 'Editor' ke ${currentUser?.email || "email Anda"}.`);
+      } else if (!googleToken) {
+        if (showFeedback) {
+          setSyncError("⚠️ Catatan Sinkronisasi: Data telah disimpan aman di database server. Untuk sinkronisasi langsung ke Google Sheet via Google API, silakan login Google.");
+        }
+      } else {
+        if (showFeedback) {
+          setSyncError("⚠️ Sinkronisasi Google Sheets: " + errMsg);
+        }
       }
     } finally {
       if (showFeedback) setSyncingSheets(false);
@@ -1030,90 +1093,145 @@ export default function App() {
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          <div className="flex items-center gap-2.5 w-full lg:w-auto justify-end">
+            {/* Primary Action Button */}
             <button
               onClick={() => setShowDataInputModal(true)}
-              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-indigo-900 bg-indigo-100/80 border border-indigo-300 px-3.5 py-2 rounded-xl hover:bg-indigo-200 transition-colors shadow-2xs cursor-pointer"
+              className="flex items-center justify-center space-x-2 text-xs font-black text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2.5 rounded-xl transition-all shadow-md shadow-indigo-600/20 cursor-pointer shrink-0"
             >
-              <Building2 className="h-4 w-4 text-indigo-700" />
-              <span>Modal Input & Sinkronisasi MBG</span>
+              <Building2 className="h-4 w-4" />
+              <span>Input Data MBG</span>
             </button>
 
+            {/* Sederhanakan / Ciutkan Menu Button */}
             <button
-              onClick={() => setShowAnalyticsModal(true)}
-              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-3.5 py-2 rounded-xl hover:bg-emerald-100 transition-colors shadow-2xs cursor-pointer"
+              onClick={toggleSidebarCollapse}
+              className={`hidden lg:flex items-center justify-center space-x-1.5 text-xs font-bold px-3 py-2.5 rounded-xl border transition-all cursor-pointer shadow-2xs shrink-0 ${
+                isSidebarCollapsed
+                  ? "bg-indigo-50 text-indigo-700 border-indigo-300 hover:bg-indigo-100"
+                  : "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200"
+              }`}
+              title={isSidebarCollapsed ? "Buka Menu Lengkap" : "Sederhanakan / Ciutkan Menu agar Ramping"}
             >
-              <Activity className="h-4 w-4 text-emerald-600" />
-              <span>Analitik & Audit Pengunjung</span>
+              {isSidebarCollapsed ? (
+                <>
+                  <PanelLeftOpen className="h-4 w-4 text-indigo-600" />
+                  <span>Menu Lengkap</span>
+                </>
+              ) : (
+                <>
+                  <PanelLeftClose className="h-4 w-4 text-slate-600" />
+                  <span>Sederhanakan Menu</span>
+                </>
+              )}
             </button>
 
-            <button
-              onClick={() => setShowOfflineFormModal(true)}
-              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-xl hover:bg-indigo-100 transition-colors shadow-2xs cursor-pointer"
-            >
-              <FileText className="h-4 w-4 text-indigo-600" />
-              <span>Cetak Form Offline</span>
-            </button>
+            {/* Streamlined Menu & Tools Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowActionDropdown(prev => !prev)}
+                className="flex items-center justify-center space-x-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-3.5 py-2.5 rounded-xl transition-colors cursor-pointer shadow-2xs shrink-0"
+                title="Buka menu opsi dan alat lainnya"
+              >
+                <SlidersHorizontal className="h-4 w-4 text-slate-600" />
+                <span>Menu Lainnya</span>
+                <ChevronDown className={`h-3.5 w-3.5 text-slate-500 transition-transform duration-200 ${showActionDropdown ? "rotate-180" : ""}`} />
+              </button>
 
-            <button
-              onClick={() => setShowManualModal(true)}
-              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3.5 py-2 rounded-xl hover:bg-blue-100 transition-colors shadow-2xs cursor-pointer"
-            >
-              <BookOpen className="h-4 w-4 text-blue-600" />
-              <span>Buku Panduan (20 Hal)</span>
-            </button>
+              {showActionDropdown && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-30" 
+                    onClick={() => setShowActionDropdown(false)} 
+                  />
+                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-40 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-3.5 py-1.5 border-b border-slate-100 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                      Aksi &amp; Publikasi Sheet
+                    </div>
+                    
+                    <button
+                      onClick={() => { setShowActionDropdown(false); handlePublishToPublic(); }}
+                      disabled={syncingSheets}
+                      className="w-full px-3.5 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                    >
+                      <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <span>{syncingSheets ? "Mempublikasikan..." : "🚀 Publikasikan ke Publik"}</span>
+                    </button>
 
-            <button
-              onClick={() => setShowConfigModal(true)}
-              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
-            >
-              <Settings className="h-4 w-4 text-slate-500" />
-              <span>Atur Bobot Pilar</span>
-            </button>
+                    <button
+                      onClick={() => { setShowActionDropdown(false); handlePullFromSheets(); }}
+                      disabled={syncingSheets}
+                      className="w-full px-3.5 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                    >
+                      <DownloadCloud className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <span>{syncingSheets ? "Memuat..." : "⬇️ Muat Ulang dari Sheet"}</span>
+                    </button>
 
-            <button
-              onClick={() => setShowWebhookModal(true)}
-              className="flex items-center justify-center space-x-1.5 text-xs font-black text-emerald-950 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-3.5 py-2 rounded-xl transition-colors shadow-2xs cursor-pointer"
-              title="Konfigurasi Webhook doPost Otomatis ke Google Sheet"
-            >
-              <Zap className="h-4 w-4 text-emerald-700" />
-              <span>Integrasi Webhook (doPost)</span>
-            </button>
+                    <button
+                      onClick={() => { setShowActionDropdown(false); setShowWebhookModal(true); }}
+                      className="w-full px-3.5 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                    >
+                      <Zap className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <span>⚡ Integrasi Webhook (doPost)</span>
+                    </button>
 
-            <button
-              onClick={() => setShowDataManagementModal(true)}
-              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3.5 py-2 rounded-xl hover:bg-rose-100 transition-colors shadow-2xs cursor-pointer"
-            >
-              <Trash2 className="h-4 w-4 text-rose-600" />
-              <span>Manajemen / Reset Data</span>
-            </button>
+                    <div className="px-3.5 py-1.5 border-t border-b border-slate-100 text-[10px] font-black uppercase text-slate-400 tracking-wider mt-1">
+                      Alat &amp; Panduan
+                    </div>
 
-            <button
-              onClick={handlePublishToPublic}
-              disabled={syncingSheets}
-              className="flex items-center justify-center space-x-1.5 text-xs font-black text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border border-emerald-500/30 px-3.5 py-2 rounded-xl transition-all shadow-md cursor-pointer disabled:opacity-50"
-              title="Pemicu Publikasi: Sinkronkan seluruh data ke Google Sheet & Izinkan Akses Dashboard Publik"
-            >
-              <Sparkles className="h-4 w-4 text-emerald-200" />
-              <span>{syncingSheets ? "Mempublikasikan..." : "🚀 Pemicu Publikasi ke Publik"}</span>
-            </button>
+                    <button
+                      onClick={() => { setShowActionDropdown(false); setShowAnalyticsModal(true); }}
+                      className="w-full px-3.5 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                    >
+                      <Activity className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <span>Analitik &amp; Audit Pengunjung</span>
+                    </button>
 
-            <button
-              onClick={handlePullFromSheets}
-              disabled={syncingSheets}
-              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-xl hover:bg-emerald-100 transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
-              title="Tarik & Muat Ulang Data Terbaru dari Google Sheets Terpusat"
-            >
-              <DownloadCloud className="h-4 w-4 text-emerald-600" />
-              <span>{syncingSheets ? "Memuat..." : "⬇️ Muat Ulang dari Sheet"}</span>
-            </button>
+                    <button
+                      onClick={() => { setShowActionDropdown(false); setShowOfflineFormModal(true); }}
+                      className="w-full px-3.5 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                    >
+                      <FileText className="h-4 w-4 text-indigo-600 shrink-0" />
+                      <span>Cetak Form Offline</span>
+                    </button>
+
+                    <button
+                      onClick={() => { setShowActionDropdown(false); setShowManualModal(true); }}
+                      className="w-full px-3.5 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                    >
+                      <BookOpen className="h-4 w-4 text-blue-600 shrink-0" />
+                      <span>Buku Panduan (20 Hal)</span>
+                    </button>
+
+                    <button
+                      onClick={() => { setShowActionDropdown(false); setShowConfigModal(true); }}
+                      className="w-full px-3.5 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                    >
+                      <Settings className="h-4 w-4 text-slate-600 shrink-0" />
+                      <span>Atur Bobot Pilar</span>
+                    </button>
+
+                    <div className="border-t border-slate-100 my-1"></div>
+
+                    <button
+                      onClick={() => { setShowActionDropdown(false); setShowDataManagementModal(true); }}
+                      className="w-full px-3.5 py-2.5 text-left text-xs font-bold text-rose-700 hover:bg-rose-50 flex items-center space-x-2.5 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4 text-rose-600 shrink-0" />
+                      <span>Manajemen / Reset Data</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
             
+            {/* Refresh Button */}
             <button
               onClick={() => setRefreshTrigger(prev => prev + 1)}
-              className="p-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors text-slate-500 cursor-pointer"
+              className="p-2.5 bg-slate-100 border border-slate-300 hover:bg-slate-200 rounded-xl transition-colors text-slate-600 cursor-pointer shadow-2xs shrink-0"
               title="Refresh Tampilan Data"
             >
-              <RefreshCw className="h-4.5 w-4.5" />
+              <RefreshCw className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -1157,218 +1275,334 @@ export default function App() {
           />
         </div>
 
-        {/* Workspace with Left Vertical Navigation Tab Menu */}
+        {/* Workspace with Left Vertical Navigation Tab Menu or Top Minimalist Strip */}
         <div className="flex flex-col lg:flex-row gap-6">
           
-          {/* Sidebar Menu Panel */}
-          <div className="lg:w-72 shrink-0 space-y-4">
-                     {/* Responsive menu container */}
-            {(() => {
-              const tabsList = [
-                {
-                  id: "overview",
-                  name: "Ringkasan Indeks",
-                  desc: "Nilai Indeks & Bobot Pilar",
-                  icon: <LayoutDashboard className="h-4.5 w-4.5" />
-                },
-                {
-                  id: "input_center",
-                  name: "Pusat Input Data",
-                  desc: "Propinsi s.d. Posyandu & MBG",
-                  icon: <Building2 className="h-4.5 w-4.5 text-indigo-600" />
-                },
-                {
-                  id: "ibu_hamil",
-                  name: "Ibu Hamil",
-                  desc: "Nama Ibu, Umur, NIK, Alamat",
-                  icon: <Heart className="h-4.5 w-4.5 text-pink-600" />
-                },
-                {
-                  id: "ibu_menyusui",
-                  name: "Ibu Menyusui & Nifas",
-                  desc: "Nama Ibu, Umur, NIK, Alamat",
-                  icon: <Heart className="h-4.5 w-4.5 text-rose-600" />
-                },
-                {
-                  id: "fondasi",
-                  name: "Fondasi Program (ToC)",
-                  desc: "Alur Transformasi Gizi",
-                  icon: <Layers className="h-4.5 w-4.5" />
-                },
-                {
-                  id: "peta",
-                  name: "Peta & Kinerja Desa",
-                  desc: "Zona Risiko & Leaderboard",
-                  icon: <Map className="h-4.5 w-4.5" />
-                },
-                {
-                  id: "analitik",
-                  name: "Analitik Gizi (MBG/PMT)",
-                  desc: "Grafik & Sinkronisasi Data",
-                  icon: <Activity className="h-4.5 w-4.5" />
-                },
-                {
-                  id: "pilar",
-                  name: "Pilar Transformasi",
-                  desc: "Detail Nilai Tiap Pilar",
-                  icon: <Award className="h-4.5 w-4.5" />
-                },
-                {
-                  id: "rekomendasi",
-                  name: "Analisis Data",
-                  desc: "Rekomendasi Kebijakan Strategis",
-                  icon: <Sparkles className="h-4.5 w-4.5 text-emerald-500" />
-                },
-                {
-                  id: "sinergi",
-                  name: "Sinergi Stakeholder",
-                  desc: "Kolaborasi OPD Kabupaten",
-                  icon: <Handshake className="h-4.5 w-4.5" />
-                }
-              ];
-              const activeTabObj = tabsList.find(t => t.id === activeTab) || tabsList[0];
+          {/* Sidebar Menu Panel (Desktop & Mobile) */}
+          {!isMenuHidden && (
+            <div className={`transition-all duration-300 shrink-0 space-y-4 ${
+              isSidebarCollapsed ? "lg:w-20" : "lg:w-64"
+            }`}>
+              {/* Responsive menu container */}
+              {(() => {
+                const tabsList = [
+                  {
+                    id: "overview",
+                    name: "Ringkasan Indeks",
+                    shortName: "Ringkasan",
+                    category: "Analitik & Indeks",
+                    desc: "Nilai Indeks & Bobot",
+                    icon: <LayoutDashboard className="h-4.5 w-4.5" />
+                  },
+                  {
+                    id: "input_center",
+                    name: "Pusat Input Data",
+                    shortName: "Input MBG",
+                    category: "Data & Intervensi",
+                    desc: "Data Posyandu & MBG",
+                    icon: <Building2 className="h-4.5 w-4.5 text-indigo-600" />
+                  },
+                  {
+                    id: "ibu_hamil",
+                    name: "Ibu Hamil",
+                    shortName: "Bumil",
+                    category: "Data & Intervensi",
+                    desc: "Sasaran Ibu Hamil",
+                    icon: <Heart className="h-4.5 w-4.5 text-pink-600" />
+                  },
+                  {
+                    id: "ibu_menyusui",
+                    name: "Ibu Menyusui & Nifas",
+                    shortName: "Busui",
+                    category: "Data & Intervensi",
+                    desc: "Sasaran Ibu Menyusui",
+                    icon: <Heart className="h-4.5 w-4.5 text-rose-600" />
+                  },
+                  {
+                    id: "analitik",
+                    name: "Analitik Gizi (MBG/PMT)",
+                    shortName: "Analitik",
+                    category: "Data & Intervensi",
+                    desc: "Grafik Intervensi",
+                    icon: <Activity className="h-4.5 w-4.5 text-emerald-600" />
+                  },
+                  {
+                    id: "peta",
+                    name: "Peta & Kinerja Desa",
+                    shortName: "Peta Desa",
+                    category: "Analitik & Indeks",
+                    desc: "Zona Risiko & Leaderboard",
+                    icon: <Map className="h-4.5 w-4.5 text-amber-600" />
+                  },
+                  {
+                    id: "fondasi",
+                    name: "Fondasi Program (ToC)",
+                    shortName: "ToC Alur",
+                    category: "Analitik & Indeks",
+                    desc: "Alur Transformasi Gizi",
+                    icon: <Layers className="h-4.5 w-4.5 text-purple-600" />
+                  },
+                  {
+                    id: "pilar",
+                    name: "Pilar Transformasi",
+                    shortName: "5 Pilar",
+                    category: "Analitik & Indeks",
+                    desc: "Detail Bobot Pilar",
+                    icon: <Award className="h-4.5 w-4.5 text-blue-600" />
+                  },
+                  {
+                    id: "rekomendasi",
+                    name: "Analisis Data",
+                    shortName: "Analisis AI",
+                    category: "Analitik & Indeks",
+                    desc: "Rekomendasi Kebijakan",
+                    icon: <Sparkles className="h-4.5 w-4.5 text-emerald-500" />
+                  },
+                  {
+                    id: "sinergi",
+                    name: "Sinergi Stakeholder",
+                    shortName: "Sinergi OPD",
+                    category: "Analitik & Indeks",
+                    desc: "Kolaborasi Lintas Sektor",
+                    icon: <Handshake className="h-4.5 w-4.5 text-teal-600" />
+                  }
+                ];
+                const activeTabObj = tabsList.find(t => t.id === activeTab) || tabsList[0];
 
-              return (
-                <>
-                  {/* MOBILE & TABLET ONLY MENU (Garis Tiga / Hamburger Button Dropdown) */}
-                  <div className="lg:hidden relative z-40">
-                    <button
-                      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                      className="w-full flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-xl shadow-xs hover:bg-slate-50 transition-colors focus:outline-hidden cursor-pointer"
-                    >
-                      <div className="flex items-center space-x-3 text-left">
-                        <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 shrink-0">
-                          {activeTabObj.icon}
+                return (
+                  <>
+                    {/* MOBILE & TABLET ONLY MENU */}
+                    <div className="lg:hidden relative z-40">
+                      <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="w-full flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-xl shadow-xs hover:bg-slate-50 transition-colors focus:outline-hidden cursor-pointer"
+                      >
+                        <div className="flex items-center space-x-3 text-left">
+                          <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 shrink-0">
+                            {activeTabObj.icon}
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-400 font-bold tracking-wider uppercase leading-none block">MENU AKTIF</span>
+                            <span className="text-xs font-black text-slate-800 leading-tight block mt-0.5">{activeTabObj.name}</span>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-[10px] text-slate-400 font-bold tracking-wider uppercase leading-none block">MENU AKTIF</span>
-                          <span className="text-xs font-black text-slate-800 leading-tight block mt-0.5">{activeTabObj.name}</span>
+                        <div className="p-2 bg-slate-50 rounded-lg text-slate-600 border border-slate-200 flex items-center justify-center">
+                          {isMobileMenuOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
                         </div>
-                      </div>
-                      <div className="p-2 bg-slate-50 rounded-lg text-slate-600 border border-slate-200 flex items-center justify-center">
-                        {isMobileMenuOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
-                      </div>
-                    </button>
+                      </button>
 
-                    <AnimatePresence>
-                      {isMobileMenuOpen && (
-                        <>
-                          {/* Close overlay */}
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="fixed inset-0 bg-slate-900 z-40"
-                          />
+                      <AnimatePresence>
+                        {isMobileMenuOpen && (
+                          <>
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 0.1 }}
+                              exit={{ opacity: 0 }}
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              className="fixed inset-0 bg-slate-900 z-40"
+                            />
 
-                          {/* Options container */}
-                          <motion.div
-                            initial={{ opacity: 0, y: -10, scale: 0.98 }}
-                            animate={{ opacity: 1, y: 4, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                            transition={{ duration: 0.15, ease: "easeOut" }}
-                            className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-2 space-y-1"
-                          >
-                            {tabsList.map((tab, idx) => {
-                              const isActive = activeTab === tab.id;
-                              return (
-                                <motion.button
-                                  key={tab.id}
-                                  initial={{ opacity: 0, x: -5 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: idx * 0.02 }}
-                                  onClick={() => {
-                                    setActiveTab(tab.id);
-                                    setIsMobileMenuOpen(false);
-                                  }}
-                                  className={`w-full flex items-center space-x-3 text-left p-3 rounded-xl transition-all cursor-pointer ${
-                                    isActive
-                                      ? "bg-indigo-50/70 text-indigo-700 font-bold border border-indigo-100"
-                                      : "bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent"
-                                  }`}
-                                >
-                                  <div className={`p-1.5 rounded-lg shrink-0 ${isActive ? "bg-indigo-100 text-indigo-600" : "bg-slate-100 text-slate-500"}`}>
-                                    {tab.icon}
-                                  </div>
-                                  <div className="truncate">
-                                    <span className="text-xs font-black block leading-tight">{tab.name}</span>
-                                    <span className="text-[10px] text-slate-400 font-medium block leading-none mt-0.5">{tab.desc}</span>
-                                  </div>
-                                </motion.button>
-                              );
-                            })}
-                          </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* DESKTOP ONLY VERTICAL NAVIGATION SIDEBAR PANEL */}
-                  <div className="hidden lg:flex lg:flex-col bg-white border border-slate-200/90 rounded-2xl p-2.5 shadow-xs space-y-1">
-                    <div className="px-3 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1 flex items-center justify-between">
-                      <span>MENU DASHBOARD</span>
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                            <motion.div
+                              initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                              animate={{ opacity: 1, y: 4, scale: 1 }}
+                              exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                              transition={{ duration: 0.15, ease: "easeOut" }}
+                              className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-2 space-y-1"
+                            >
+                              {tabsList.map((tab, idx) => {
+                                const isActive = activeTab === tab.id;
+                                return (
+                                  <motion.button
+                                    key={tab.id}
+                                    initial={{ opacity: 0, x: -5 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.02 }}
+                                    onClick={() => {
+                                      setActiveTab(tab.id);
+                                      setIsMobileMenuOpen(false);
+                                    }}
+                                    className={`w-full flex items-center space-x-3 text-left p-2.5 rounded-xl transition-all cursor-pointer ${
+                                      isActive
+                                        ? "bg-indigo-50/80 text-indigo-700 font-bold border border-indigo-100"
+                                        : "bg-transparent text-slate-600 hover:bg-slate-50 border border-transparent"
+                                    }`}
+                                  >
+                                    <div className={`p-1.5 rounded-lg shrink-0 ${isActive ? "bg-indigo-100 text-indigo-600" : "bg-slate-100 text-slate-500"}`}>
+                                      {tab.icon}
+                                    </div>
+                                    <div className="truncate">
+                                      <span className="text-xs font-bold block leading-tight">{tab.name}</span>
+                                      <span className="text-[10px] text-slate-400 block leading-none mt-0.5">{tab.desc}</span>
+                                    </div>
+                                  </motion.button>
+                                );
+                              })}
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
                     </div>
 
-                    {tabsList.map((tab) => {
-                      const isActive = activeTab === tab.id;
-                      return (
-                        <button
-                          key={tab.id}
-                          onClick={() => setActiveTab(tab.id)}
-                          className={`flex items-center space-x-3 text-left p-3 rounded-xl transition-all w-full cursor-pointer group ${
-                            isActive
-                              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 font-bold"
-                              : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
-                          }`}
-                        >
-                          <div className={`p-2 rounded-lg shrink-0 transition-colors ${
-                            isActive 
-                              ? "bg-white/20 text-white" 
-                              : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700"
-                          }`}>
-                            {tab.icon}
-                          </div>
-                          <div className="truncate flex-1">
-                            <span className="text-xs font-black block leading-tight">{tab.name}</span>
-                            <span className={`text-[10px] truncate block mt-0.5 leading-none ${
-                              isActive ? "text-indigo-100 font-medium" : "text-slate-400 font-normal"
-                            }`}>
-                              {tab.desc}
-                            </span>
-                          </div>
-                          {isActive && (
-                            <div className="w-1.5 h-4 bg-white/80 rounded-full shrink-0 animate-in fade-in duration-200"></div>
-                          )}
-                        </button>
-                      );
-                    })}
+                    {/* DESKTOP VERTICAL NAVIGATION SIDEBAR PANEL */}
+                    <div className="hidden lg:flex lg:flex-col bg-white border border-slate-200 rounded-2xl p-2 shadow-xs transition-all duration-300">
+                      
+                      {/* Sidebar Header with Controls */}
+                      <div className={`flex items-center pb-2 mb-1 border-b border-slate-100 ${
+                        isSidebarCollapsed ? "justify-center" : "justify-between px-2"
+                      }`}>
+                        {!isSidebarCollapsed ? (
+                          <>
+                            <div className="flex items-center space-x-1.5">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                                MENU DASHBOARD
+                              </span>
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <button
+                                onClick={toggleSidebarCollapse}
+                                className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+                                title="Sederhanakan / Ciutkan Menu"
+                              >
+                                <PanelLeftClose className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={toggleMenuHidden}
+                                className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+                                title="Sembunyikan Sidebar Sepenuhnya"
+                              >
+                                <EyeOff className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <button
+                            onClick={toggleSidebarCollapse}
+                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
+                            title="Perluas Menu Lengkap"
+                          >
+                            <PanelLeftOpen className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Tab List Navigation */}
+                      <div className="space-y-1">
+                        {tabsList.map((tab) => {
+                          const isActive = activeTab === tab.id;
+
+                          if (isSidebarCollapsed) {
+                            return (
+                              <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                title={`${tab.name} (${tab.desc})`}
+                                className={`w-full flex items-center justify-center p-2.5 rounded-xl transition-all cursor-pointer relative group ${
+                                  isActive
+                                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/30"
+                                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                                }`}
+                              >
+                                <div className="shrink-0">{tab.icon}</div>
+                                {isActive && (
+                                  <div className="absolute right-1 w-1 h-3 bg-white/80 rounded-full"></div>
+                                )}
+                              </button>
+                            );
+                          }
+
+                          return (
+                            <button
+                              key={tab.id}
+                              onClick={() => setActiveTab(tab.id)}
+                              className={`flex items-center space-x-2.5 text-left px-2.5 py-2 rounded-xl transition-all w-full cursor-pointer group ${
+                                isActive
+                                  ? "bg-indigo-600 text-white shadow-xs font-bold"
+                                  : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+                              }`}
+                            >
+                              <div className={`p-1.5 rounded-lg shrink-0 transition-colors ${
+                                isActive 
+                                  ? "bg-white/20 text-white" 
+                                  : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700"
+                              }`}>
+                                {tab.icon}
+                              </div>
+                              <div className="truncate flex-1">
+                                <span className="text-xs font-bold block leading-tight">{tab.name}</span>
+                              </div>
+                              {isActive && (
+                                <div className="w-1.5 h-3.5 bg-white/90 rounded-full shrink-0"></div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+
+              {/* Discreet Info Footer widget (Only when expanded) */}
+              {!isSidebarCollapsed && (
+                <div className="hidden lg:flex items-center justify-between bg-slate-900 text-slate-300 rounded-xl px-3.5 py-2.5 border border-slate-800 shadow-2xs text-[10px]">
+                  <div className="flex items-center space-x-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span className="font-bold text-slate-300">{data.kabupatenName}</span>
                   </div>
-                </>
-              );
-            })()}
+                  <span className="font-mono text-emerald-400 font-bold">14 Parameter</span>
+                </div>
+              )}
 
-            {/* Kabupaten Profile Info widget in Sidebar (Desktop only) */}
-            <div className="hidden lg:block bg-slate-900 text-slate-300 rounded-2xl p-4.5 border border-slate-800 shadow-xs space-y-3.5">
-              <div className="flex items-center space-x-2">
-                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span className="text-[10px] font-black text-indigo-400 tracking-wider uppercase">SISTEM SINKRONISASI</span>
-              </div>
-              <div>
-                <span className="text-[11px] font-bold text-slate-400 block">Kecamatan Pantauan</span>
-                <span className="text-xs font-black text-white">7 Wilayah Terpadu</span>
-              </div>
-              <div className="pt-2.5 border-t border-slate-800 flex justify-between items-center text-[10px]">
-                <span className="text-slate-400 font-semibold">Total Indikator</span>
-                <span className="font-mono text-emerald-400 font-bold">14 Parameter Riil</span>
-              </div>
             </div>
-
-          </div>
+          )}
 
           {/* Active Worksite Area (Content Panel) */}
           <div className="flex-1 min-w-0">
+
+            {/* Horizontal Minimalist Quick-Bar when Sidebar is Hidden */}
+            {isMenuHidden && (
+              <div className="hidden lg:flex items-center justify-between bg-white border border-slate-200 rounded-2xl p-2 mb-4 shadow-xs">
+                <div className="flex items-center space-x-1.5 overflow-x-auto py-1">
+                  <button
+                    onClick={toggleMenuHidden}
+                    className="flex items-center space-x-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition-colors shrink-0 cursor-pointer border border-indigo-200"
+                    title="Buka kembali sidebar menu"
+                  >
+                    <PanelLeftOpen className="h-3.5 w-3.5 text-indigo-600" />
+                    <span>Buka Sidebar</span>
+                  </button>
+
+                  <div className="h-5 w-px bg-slate-200 mx-1"></div>
+
+                  {[
+                    { id: "overview", name: "Ringkasan", icon: <LayoutDashboard className="h-3.5 w-3.5" /> },
+                    { id: "input_center", name: "Pusat Input MBG", icon: <Building2 className="h-3.5 w-3.5 text-indigo-600" /> },
+                    { id: "ibu_hamil", name: "Ibu Hamil", icon: <Heart className="h-3.5 w-3.5 text-pink-600" /> },
+                    { id: "ibu_menyusui", name: "Ibu Menyusui", icon: <Heart className="h-3.5 w-3.5 text-rose-600" /> },
+                    { id: "analitik", name: "Analitik", icon: <Activity className="h-3.5 w-3.5 text-emerald-600" /> },
+                    { id: "peta", name: "Peta Desa", icon: <Map className="h-3.5 w-3.5 text-amber-600" /> },
+                    { id: "fondasi", name: "ToC", icon: <Layers className="h-3.5 w-3.5 text-purple-600" /> },
+                    { id: "pilar", name: "5 Pilar", icon: <Award className="h-3.5 w-3.5 text-blue-600" /> },
+                    { id: "rekomendasi", name: "Analisis Data", icon: <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> },
+                    { id: "sinergi", name: "Sinergi OPD", icon: <Handshake className="h-3.5 w-3.5 text-teal-600" /> },
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                        activeTab === tab.id
+                          ? "bg-indigo-600 text-white shadow-xs"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      }`}
+                    >
+                      {tab.icon}
+                      <span>{tab.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {activeTab === "overview" && (
               <div className="space-y-6 animate-in fade-in duration-200">

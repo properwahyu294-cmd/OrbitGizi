@@ -568,6 +568,9 @@ export async function getAppData(): Promise<OrbitGiziData> {
   try {
     const res = await fetch("/api/data");
     const json = await parseResponseSafely(res);
+    if (json && json.webhookUrl) {
+      localStorage.setItem("orbit_gizi_webhook_url", json.webhookUrl);
+    }
     return json;
   } catch (err) {
     console.warn("API Endpoint notice, utilizing local dataset:", err);
