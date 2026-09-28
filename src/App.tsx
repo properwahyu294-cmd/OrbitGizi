@@ -787,27 +787,50 @@ export default function App() {
     }
   };
 
-  const handleSyncSheets = async () => {
+  const handleSyncSheets = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (syncingSheets) return;
     if (!googleToken) {
       try {
         await handleSyncSheetsDirect("");
       } catch {
-        await handleGoogleLogin();
+        try {
+          await handleGoogleLogin();
+        } catch (loginErr) {
+          console.warn("Google login warning:", loginErr);
+        }
       }
     } else {
-      await handleSyncSheetsDirect(googleToken);
+      try {
+        await handleSyncSheetsDirect(googleToken);
+      } catch (tokenErr) {
+        console.warn("Token sync warning:", tokenErr);
+        await handleSyncSheetsDirect("");
+      }
     }
   };
 
   // Auto-sync public sheet data only once when public dashboard is first opened if no data exists
   useEffect(() => {
     if (showPublicDashboard && (!beneficiaries || beneficiaries.length === 0)) {
-      handleSyncSheetsDirect("");
+      handleSyncSheetsDirect("").catch(e => console.warn("Auto-sync public sheet warning:", e));
     }
   }, [showPublicDashboard]);
 
-  const handleRefreshPublicSheet = async () => {
-    await handleSyncSheetsDirect("");
+  const handleRefreshPublicSheet = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (syncingSheets) return;
+    try {
+      await handleSyncSheetsDirect("");
+    } catch (e) {
+      console.warn("Refresh public sheet warning:", e);
+    }
   };
 
   const handlePublishToPublic = async () => {

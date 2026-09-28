@@ -72,7 +72,12 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   const [showVisitorModal, setShowVisitorModal] = useState<boolean>(false);
   const [isSyncingSheetLocal, setIsSyncingSheetLocal] = useState<boolean>(false);
 
-  const handleManualRefreshSheet = async () => {
+  const handleManualRefreshSheet = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (isSyncingSheetLocal || isRefreshingSheet) return;
     setIsSyncingSheetLocal(true);
     try {
       if (onRefreshPublicSheet) {
