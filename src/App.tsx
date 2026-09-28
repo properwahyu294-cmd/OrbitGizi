@@ -952,17 +952,17 @@ export default function App() {
   }
 
   // Filtered villages
-  const filteredVillages = data.villages.filter(v => 
-    v.name.toLowerCase().includes(villageSearch.toLowerCase())
+  const filteredVillages = (data?.villages || []).filter(v => 
+    v && v.name && v.name.toLowerCase().includes(villageSearch.toLowerCase())
   );
 
   // Sorting villages by performance score descending
-  const sortedVillages = [...data.villages].sort((a, b) => b.score - a.score);
+  const sortedVillages = [...(data?.villages || [])].sort((a, b) => (b?.score || 0) - (a?.score || 0));
 
   // Extract Pilar 2 (Kolaborasi)
-  const pillar2 = data.pillars.find(p => p.id === "pilar2")!;
+  const pillar2 = (data?.pillars || []).find(p => p && p.id === "pilar2") || { id: "pilar2", name: "Pilar 2. Kolaborasi", weight: 30, indicators: [] };
   // Extract Pilar 1 (Sinkronisasi Data)
-  const pillar1 = data.pillars.find(p => p.id === "pilar1")!;
+  const pillar1 = (data?.pillars || []).find(p => p && p.id === "pilar1") || { id: "pilar1", name: "Pilar 1. Sinkronisasi Data", weight: 10, indicators: [] };
 
   if (showPublicDashboard) {
     return (
