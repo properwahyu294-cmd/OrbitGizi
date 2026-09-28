@@ -114,6 +114,52 @@ async function ensureSheetTabsExist(accessToken: string, spreadsheetId: string):
 }
 
 /**
+ * Ensures grid capacity (rows count) is sufficient before writing data
+ */
+async function ensureSheetGridCapacity(accessToken: string, spreadsheetId: string, requiredRowsMap: Record<string, number>): Promise<void> {
+  try {
+    const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (!res.ok) return;
+    const json = await res.json();
+    const sheets = json.sheets || [];
+    const requests: any[] = [];
+
+    sheets.forEach((s: any) => {
+      const title = s.properties?.title;
+      const sheetId = s.properties?.sheetId;
+      const currentMaxRows = s.properties?.gridProperties?.rowCount || 0;
+      const neededRows = requiredRowsMap[title] || 0;
+
+      if (neededRows > currentMaxRows && sheetId !== undefined) {
+        const rowsToAdd = Math.max(100, neededRows - currentMaxRows + 50);
+        requests.push({
+          appendDimension: {
+            sheetId: sheetId,
+            dimension: "ROWS",
+            length: rowsToAdd
+          }
+        });
+      }
+    });
+
+    if (requests.length > 0) {
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ requests })
+      });
+    }
+  } catch (e) {
+    console.warn("Gagal menyesuaikan kapasitas baris sheet:", e);
+  }
+}
+
+/**
  * Synchronizes Kabupaten and Villages data to Google Sheets
  */
 export async function syncToGoogleSheets(
@@ -537,7 +583,20 @@ export async function syncToGoogleSheets(
     console.error("Error reading audit logs for sheet sync:", e);
   }
 
-  // Clear spreadsheet ranges before writing updated values to ensure deleted rows are completely removed
+  // Ensure grid capacity (add extra rows if hapusSelKosong or script deleted empty rows)
+  await ensureSheetGridCapacity(accessToken, spreadsheetId!, {
+    "Ringkasan Indeks": summaryValues.length,
+    "Data Desa": villageValues.length,
+    "Daftar Wilayah": wilayahValues.length,
+    "Penerima MBG": mbgValues.length,
+    "Ibu Hamil": ibuHamilValues.length,
+    "Ibu Menyusui": ibuMenyusuiValues.length,
+    "Catatan Timbang": catatanTimbangValues.length,
+    "Analitik Pengunjung": visitorValues.length,
+    "Audit Log Operator": auditValues.length
+  });
+
+  // Clear spreadsheet ranges before writing updated values
   try {
     await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchClear`, {
       method: "POST",
@@ -547,15 +606,15 @@ export async function syncToGoogleSheets(
       },
       body: JSON.stringify({
         ranges: [
-          "'Ringkasan Indeks'!A1:Z500",
-          "'Data Desa'!A1:Z2000",
-          "'Daftar Wilayah'!A1:Z2000",
-          "'Penerima MBG'!A1:Z10000",
-          "'Ibu Hamil'!A1:Z5000",
-          "'Ibu Menyusui'!A1:Z5000",
-          "'Catatan Timbang'!A1:Z20000",
-          "'Analitik Pengunjung'!A1:Z10000",
-          "'Audit Log Operator'!A1:Z10000"
+          "'Ringkasan Indeks'!A:Z",
+          "'Data Desa'!A:Z",
+          "'Daftar Wilayah'!A:Z",
+          "'Penerima MBG'!A:Z",
+          "'Ibu Hamil'!A:Z",
+          "'Ibu Menyusui'!A:Z",
+          "'Catatan Timbang'!A:Z",
+          "'Analitik Pengunjung'!A:Z",
+          "'Audit Log Operator'!A:Z"
         ]
       })
     });
