@@ -295,21 +295,37 @@ async function autoImportFromGoogleSheet() {
       if (dataRows.length > 0) {
         const sheetBens = dataRows.map((row, idx) => parseMbgRowServer(row, idx)).filter(Boolean) as any[];
 
+        const updatedBens: any[] = [];
         sheetBens.forEach(sb => {
-          const idx = beneficiaries.findIndex(b => b.id === sb.id || (sb.nik && b.nik === sb.nik));
-          if (idx !== -1) {
-            // Keep local/server changes prioritary so newly input admin data is not overwritten by stale sheet data
-            beneficiaries[idx] = {
+          const existing = beneficiaries.find(b => 
+            b.id === sb.id || 
+            (sb.nik && b.nik && b.nik === sb.nik) || 
+            (sb.name && b.name && b.name.toLowerCase().trim() === sb.name.toLowerCase().trim())
+          );
+          if (existing) {
+            updatedBens.push({
+              ...existing,
               ...sb,
-              ...beneficiaries[idx],
-              weightRecords: (beneficiaries[idx].weightRecords && beneficiaries[idx].weightRecords.length > 0)
-                ? beneficiaries[idx].weightRecords
-                : sb.weightRecords
-            };
+              weightRecords: (existing.weightRecords && existing.weightRecords.length > 0)
+                ? existing.weightRecords
+                : sb.weightRecords,
+              initialWeightKg: sb.initialWeightKg || existing.initialWeightKg,
+              initialStatusGizi: sb.initialStatusGizi || existing.initialStatusGizi,
+              initialHeightCm: sb.initialHeightCm || existing.initialHeightCm
+            });
           } else {
-            beneficiaries.push(sb);
+            updatedBens.push(sb);
           }
         });
+
+        // Retain local-only beneficiaries created in app that are not in sheet
+        beneficiaries.forEach(b => {
+          if (b.isLocalOnly && !updatedBens.some(ub => ub.id === b.id)) {
+            updatedBens.push(b);
+          }
+        });
+
+        beneficiaries = updatedBens;
         saveStoreToDisk();
       }
     }
