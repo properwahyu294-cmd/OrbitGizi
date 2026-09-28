@@ -1050,29 +1050,101 @@ export async function updateWebhookConfigApi(url: string): Promise<{ webhookUrl:
   return { webhookUrl: cleanUrl };
 }
 
-export async function sendWebhookApi(payload?: any): Promise<{ success: boolean; message: string; result?: any }> {
+export async function sendWebhookApi(payload?: any, overrideUrl?: string): Promise<{ success: boolean; message: string; result?: any }> {
+  const targetUrl = (overrideUrl || localStorage.getItem("orbit_gizi_webhook_url") || "").trim();
+
+  // 1. Try server-side proxy
   try {
     const res = await fetch("/api/webhook/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ payload })
+      body: JSON.stringify({ payload, webhookUrl: targetUrl })
     });
-    return await parseResponseSafely(res);
-  } catch (err: any) {
-    throw new Error(err.message || "Gagal mengirim data melalui Webhook.");
+    const json = await parseResponseSafely(res);
+    if (json && json.success) return json;
+  } catch (serverErr) {
+    console.warn("Server webhook send proxy returned HTML/error, attempting direct client push...", serverErr);
   }
+
+  // 2. Direct client-side push to Google Apps Script Web App (using mode no-cors for CORS/302 redirects)
+  if (targetUrl && targetUrl.startsWith("http")) {
+    try {
+      await fetch(targetUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload || { action: "sync_all", timestamp: new Date().toISOString() })
+      });
+      return {
+        success: true,
+        message: "Data berhasil dikirim langsung ke Webhook Google Apps Script (doPost)!"
+      };
+    } catch (clientErr: any) {
+      console.warn("Direct client webhook send failed:", clientErr);
+    }
+  }
+
+  if (!targetUrl) {
+    throw new Error("URL Webhook belum dikonfigurasi. Masukkan URL Google Apps Script Web App terlebih dahulu.");
+  }
+
+  throw new Error("Gagal mengirim data melalui Webhook. Pastikan URL Web App valid dan dapat diakses.");
 }
 
-export async function pullWebhookApi(): Promise<any> {
+export async function pullWebhookApi(overrideUrl?: string): Promise<any> {
+  const targetUrl = (overrideUrl || localStorage.getItem("orbit_gizi_webhook_url") || "").trim();
+
+  // 1. Try server-side proxy
   try {
     const res = await fetch("/api/webhook/pull", {
       method: "POST",
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ webhookUrl: targetUrl })
     });
-    return await parseResponseSafely(res);
-  } catch (err: any) {
-    throw new Error(err.message || "Gagal menarik data melalui Webhook.");
+    const json = await parseResponseSafely(res);
+    if (json && json.success) return json;
+  } catch (serverErr) {
+    console.warn("Server webhook pull proxy returned HTML/error, attempting direct client fetch...", serverErr);
   }
+
+  // 2. Direct client-side fetch from Google Apps Script Web App (doGet)
+  if (targetUrl && targetUrl.startsWith("http")) {
+    try {
+      const directRes = await fetch(targetUrl, {
+        method: "GET",
+        headers: { "Accept": "application/json" }
+      });
+      if (directRes.ok) {
+        const text = await directRes.text();
+        const directJson = JSON.parse(text);
+        if (directJson && directJson.success) {
+          if (Array.isArray(directJson.beneficiaries)) {
+            localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(directJson.beneficiaries));
+          }
+          if (Array.isArray(directJson.ibuHamil)) {
+            localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(directJson.ibuHamil));
+          }
+          if (Array.isArray(directJson.ibuMenyusui)) {
+            localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(directJson.ibuMenyusui));
+          }
+          return {
+            success: true,
+            message: "Data berhasil dimuat langsung dari Webhook Google Apps Script!",
+            ...directJson
+          };
+        }
+      }
+    } catch (clientErr: any) {
+      console.warn("Direct client webhook pull failed:", clientErr);
+      throw new Error("Gagal menarik data dari Webhook: " + (clientErr.message || "Koneksi terputus"));
+    }
+  }
+
+  if (!targetUrl) {
+    throw new Error("URL Webhook belum diisi. Masukkan URL Google Apps Script Web App di pengaturan terlebih dahulu.");
+  }
+
+  throw new Error("Gagal menarik data via Webhook. Pastikan URL Google Apps Script Web App sudah diterapkan (Deploy) dengan akses 'Anyone'.");
 }
 
 /**

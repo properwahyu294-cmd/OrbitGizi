@@ -74,6 +74,13 @@ export const WebhookIntegrationModal: React.FC<WebhookIntegrationModalProps> = (
   };
 
   const handleTestSendWebhook = async () => {
+    if (!webhookUrl || !webhookUrl.startsWith("http")) {
+      setTestStatus({
+        success: false,
+        message: "Masukkan URL Webhook Google Apps Script yang valid terlebih dahulu (berawalan https://script.google.com/...)."
+      });
+      return;
+    }
     setLoading(true);
     setTestStatus(null);
     try {
@@ -82,10 +89,10 @@ export const WebhookIntegrationModal: React.FC<WebhookIntegrationModalProps> = (
         source: "Orbit Gizi UI",
         senderEmail: currentUserEmail || "properwahyu294@gmail.com",
         timestamp: new Date().toISOString()
-      });
+      }, webhookUrl);
       setTestStatus({
         success: true,
-        message: `Koneksi Webhook Berhasil (200 OK)! Google Sheet merespon dengan baik: ${res.message || "Terkirim"}`
+        message: `Koneksi Webhook Berhasil! Google Sheet merespon dengan baik: ${res.message || "Terkirim"}`
       });
     } catch (err: any) {
       setTestStatus({
@@ -98,10 +105,17 @@ export const WebhookIntegrationModal: React.FC<WebhookIntegrationModalProps> = (
   };
 
   const handlePullFromWebhook = async () => {
+    if (!webhookUrl || !webhookUrl.startsWith("http")) {
+      setTestStatus({
+        success: false,
+        message: "Masukkan URL Webhook Google Apps Script yang valid terlebih dahulu (berawalan https://script.google.com/...)."
+      });
+      return;
+    }
     setLoading(true);
     setTestStatus(null);
     try {
-      const res = await pullWebhookApi();
+      const res = await pullWebhookApi(webhookUrl);
       setTestStatus({
         success: true,
         message: "Berhasil menarik data terbaru dari Google Sheet via Webhook!"
