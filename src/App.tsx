@@ -73,6 +73,7 @@ import {
   MASTER_SHEET_URL,
   MASTER_SPREADSHEET_ID
 } from "./lib/dataService";
+import { DEFAULT_SAVED_BENEFICIARIES } from "./lib/defaultBeneficiaries";
 
 // Components
 import LogoOrbitGizi from "./components/LogoOrbitGizi";
@@ -300,14 +301,16 @@ export default function App() {
       try {
         const parsed: MBGBeneficiary[] = JSON.parse(stored);
         const clean = parsed.filter(b => b && b.id && b.name && String(b.name).trim().length > 0);
-        localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(clean));
-        return clean;
+        if (clean.length > 0) {
+          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(clean));
+          return clean;
+        }
       } catch {
         // fallback
       }
     }
-    localStorage.setItem("orbit_gizi_local_beneficiaries", "[]");
-    return [];
+    localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(DEFAULT_SAVED_BENEFICIARIES));
+    return DEFAULT_SAVED_BENEFICIARIES;
   });
 
   const collaborationMetrics = useMemo(() => {
@@ -471,8 +474,10 @@ export default function App() {
 
       setData(json);
 
-      if (bensList && Array.isArray(bensList)) {
+      if (bensList && Array.isArray(bensList) && bensList.length > 0) {
         setBeneficiaries(bensList);
+      } else {
+        setBeneficiaries(prev => (prev && prev.length > 0) ? prev : DEFAULT_SAVED_BENEFICIARIES);
       }
 
       if (sheetConfig && sheetConfig.adminSheetUrl) {

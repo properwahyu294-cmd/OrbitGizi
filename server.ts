@@ -66,7 +66,15 @@ const DEFAULT_ADMIN_SHEET_ID = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
 
 const SEED_VILLAGES: Village[] = [];
 
-const SEED_BENEFICIARIES: any[] = [];
+let SEED_BENEFICIARIES: any[] = [];
+try {
+  const backupPath = path.join(process.cwd(), "src/lib/saved_beneficiaries_backup.json");
+  if (fs.existsSync(backupPath)) {
+    SEED_BENEFICIARIES = JSON.parse(fs.readFileSync(backupPath, "utf-8"));
+  }
+} catch (e) {
+  console.warn("Notice: backup beneficiaries file read:", e);
+}
 
 // Memory state loaded from data_store.json
 let adminSheetUrl = DEFAULT_ADMIN_SHEET_URL;
@@ -103,7 +111,7 @@ function loadStoreFromDisk() {
       kabupatenName = parsed.kabupatenName || "Kabupaten Nagekeo";
       weights = parsed.weights || weights;
       villages = Array.isArray(parsed.villages) && parsed.villages.length > 0 ? parsed.villages : [...SEED_VILLAGES];
-      beneficiaries = Array.isArray(parsed.beneficiaries) ? parsed.beneficiaries : [];
+      beneficiaries = (Array.isArray(parsed.beneficiaries) && parsed.beneficiaries.length > 0) ? parsed.beneficiaries : [...SEED_BENEFICIARIES];
       ibuHamil = Array.isArray(parsed.ibuHamil) ? parsed.ibuHamil : [];
       ibuMenyusui = Array.isArray(parsed.ibuMenyusui) ? parsed.ibuMenyusui : [];
       bannerImages = Array.isArray(parsed.bannerImages) ? parsed.bannerImages : [];

@@ -1,4 +1,5 @@
 import { UnitType } from "../types";
+import { DEFAULT_SAVED_BENEFICIARIES } from "./defaultBeneficiaries";
 
 export interface Village {
   id: string;
@@ -101,6 +102,11 @@ let isUsingLocalMode = false;
 function initLocalStorage() {
   const vStored = localStorage.getItem("orbit_gizi_local_villages");
   const wStored = localStorage.getItem("orbit_gizi_local_weights");
+  const bStored = localStorage.getItem("orbit_gizi_local_beneficiaries");
+
+  if (!bStored || bStored === "[]" || bStored === "null") {
+    localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(DEFAULT_SAVED_BENEFICIARIES));
+  }
 
   if (vStored) {
     try {
@@ -218,6 +224,10 @@ function buildLocalAppData(): OrbitGiziData {
     }
   } catch (e) {
     console.error("Error reading local beneficiaries", e);
+  }
+
+  if (!Array.isArray(localBeneficiaries) || localBeneficiaries.length === 0) {
+    localBeneficiaries = [...DEFAULT_SAVED_BENEFICIARIES];
   }
 
   // 1. Automatically ensure villages from newly added beneficiaries exist in localVillages
@@ -555,17 +565,12 @@ async function parseResponseSafely(res: Response): Promise<any> {
  * FETCH MAIN DATA
  */
 export async function getAppData(): Promise<OrbitGiziData> {
-  if (isUsingLocalMode) {
-    return buildLocalAppData();
-  }
-
   try {
     const res = await fetch("/api/data");
     const json = await parseResponseSafely(res);
     return json;
   } catch (err) {
-    console.warn("API Endpoint unavailable or returned HTML (Cloudflare Pages fallback). Switching to full offline client-side state...", err);
-    isUsingLocalMode = true;
+    console.warn("API Endpoint notice, utilizing local dataset:", err);
     return buildLocalAppData();
   }
 }
@@ -895,24 +900,24 @@ export async function getBeneficiariesApi(): Promise<any[]> {
   try {
     const res = await fetch("/api/beneficiaries");
     const json = await parseResponseSafely(res);
-    if (json.success && Array.isArray(json.beneficiaries)) {
+    if (json.success && Array.isArray(json.beneficiaries) && json.beneficiaries.length > 0) {
       localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(json.beneficiaries));
       return json.beneficiaries;
     }
   } catch (err) {
-    console.warn("API beneficiaries unavailable, using local cache:", err);
+    console.warn("API beneficiaries notice, using local cache:", err);
   }
 
   const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
   if (stored !== null) {
     try {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     } catch {
       // ignore
     }
   }
-  return [];
+  return DEFAULT_SAVED_BENEFICIARIES;
 }
 
 export async function saveBeneficiaryApi(ben: any): Promise<any[]> {
