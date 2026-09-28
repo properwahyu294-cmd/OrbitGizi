@@ -1014,6 +1014,68 @@ export async function updateAdminSheetConfigApi(url: string): Promise<{ adminShe
 }
 
 /**
+ * WEBHOOK (GOOGLE APPS SCRIPT) API HELPERS
+ */
+export async function getWebhookConfigApi(): Promise<{ webhookUrl: string }> {
+  try {
+    const res = await fetch("/api/webhook/config");
+    const json = await parseResponseSafely(res);
+    if (json && json.success) {
+      if (json.webhookUrl) localStorage.setItem("orbit_gizi_webhook_url", json.webhookUrl);
+      return { webhookUrl: json.webhookUrl || "" };
+    }
+  } catch (err) {
+    console.warn("Failed to get webhook config from API, using local cache:", err);
+  }
+  return { webhookUrl: localStorage.getItem("orbit_gizi_webhook_url") || "" };
+}
+
+export async function updateWebhookConfigApi(url: string): Promise<{ webhookUrl: string }> {
+  const cleanUrl = (url || "").trim();
+  try {
+    const res = await fetch("/api/webhook/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: cleanUrl })
+    });
+    const json = await parseResponseSafely(res);
+    if (json && json.success) {
+      localStorage.setItem("orbit_gizi_webhook_url", cleanUrl);
+      return { webhookUrl: cleanUrl };
+    }
+  } catch (err) {
+    console.warn("Failed to update webhook via API, updating local cache:", err);
+  }
+  localStorage.setItem("orbit_gizi_webhook_url", cleanUrl);
+  return { webhookUrl: cleanUrl };
+}
+
+export async function sendWebhookApi(payload?: any): Promise<{ success: boolean; message: string; result?: any }> {
+  try {
+    const res = await fetch("/api/webhook/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payload })
+    });
+    return await parseResponseSafely(res);
+  } catch (err: any) {
+    throw new Error(err.message || "Gagal mengirim data melalui Webhook.");
+  }
+}
+
+export async function pullWebhookApi(): Promise<any> {
+  try {
+    const res = await fetch("/api/webhook/pull", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+    return await parseResponseSafely(res);
+  } catch (err: any) {
+    throw new Error(err.message || "Gagal menarik data melalui Webhook.");
+  }
+}
+
+/**
  * IBU HAMIL API HELPERS
  */
 export async function getIbuHamilApi(): Promise<any[]> {

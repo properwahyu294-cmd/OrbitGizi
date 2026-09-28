@@ -71,6 +71,7 @@ const SEED_BENEFICIARIES: any[] = [];
 // Memory state loaded from data_store.json
 let adminSheetUrl = DEFAULT_ADMIN_SHEET_URL;
 let adminSheetId = DEFAULT_ADMIN_SHEET_ID;
+let webhookUrl = "";
 let kabupatenName = "Kabupaten Nagekeo";
 let lastUpdated = new Date().toISOString();
 let weights = {
@@ -98,6 +99,7 @@ function loadStoreFromDisk() {
       const parsed = JSON.parse(fileData);
       adminSheetUrl = DEFAULT_ADMIN_SHEET_URL;
       adminSheetId = DEFAULT_ADMIN_SHEET_ID;
+      webhookUrl = parsed.webhookUrl || "";
       kabupatenName = parsed.kabupatenName || "Kabupaten Nagekeo";
       weights = parsed.weights || weights;
       villages = Array.isArray(parsed.villages) && parsed.villages.length > 0 ? parsed.villages : [...SEED_VILLAGES];
@@ -134,6 +136,7 @@ function saveStoreToDisk() {
     const payload = {
       adminSheetUrl,
       adminSheetId,
+      webhookUrl,
       kabupatenName,
       lastUpdated,
       weights,
@@ -150,6 +153,34 @@ function saveStoreToDisk() {
     fs.writeFileSync(DATA_FILE, JSON.stringify(payload, null, 2), "utf-8");
   } catch (e) {
     console.error("Gagal menyimpan data_store.json:", e);
+  }
+}
+
+// Helper to push updates directly to Google Apps Script Webhook
+async function pushToWebhookIfConfigured(action: string, specificData?: any) {
+  if (!webhookUrl || typeof webhookUrl !== "string" || !webhookUrl.startsWith("http")) {
+    return;
+  }
+  try {
+    const payload = {
+      action,
+      timestamp: new Date().toISOString(),
+      adminSheetId,
+      kabupatenName,
+      data: specificData,
+      beneficiaries,
+      ibuHamil,
+      ibuMenyusui,
+      villages
+    };
+    await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      redirect: "follow"
+    });
+  } catch (err) {
+    console.warn("Auto-push to Webhook failed (ignorable):", err);
   }
 }
 
@@ -760,6 +791,7 @@ app.post("/api/beneficiaries/save", (req, res) => {
   }
 
   saveStoreToDisk();
+  pushToWebhookIfConfigured("save_beneficiary", ben);
 
   res.json({
     success: true,
@@ -778,6 +810,7 @@ app.post("/api/beneficiaries/delete", (req, res) => {
 
   beneficiaries = beneficiaries.filter(b => b.id !== id && b.nik !== id);
   saveStoreToDisk();
+  pushToWebhookIfConfigured("delete_beneficiary", { id });
 
   res.json({
     success: true,
@@ -808,6 +841,7 @@ app.post("/api/beneficiaries/batch", (req, res) => {
       });
     }
     saveStoreToDisk();
+    pushToWebhookIfConfigured("sync_all", { beneficiaries });
   }
   res.json({
     success: true,
@@ -835,6 +869,7 @@ app.post("/api/ibu-hamil/batch", (req, res) => {
       }
     });
     saveStoreToDisk();
+    pushToWebhookIfConfigured("sync_all", { ibuHamil });
   }
   res.json({ success: true });
 });
@@ -852,6 +887,7 @@ app.post("/api/ibu-hamil/save", (req, res) => {
     ibuHamil.unshift(item);
   }
   saveStoreToDisk();
+  pushToWebhookIfConfigured("save_ibu_hamil", item);
   res.json({ success: true, message: "Data Ibu Hamil berhasil disimpan ke server.", list: ibuHamil });
 });
 
@@ -863,6 +899,7 @@ app.post("/api/ibu-hamil/delete", (req, res) => {
   }
   ibuHamil = ibuHamil.filter(b => b.id !== id);
   saveStoreToDisk();
+  pushToWebhookIfConfigured("delete_ibu_hamil", { id });
   res.json({ success: true, message: "Data Ibu Hamil berhasil dihapus dari server.", list: ibuHamil });
 });
 
@@ -884,6 +921,7 @@ app.post("/api/ibu-menyusui/batch", (req, res) => {
       }
     });
     saveStoreToDisk();
+    pushToWebhookIfConfigured("sync_all", { ibuMenyusui });
   }
   res.json({ success: true });
 });
@@ -901,6 +939,7 @@ app.post("/api/ibu-menyusui/save", (req, res) => {
     ibuMenyusui.unshift(item);
   }
   saveStoreToDisk();
+  pushToWebhookIfConfigured("save_ibu_menyusui", item);
   res.json({ success: true, message: "Data Ibu Menyusui berhasil disimpan ke server.", list: ibuMenyusui });
 });
 
@@ -912,6 +951,7 @@ app.post("/api/ibu-menyusui/delete", (req, res) => {
   }
   ibuMenyusui = ibuMenyusui.filter(b => b.id !== id);
   saveStoreToDisk();
+  pushToWebhookIfConfigured("delete_ibu_menyusui", { id });
   res.json({ success: true, message: "Data Ibu Menyusui berhasil dihapus dari server.", list: ibuMenyusui });
 });
 
@@ -1026,6 +1066,89 @@ app.post("/api/admins/delete", (req, res) => {
   registeredAdmins = registeredAdmins.filter(e => e.toLowerCase() !== cleanEmail);
   saveStoreToDisk();
   res.json({ success: true, registeredAdmins });
+});
+
+// API: Get Webhook Config
+app.get("/api/webhook/config", (req, res) => {
+  res.json({
+    success: true,
+    webhookUrl
+  });
+});
+
+// API: Update Webhook Config
+app.post("/api/webhook/config", (req, res) => {
+  const { url } = req.body;
+  webhookUrl = (typeof url === "string") ? url.trim() : "";
+  saveStoreToDisk();
+  res.json({
+    success: true,
+    message: "URL Webhook Google Apps Script berhasil diperbarui.",
+    webhookUrl
+  });
+});
+
+// API: Forward payload to Webhook (doPost)
+app.post("/api/webhook/send", async (req, res) => {
+  const targetUrl = req.body.webhookUrl || webhookUrl;
+  if (!targetUrl || !targetUrl.startsWith("http")) {
+    return res.status(400).json({ error: "URL Webhook belum dikonfigurasi." });
+  }
+
+  const payload = req.body.payload || {
+    action: "sync_all",
+    timestamp: new Date().toISOString(),
+    adminSheetId,
+    kabupatenName,
+    beneficiaries,
+    ibuHamil,
+    ibuMenyusui,
+    villages
+  };
+
+  try {
+    const hookRes = await fetch(targetUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      redirect: "follow"
+    });
+    const hookJson = await hookRes.json();
+    res.json({ success: true, message: "Data berhasil dikirim melalui Webhook ke Google Sheet!", result: hookJson });
+  } catch (e: any) {
+    res.status(500).json({ error: "Gagal mengirim ke Webhook: " + e.message });
+  }
+});
+
+// API: Pull from Webhook (doGet)
+app.post("/api/webhook/pull", async (req, res) => {
+  const targetUrl = req.body.webhookUrl || webhookUrl;
+  if (!targetUrl || !targetUrl.startsWith("http")) {
+    return res.status(400).json({ error: "URL Webhook belum dikonfigurasi." });
+  }
+
+  try {
+    const hookRes = await fetch(targetUrl, {
+      method: "GET",
+      redirect: "follow"
+    });
+    const json = await hookRes.json();
+    if (json && json.success) {
+      if (Array.isArray(json.beneficiaries)) beneficiaries = json.beneficiaries;
+      if (Array.isArray(json.ibuHamil)) ibuHamil = json.ibuHamil;
+      if (Array.isArray(json.ibuMenyusui)) ibuMenyusui = json.ibuMenyusui;
+      saveStoreToDisk();
+      res.json({
+        success: true,
+        message: "Data berhasil dimuat dari Webhook Google Apps Script!",
+        ...buildAppData()
+      });
+    } else {
+      res.status(400).json({ error: "Format respon Webhook tidak sesuai." });
+    }
+  } catch (e: any) {
+    res.status(500).json({ error: "Gagal menarik data dari Webhook: " + e.message });
+  }
 });
 
 // API: Get Admin Sheet Config

@@ -39,7 +39,9 @@ import {
   FileSpreadsheet,
   LogOut,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Zap,
+  Webhook
 } from "lucide-react";
 
 // Types
@@ -57,6 +59,9 @@ import {
   deleteBeneficiaryApi,
   getAdminSheetConfigApi,
   updateAdminSheetConfigApi,
+  getWebhookConfigApi,
+  updateWebhookConfigApi,
+  sendWebhookApi,
   getBannersApi,
   saveBannersApi,
   getIbuHamilApi,
@@ -95,6 +100,7 @@ import { AdminNutritionCharts } from "./components/AdminNutritionCharts";
 import { OperatorIdentityModal } from "./components/OperatorIdentityModal";
 import { VisitorAnalyticsModal } from "./components/VisitorAnalyticsModal";
 import { AdminManagementModal } from "./components/AdminManagementModal";
+import { WebhookIntegrationModal } from "./components/WebhookIntegrationModal";
 import { recordVisitorAccess, recordAuditAction, getOperatorProfile, fetchVisitorLogsApi, fetchAuditLogsApi } from "./lib/analyticsService";
 import { OperatorProfile } from "./types";
 
@@ -121,6 +127,7 @@ export default function App() {
   const [showDataManagementModal, setShowDataManagementModal] = useState<boolean>(false);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState<boolean>(false);
   const [showDataInputModal, setShowDataInputModal] = useState<boolean>(false);
+  const [showWebhookModal, setShowWebhookModal] = useState<boolean>(false);
   const [showOperatorModal, setShowOperatorModal] = useState<boolean>(false);
   const [pendingOperatorAction, setPendingOperatorAction] = useState<((profile: OperatorProfile) => void) | null>(null);
   const [visitorEmail, setVisitorEmail] = useState<string>(() => localStorage.getItem("orbit_gizi_visitor_email") || "");
@@ -580,19 +587,7 @@ export default function App() {
 
 
   const handlePushToSheetsBackground = async (showFeedback: boolean = false, overrideBens?: MBGBeneficiary[]) => {
-    let token = googleToken;
-    if (!token) {
-      token = await getAccessToken();
-    }
-
     if (!data) return;
-
-    if (!token) {
-      if (showFeedback) {
-        setSyncError("⚠️ AKSES GOOGLE SHEETS BELUM TERHUBUNG: Silakan klik 'Masuk Google' di bilah kanan atas agar data tersimpan otomatis ke Google Sheet.");
-      }
-      return;
-    }
 
     if (showFeedback) setSyncingSheets(true);
     try {
@@ -618,12 +613,24 @@ export default function App() {
         adminSheetUrl: MASTER_SHEET_URL,
         adminSheetId: MASTER_SPREADSHEET_ID
       };
-      
-      const result = await syncToGoogleSheets(token, data.kabupatenName, fullData, activeUser?.email || undefined);
-      if (result.spreadsheetUrl && result.spreadsheetUrl !== sheetsSyncUrl) {
-        setSheetsSyncUrl(result.spreadsheetUrl);
-        await updateAdminSheetConfigApi(result.spreadsheetUrl);
+
+      // 1. Always trigger Webhook doPost automatically in background
+      sendWebhookApi(fullData).catch(hookErr => console.warn("Webhook background sync info:", hookErr));
+
+      // 2. Direct Google Sheets API sync if user is connected via OAuth token
+      let token = googleToken;
+      if (!token) {
+        token = await getAccessToken();
       }
+
+      if (token) {
+        const result = await syncToGoogleSheets(token, data.kabupatenName, fullData, activeUser?.email || undefined);
+        if (result.spreadsheetUrl && result.spreadsheetUrl !== sheetsSyncUrl) {
+          setSheetsSyncUrl(result.spreadsheetUrl);
+          await updateAdminSheetConfigApi(result.spreadsheetUrl);
+        }
+      }
+
       setSyncError(null);
       if (showFeedback) {
         setSyncSuccess(true);
@@ -631,7 +638,9 @@ export default function App() {
       }
     } catch (e: any) {
       console.error("Push to Google Sheets error:", e);
-      setSyncError("⚠️ GAGAL SINKRON KE GOOGLE SHEET: " + (e.message || "Akses ditolak / token kedaluwarsa") + ". Silakan klik 'Masuk Google' di bilah kanan atas untuk memperbarui token Google Sheets Anda.");
+      if (showFeedback) {
+        setSyncError("⚠️ Catatan Sinkronisasi: Data telah disimpan di server & Webhook. Jika ingin sinkronisasi langsung Google API, pastikan telah login Google.");
+      }
     } finally {
       if (showFeedback) setSyncingSheets(false);
     }
@@ -1055,6 +1064,15 @@ export default function App() {
             >
               <Settings className="h-4 w-4 text-slate-500" />
               <span>Atur Bobot Pilar</span>
+            </button>
+
+            <button
+              onClick={() => setShowWebhookModal(true)}
+              className="flex items-center justify-center space-x-1.5 text-xs font-black text-emerald-950 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-3.5 py-2 rounded-xl transition-colors shadow-2xs cursor-pointer"
+              title="Konfigurasi Webhook doPost Otomatis ke Google Sheet"
+            >
+              <Zap className="h-4 w-4 text-emerald-700" />
+              <span>Integrasi Webhook (doPost)</span>
             </button>
 
             <button
@@ -1845,6 +1863,15 @@ export default function App() {
         currentUserEmail={currentUser?.email || null}
         registeredAdmins={registeredAdmins}
         onAdminsUpdated={setRegisteredAdmins}
+      />
+
+      {/* Webhook Google Apps Script Integration Modal */}
+      <WebhookIntegrationModal
+        isOpen={showWebhookModal}
+        onClose={() => setShowWebhookModal(false)}
+        isAdmin={isAdmin}
+        currentUserEmail={currentUser?.email || ""}
+        onDataRefreshed={() => setRefreshTrigger(prev => prev + 1)}
       />
 
     </div>
