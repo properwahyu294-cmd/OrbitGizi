@@ -63,7 +63,7 @@ interface Village {
 
 const DEFAULT_ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
 const DEFAULT_ADMIN_SHEET_ID = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
-const DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz_OrbitGizi_MasterWebhook/exec";
+const DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbx_2U4s5xIWLQ04-9NGlF-rZ2h-IfDk4NaxdHgVrGM9E9XaJ0B_yKK1i6mXWHZHi2stxg/exec";
 
 const SEED_VILLAGES: Village[] = [];
 
