@@ -907,38 +907,6 @@
     "weightRecords": []
   },
   {
-    "id": "ben_1786685438832",
-    "name": "RIVALDO NO FONO",
-    "parentName": "MARIA M PAE",
-    "nik": "1902245192",
-    "gender": "Laki-laki",
-    "age": "2 Tahun 5 Bulan",
-    "birthDate": "2024-02-19",
-    "category": "Balita",
-    "location": {
-      "propinsi": "Nusa Tenggara Timur",
-      "kabupaten": "Kabupaten Nagekeo",
-      "puskesmas": "Puskesmas Boawae",
-      "kelurahan": "Desa Nangateke",
-      "dusun": "Dusun Nangateke",
-      "posyandu": "Posyandu Nangateke"
-    },
-    "attendanceStatus": "Tidak Mengunjungi",
-    "isReceivedMBG": true,
-    "isReceivedPMT": true,
-    "isPetugasDesaHadir": false,
-    "isPetugasPosyanduHadir": true,
-    "stakeholdersHadir": [
-      "Petugas Desa / Pemdes",
-      "Kader Posyandu",
-      "Petugas Puskesmas",
-      "Petugas Dinkes / Dinas Kesehatan",
-      "Ahli Gizi Puskesmas/Desa"
-    ],
-    "notes": "",
-    "weightRecords": []
-  },
-  {
     "id": "ben_1786685341977",
     "name": "RAFAEL AXEL RANI TIBA",
     "parentName": "MARIA Y. KEWA EBAN",

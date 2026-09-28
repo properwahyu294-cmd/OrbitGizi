@@ -104,8 +104,8 @@ function initLocalStorage() {
   const wStored = localStorage.getItem("orbit_gizi_local_weights");
   const bStored = localStorage.getItem("orbit_gizi_local_beneficiaries");
 
-  if (!bStored || bStored === "[]" || bStored === "null") {
-    localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(DEFAULT_SAVED_BENEFICIARIES));
+  if (!bStored || bStored === "null") {
+    localStorage.setItem("orbit_gizi_local_beneficiaries", "[]");
   }
 
   if (vStored) {
@@ -903,7 +903,7 @@ export async function getBeneficiariesApi(): Promise<any[]> {
   try {
     const res = await fetch("/api/beneficiaries");
     const json = await parseResponseSafely(res);
-    if (json.success && Array.isArray(json.beneficiaries) && json.beneficiaries.length > 0) {
+    if (json.success && Array.isArray(json.beneficiaries)) {
       localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(json.beneficiaries));
       return json.beneficiaries;
     }
@@ -915,12 +915,12 @@ export async function getBeneficiariesApi(): Promise<any[]> {
   if (stored !== null) {
     try {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) return parsed;
     } catch {
       // ignore
     }
   }
-  return DEFAULT_SAVED_BENEFICIARIES;
+  return [];
 }
 
 export async function saveBeneficiaryApi(ben: any): Promise<any[]> {
@@ -976,6 +976,7 @@ export async function deleteBeneficiaryApi(id: string): Promise<any[]> {
  */
 export const MASTER_SHEET_URL = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
 export const MASTER_SPREADSHEET_ID = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
+export const DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz_OrbitGizi_MasterWebhook/exec";
 
 /**
  * ADMIN GOOGLE SHEET CONFIG HELPERS
@@ -1028,14 +1029,15 @@ export async function getWebhookConfigApi(): Promise<{ webhookUrl: string }> {
   try {
     const res = await fetch("/api/webhook/config");
     const json = await parseResponseSafely(res);
-    if (json && json.success) {
-      if (json.webhookUrl) localStorage.setItem("orbit_gizi_webhook_url", json.webhookUrl);
-      return { webhookUrl: json.webhookUrl || "" };
+    if (json && json.success && json.webhookUrl) {
+      localStorage.setItem("orbit_gizi_webhook_url", json.webhookUrl);
+      return { webhookUrl: json.webhookUrl };
     }
   } catch (err) {
     console.warn("Failed to get webhook config from API, using local cache:", err);
   }
-  return { webhookUrl: localStorage.getItem("orbit_gizi_webhook_url") || "" };
+  const cached = localStorage.getItem("orbit_gizi_webhook_url") || DEFAULT_WEBHOOK_URL;
+  return { webhookUrl: cached };
 }
 
 export async function updateWebhookConfigApi(url: string): Promise<{ webhookUrl: string }> {
@@ -1059,7 +1061,7 @@ export async function updateWebhookConfigApi(url: string): Promise<{ webhookUrl:
 }
 
 export async function sendWebhookApi(payload?: any, overrideUrl?: string): Promise<{ success: boolean; message: string; result?: any }> {
-  const targetUrl = (overrideUrl || localStorage.getItem("orbit_gizi_webhook_url") || "").trim();
+  const targetUrl = (overrideUrl || localStorage.getItem("orbit_gizi_webhook_url") || DEFAULT_WEBHOOK_URL).trim();
 
   // 1. Try server-side proxy
   try {
@@ -1100,7 +1102,7 @@ export async function sendWebhookApi(payload?: any, overrideUrl?: string): Promi
 }
 
 export async function pullWebhookApi(overrideUrl?: string): Promise<any> {
-  const targetUrl = (overrideUrl || localStorage.getItem("orbit_gizi_webhook_url") || "").trim();
+  const targetUrl = (overrideUrl || localStorage.getItem("orbit_gizi_webhook_url") || DEFAULT_WEBHOOK_URL).trim();
 
   // 1. Try server-side proxy
   try {

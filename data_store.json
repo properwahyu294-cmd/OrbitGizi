@@ -1,8 +1,9 @@
 {
   "adminSheetUrl": "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316",
   "adminSheetId": "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE",
+  "webhookUrl": "",
   "kabupatenName": "Kabupaten Nagekeo",
-  "lastUpdated": "2026-09-28T01:35:49.517Z",
+  "lastUpdated": "2026-09-28T03:38:54.784Z",
   "weights": {
     "pilar1": 0.1,
     "pilar2": 0.3,
@@ -42,9 +43,18 @@
         "Ahli Gizi Puskesmas/Desa"
       ],
       "notes": "",
-      "weightRecords": [],
-      "initialWeightKg": 0,
-      "initialStatusGizi": "Normal"
+      "weightRecords": [
+        {
+          "period": "2026-07-01",
+          "weightKg": 14,
+          "heightCm": 95,
+          "statusGizi": "Normal",
+          "measuredAt": "2026-09-28"
+        }
+      ],
+      "initialWeightKg": 14,
+      "initialStatusGizi": "Normal",
+      "initialHeightCm": 95
     },
     {
       "id": "ben_1786166824522",
@@ -79,6 +89,13 @@
       "weightRecords": [
         {
           "period": "Agustus 2026",
+          "weightKg": 6.6,
+          "heightCm": 74.2,
+          "statusGizi": "Risiko Stunting",
+          "measuredAt": "2026-08-11"
+        },
+        {
+          "period": "2026-08-01",
           "weightKg": 6.6,
           "heightCm": 74.2,
           "statusGizi": "Risiko Stunting",
@@ -892,38 +909,6 @@
       "name": "RONALDUS K WAWO",
       "parentName": "MARIA M PAE",
       "nik": "1902242428",
-      "gender": "Laki-laki",
-      "age": "2 Tahun 5 Bulan",
-      "birthDate": "2024-02-19",
-      "category": "Balita",
-      "location": {
-        "propinsi": "Nusa Tenggara Timur",
-        "kabupaten": "Kabupaten Nagekeo",
-        "puskesmas": "Puskesmas Boawae",
-        "kelurahan": "Desa Nangateke",
-        "dusun": "Dusun Nangateke",
-        "posyandu": "Posyandu Nangateke"
-      },
-      "attendanceStatus": "Tidak Mengunjungi",
-      "isReceivedMBG": true,
-      "isReceivedPMT": true,
-      "isPetugasDesaHadir": false,
-      "isPetugasPosyanduHadir": true,
-      "stakeholdersHadir": [
-        "Petugas Desa / Pemdes",
-        "Kader Posyandu",
-        "Petugas Puskesmas",
-        "Petugas Dinkes / Dinas Kesehatan",
-        "Ahli Gizi Puskesmas/Desa"
-      ],
-      "notes": "",
-      "weightRecords": []
-    },
-    {
-      "id": "ben_1786685438832",
-      "name": "RIVALDO NO FONO",
-      "parentName": "MARIA M PAE",
-      "nik": "1902245192",
       "gender": "Laki-laki",
       "age": "2 Tahun 5 Bulan",
       "birthDate": "2024-02-19",
@@ -2173,6 +2158,198 @@
   "bannerImages": [],
   "dashboardBannerImages": [],
   "visitorLogs": [
+    {
+      "id": "v_1790566735114_uktr",
+      "timestamp": "2026-09-28T03:38:55.114Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790566734390_glj4",
+      "timestamp": "2026-09-28T03:38:54.390Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790566734388_a5ea",
+      "timestamp": "2026-09-28T03:38:54.388Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790565872514_5q3y",
+      "timestamp": "2026-09-28T03:24:32.514Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790565871066_p8qw",
+      "timestamp": "2026-09-28T03:24:31.066Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790565871064_ep6w",
+      "timestamp": "2026-09-28T03:24:31.064Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790564960472_by56",
+      "timestamp": "2026-09-28T03:09:20.472Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Admin (overview)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790564062734_xp3s",
+      "timestamp": "2026-09-28T02:54:22.734Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790564061913_vb4w",
+      "timestamp": "2026-09-28T02:54:21.913Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790564061909_xy4k",
+      "timestamp": "2026-09-28T02:54:21.909Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790563357210_4ap9",
+      "timestamp": "2026-09-28T02:42:37.210Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Admin (overview)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790563222350_62lw",
+      "timestamp": "2026-09-28T02:40:22.350Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790563221595_klwu",
+      "timestamp": "2026-09-28T02:40:21.595Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790563221601_kiba",
+      "timestamp": "2026-09-28T02:40:21.601Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790562568042_bg06",
+      "timestamp": "2026-09-28T02:29:28.042Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790562567284_7qph",
+      "timestamp": "2026-09-28T02:29:27.284Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790562567281_pa5y",
+      "timestamp": "2026-09-28T02:29:27.281Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790562175441_ky9p",
+      "timestamp": "2026-09-28T02:22:55.441Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Admin (overview)",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790562149741_vqrm",
+      "timestamp": "2026-09-28T02:22:29.741Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790562144672_05ub",
+      "timestamp": "2026-09-28T02:22:24.672Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790562144671_3bfe",
+      "timestamp": "2026-09-28T02:22:24.671Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790559382961_85ow",
+      "timestamp": "2026-09-28T01:36:22.961Z",
+      "email": "properwahyu294@gmail.com",
+      "role": "ADMIN",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790559381958_gagj",
+      "timestamp": "2026-09-28T01:36:21.958Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
+    {
+      "id": "v_1790559381952_4n7o",
+      "timestamp": "2026-09-28T01:36:21.952Z",
+      "email": "pengunjung@public.go.id",
+      "role": "PENGUNJUNG",
+      "viewName": "Halaman Utama / Launcher App",
+      "deviceInfo": "Komputer / Desktop"
+    },
     {
       "id": "v_1790558353256_x18c",
       "timestamp": "2026-09-28T01:19:13.256Z",

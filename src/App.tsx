@@ -334,17 +334,14 @@ export default function App() {
     if (stored) {
       try {
         const parsed: MBGBeneficiary[] = JSON.parse(stored);
-        const clean = parsed.filter(b => b && b.id && b.name && String(b.name).trim().length > 0);
-        if (clean.length > 0) {
-          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(clean));
-          return clean;
+        if (Array.isArray(parsed)) {
+          return parsed;
         }
       } catch {
         // fallback
       }
     }
-    localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(DEFAULT_SAVED_BENEFICIARIES));
-    return DEFAULT_SAVED_BENEFICIARIES;
+    return [];
   });
 
   const collaborationMetrics = useMemo(() => {
@@ -519,10 +516,8 @@ export default function App() {
 
       setData(json);
 
-      if (bensList && Array.isArray(bensList) && bensList.length > 0) {
+      if (bensList && Array.isArray(bensList)) {
         setBeneficiaries(bensList);
-      } else {
-        setBeneficiaries(prev => (prev && prev.length > 0) ? prev : DEFAULT_SAVED_BENEFICIARIES);
       }
 
       if (sheetConfig && sheetConfig.adminSheetUrl) {

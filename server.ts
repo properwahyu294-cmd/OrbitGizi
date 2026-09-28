@@ -63,6 +63,7 @@ interface Village {
 
 const DEFAULT_ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
 const DEFAULT_ADMIN_SHEET_ID = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
+const DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz_OrbitGizi_MasterWebhook/exec";
 
 const SEED_VILLAGES: Village[] = [];
 
@@ -166,7 +167,8 @@ function saveStoreToDisk() {
 
 // Helper to push updates directly to Google Apps Script Webhook
 async function pushToWebhookIfConfigured(action: string, specificData?: any) {
-  if (!webhookUrl || typeof webhookUrl !== "string" || !webhookUrl.startsWith("http")) {
+  const activeUrl = webhookUrl || DEFAULT_WEBHOOK_URL;
+  if (!activeUrl || typeof activeUrl !== "string" || !activeUrl.startsWith("http")) {
     return;
   }
   try {
@@ -181,7 +183,7 @@ async function pushToWebhookIfConfigured(action: string, specificData?: any) {
       ibuMenyusui,
       villages
     };
-    await fetch(webhookUrl, {
+    await fetch(activeUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -1081,7 +1083,7 @@ app.post("/api/admins/delete", (req, res) => {
 app.get("/api/webhook/config", (req, res) => {
   res.json({
     success: true,
-    webhookUrl
+    webhookUrl: webhookUrl || DEFAULT_WEBHOOK_URL
   });
 });
 
@@ -1099,7 +1101,7 @@ app.post("/api/webhook/config", (req, res) => {
 
 // API: Forward payload to Webhook (doPost)
 app.post("/api/webhook/send", async (req, res) => {
-  const targetUrl = req.body.webhookUrl || webhookUrl;
+  const targetUrl = req.body.webhookUrl || webhookUrl || DEFAULT_WEBHOOK_URL;
   if (!targetUrl || !targetUrl.startsWith("http")) {
     return res.status(400).json({ error: "URL Webhook belum dikonfigurasi." });
   }
@@ -1131,7 +1133,7 @@ app.post("/api/webhook/send", async (req, res) => {
 
 // API: Pull from Webhook (doGet)
 app.post("/api/webhook/pull", async (req, res) => {
-  const targetUrl = req.body.webhookUrl || webhookUrl;
+  const targetUrl = req.body.webhookUrl || webhookUrl || DEFAULT_WEBHOOK_URL;
   if (!targetUrl || !targetUrl.startsWith("http")) {
     return res.status(400).json({ error: "URL Webhook belum dikonfigurasi." });
   }
