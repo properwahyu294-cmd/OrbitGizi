@@ -922,6 +922,9 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
     const csvMbgRes = await fetch(`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Penerima%20MBG&headers=1`);
     if (csvMbgRes.ok) {
       const csvText = await csvMbgRes.text();
+      if (csvText.includes("<!DOCTYPE") || csvText.includes("<html") || csvText.includes("Google Accounts")) {
+        throw new Error("Spreadsheet Google tidak publik. Mohon pastikan link Google Sheet diatur 'Anyone with the link can view' di Google Drive.");
+      }
       const rows = parseCsvSimple(csvText);
       const dataRows = rows.slice(1).filter(r => r.length > 0 && r.some(c => c !== ""));
       const parsedMbg = dataRows.map((row, idx) => parseMbgRow(row, idx)).filter(Boolean);

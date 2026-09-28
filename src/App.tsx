@@ -25,7 +25,7 @@ import {
   Sparkles,
   Search,
   LayoutDashboard,
-  Map,
+  Map as MapIcon,
   Brain,
   Handshake,
   Menu,
@@ -1357,7 +1357,7 @@ export default function App() {
                     shortName: "Peta Desa",
                     category: "Analitik & Indeks",
                     desc: "Zona Risiko & Leaderboard",
-                    icon: <Map className="h-4.5 w-4.5 text-amber-600" />
+                    icon: <MapIcon className="h-4.5 w-4.5 text-amber-600" />
                   },
                   {
                     id: "fondasi",
