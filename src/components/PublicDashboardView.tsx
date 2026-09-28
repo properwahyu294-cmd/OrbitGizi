@@ -25,7 +25,6 @@ import { BeneficiaryDetailModal } from "./BeneficiaryDetailModal";
 import { AdminNutritionCharts } from "./AdminNutritionCharts";
 import { VisitorEmailModal } from "./VisitorEmailModal";
 import { MBGBeneficiary } from "../types";
-import { DEFAULT_BENEFICIARIES } from "../lib/dataService";
 
 interface PublicDashboardViewProps {
   onBackToLauncher: () => void;

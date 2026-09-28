@@ -36,7 +36,10 @@ import {
   BookOpen,
   Trash2,
   DownloadCloud,
-  UploadCloud
+  FileSpreadsheet,
+  LogOut,
+  CheckCircle,
+  AlertCircle
 } from "lucide-react";
 
 // Types
@@ -95,13 +98,10 @@ import { AdminManagementModal } from "./components/AdminManagementModal";
 import { recordVisitorAccess, recordAuditAction, getOperatorProfile, fetchVisitorLogsApi, fetchAuditLogsApi } from "./lib/analyticsService";
 import { OperatorProfile } from "./types";
 
-const DEFAULT_BENEFICIARIES: MBGBeneficiary[] = [];
-
 // Firebase & Sheets integration
 import { initAuth, googleSignIn, logout, getAccessToken } from "./lib/firebase";
 import { syncToGoogleSheets, pullFromGoogleSheets } from "./lib/sheetsService";
 import { User } from "firebase/auth";
-import { FileSpreadsheet, LogOut, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function App() {
   const [data, setData] = useState<OrbitGiziData | null>(null);
@@ -361,7 +361,7 @@ export default function App() {
       const updated = await saveBeneficiaryApi(ben);
       setBeneficiaries(updated);
       setRefreshTrigger(prev => prev + 1);
-      await handlePushToSheetsBackground(false, updated);
+      await handlePushToSheetsBackground(true, updated);
     });
   };
 
@@ -373,7 +373,7 @@ export default function App() {
       const updated = await deleteBeneficiaryApi(id);
       setBeneficiaries(updated);
       setRefreshTrigger(prev => prev + 1);
-      await handlePushToSheetsBackground(false, updated);
+      await handlePushToSheetsBackground(true, updated);
     });
   };
 
@@ -407,7 +407,7 @@ export default function App() {
     }
 
     setRefreshTrigger(prev => prev + 1);
-    await handlePushToSheetsBackground(false, updatedList);
+    await handlePushToSheetsBackground(true, updatedList);
   };
 
   const handleDeleteWeightRecord = async (beneficiaryId: string, period: string) => {
@@ -437,7 +437,7 @@ export default function App() {
     }
 
     setRefreshTrigger(prev => prev + 1);
-    await handlePushToSheetsBackground(false, updatedList);
+    await handlePushToSheetsBackground(true, updatedList);
   };
 
   const loadData = async () => {
@@ -639,7 +639,22 @@ export default function App() {
           // SMART MERGE: Jangan pernah menghapus data sasaran yang baru diinput lokal
           setBeneficiaries(prev => {
             const merged = [...sheetData.beneficiaries];
-            prev.forEach(localBen => {
+
+            // Baca data cache lokal agar data baru yang belum masuk sheet tetap dipertahankan
+            let localCache: MBGBeneficiary[] = [];
+            try {
+              const raw = localStorage.getItem("orbit_gizi_local_beneficiaries");
+              if (raw) localCache = JSON.parse(raw);
+            } catch (e) {}
+
+            const sourceList = [...prev];
+            localCache.forEach(c => {
+              if (!sourceList.some(s => s.id === c.id || (c.nik && s.nik === c.nik))) {
+                sourceList.push(c);
+              }
+            });
+
+            sourceList.forEach(localBen => {
               const sheetIdx = merged.findIndex(sb => sb.id === localBen.id || (localBen.nik && sb.nik === localBen.nik));
               if (sheetIdx === -1) {
                 // Pertahankan data lokal yang belum masuk ke sheet!
@@ -731,7 +746,7 @@ export default function App() {
       const json = await updateVillageApi(updatedMetrics as any);
       setData(json);
       setRefreshTrigger(prev => prev + 1);
-      handlePushToSheetsBackground();
+      handlePushToSheetsBackground(true);
     } catch (e: any) {
       alert("Error: " + e.message);
     }
@@ -743,7 +758,7 @@ export default function App() {
       const json = await addVillageApi(name, unitType);
       setData(json);
       setRefreshTrigger(prev => prev + 1);
-      handlePushToSheetsBackground();
+      handlePushToSheetsBackground(true);
     } catch (e: any) {
       alert("Error: " + e.message);
     }
@@ -755,7 +770,7 @@ export default function App() {
       const json = await deleteVillageApi(id);
       setData(json);
       setRefreshTrigger(prev => prev + 1);
-      handlePushToSheetsBackground();
+      handlePushToSheetsBackground(true);
     } catch (e: any) {
       alert("Error: " + e.message);
     }
@@ -767,7 +782,7 @@ export default function App() {
       const json = await resetDataApi();
       setData(json);
       setRefreshTrigger(prev => prev + 1);
-      handlePushToSheetsBackground();
+      handlePushToSheetsBackground(true);
     } catch (e: any) {
       alert("Error: " + e.message);
     }
@@ -779,7 +794,7 @@ export default function App() {
       const json = await clearDataApi();
       setData(json);
       setRefreshTrigger(prev => prev + 1);
-      handlePushToSheetsBackground();
+      handlePushToSheetsBackground(true);
     } catch (e: any) {
       alert("Error: " + e.message);
     }
@@ -806,7 +821,7 @@ export default function App() {
       setData(json);
       setShowConfigModal(false);
       setRefreshTrigger(prev => prev + 1);
-      handlePushToSheetsBackground();
+      handlePushToSheetsBackground(true);
     } catch (e: any) {
       setWeightError(e.message);
     }
@@ -953,7 +968,6 @@ export default function App() {
         onSetVisitorEmail={handleSetVisitorEmail}
         onLogout={handleGoogleLogout} 
         onLogin={handleGoogleLogin}
-        onSync={() => handlePushToSheetsBackground(true)}
         syncingSheets={syncingSheets}
         sheetsSyncUrl={sheetsSyncUrl || MASTER_SHEET_URL}
         onOpenLauncher={() => setShowLauncher(true)}
@@ -1048,29 +1062,19 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => handlePushToSheetsBackground(true)}
-              disabled={syncingSheets}
-              className="flex items-center justify-center space-x-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 border border-blue-500 px-3.5 py-2 rounded-xl transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
-              title="Kirim & Simpan Seluruh Data Aplikasi ke Google Sheet Terpusat"
-            >
-              <UploadCloud className="h-4 w-4 text-white" />
-              <span>{syncingSheets ? "Menyimpan ke Sheet..." : "⬆️ Kirim Data ke Sheet"}</span>
-            </button>
-
-            <button
               onClick={handlePullFromSheets}
               disabled={syncingSheets}
               className="flex items-center justify-center space-x-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-xl hover:bg-emerald-100 transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
-              title="Tarik & Muat Data Terbaru dari Google Sheets"
+              title="Tarik & Muat Ulang Data Terbaru dari Google Sheets Terpusat"
             >
               <DownloadCloud className="h-4 w-4 text-emerald-600" />
-              <span>{syncingSheets ? "Memuat..." : "⬇️ Tarik Data dari Sheet"}</span>
+              <span>{syncingSheets ? "Memuat..." : "⬇️ Muat Ulang dari Sheet"}</span>
             </button>
             
             <button
               onClick={() => setRefreshTrigger(prev => prev + 1)}
               className="p-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors text-slate-500 cursor-pointer"
-              title="Refresh Data"
+              title="Refresh Tampilan Data"
             >
               <RefreshCw className="h-4.5 w-4.5" />
             </button>
@@ -1083,7 +1087,7 @@ export default function App() {
             {syncSuccess && (
               <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-xl p-3 flex items-center space-x-2">
                 <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
-                <span className="flex-1">Data berhasil disinkronisasi ke Google Sheets! Seluruh data Orbit Gizi Anda aman dan ter-update di Google Sheets.</span>
+                <span className="flex-1">Data berhasil disimpan & otomatis disinkronkan ke Google Sheet resmi! Data Orbit Gizi Anda aman dan ter-update secara terpusat.</span>
                 {sheetsSyncUrl && (
                   <a
                     href={sheetsSyncUrl}
@@ -1091,7 +1095,7 @@ export default function App() {
                     referrerPolicy="no-referrer"
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] shadow-2xs"
                   >
-                    Buka Spreadsheet
+                    Buka Spreadsheet ↗
                   </a>
                 )}
               </div>

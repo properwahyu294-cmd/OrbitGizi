@@ -74,46 +74,6 @@ export interface SheetsSyncResult {
 }
 
 /**
- * Creates a new Google Spreadsheet with custom sheets for Orbit Gizi
- */
-async function createSpreadsheet(accessToken: string, kabupatenName: string): Promise<SheetsSyncResult> {
-  const response = await fetch("https://sheets.googleapis.com/v4/spreadsheets", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      properties: {
-        title: `Orbit Gizi Nagekeo - ${kabupatenName}`,
-      },
-      sheets: [
-        { properties: { title: "Ringkasan Indeks" } },
-        { properties: { title: "Data Desa" } },
-        { properties: { title: "Daftar Wilayah" } },
-        { properties: { title: "Penerima MBG" } },
-        { properties: { title: "Ibu Hamil" } },
-        { properties: { title: "Ibu Menyusui" } },
-        { properties: { title: "Catatan Timbang" } },
-        { properties: { title: "Analitik Pengunjung" } },
-        { properties: { title: "Audit Log Operator" } },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gagal membuat Spreadsheet Baru: ${errText}`);
-  }
-
-  const resJson = await response.json();
-  return {
-    spreadsheetId: resJson.spreadsheetId,
-    spreadsheetUrl: resJson.spreadsheetUrl || `https://docs.google.com/spreadsheets/d/${resJson.spreadsheetId}`,
-  };
-}
-
-/**
  * Ensures all required sheet tabs exist in the target spreadsheet
  */
 async function ensureSheetTabsExist(accessToken: string, spreadsheetId: string): Promise<void> {
@@ -150,34 +110,6 @@ async function ensureSheetTabsExist(accessToken: string, spreadsheetId: string):
     }
   } catch (e) {
     console.warn("Gagal memastikan tab sheet ada:", e);
-  }
-}
-
-/**
- * Clears old data in sheets to prepare for fresh write
- */
-async function clearSheets(accessToken: string, spreadsheetId: string): Promise<void> {
-  const ranges = [
-    "'Ringkasan Indeks'!A1:Z100",
-    "'Data Desa'!A1:Z1000",
-    "'Penerima MBG'!A1:Z5000",
-    "'Ibu Hamil'!A1:Z5000",
-    "'Ibu Menyusui'!A1:Z5000",
-    "'Catatan Timbang'!A1:Z10000",
-    "'Analitik Pengunjung'!A1:Z5000",
-    "'Audit Log Operator'!A1:Z5000"
-  ];
-  for (const range of ranges) {
-    try {
-      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:clear`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-    } catch (e) {
-      console.warn(`Pembersihan range ${range} diabaikan:`, e);
-    }
   }
 }
 

@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Heart, LogOut, User as UserIcon, FileSpreadsheet, RefreshCw, Building, Upload, RotateCcw, Info, Camera, Edit3, Mail, ShieldCheck, UploadCloud } from "lucide-react";
+import { LogOut, User as UserIcon, FileSpreadsheet, RefreshCw, Building, Upload, RotateCcw, Info, Camera, Edit3, Mail, ShieldCheck } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import logoPemdaFile from "../assets/images/LOGOPEMDA (1).png";
-import { PemdaNagekeoLogo } from "./PemdaNagekeoLogo";
 import { VisitorEmailModal } from "./VisitorEmailModal";
 import { MASTER_SHEET_URL } from "../lib/dataService";
 
@@ -193,27 +192,23 @@ export default function LogoOrbitGizi({
 
         {currentUser ? (
           <>
-            {/* Sync Status Badge */}
-            <div className="flex items-center space-x-2 text-xs text-emerald-700 bg-emerald-50/50 px-3.5 py-2 rounded-xl border border-emerald-100 shadow-3xs">
+            {/* Auto-Sync Status Badge */}
+            <div 
+              className={`flex items-center space-x-2 text-xs px-3.5 py-2 rounded-xl border shadow-3xs transition-colors ${
+                syncingSheets 
+                  ? "text-amber-800 bg-amber-50/80 border-amber-200" 
+                  : "text-emerald-700 bg-emerald-50/50 border-emerald-100"
+              }`}
+              title="Setiap tombol 'Simpan' ditekan pada formulir, seluruh data otomatis tersimpan dan tersinkronisasi ke Google Sheet resmi"
+            >
               <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${syncingSheets ? "bg-amber-400" : "bg-emerald-400"} opacity-75`}></span>
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${syncingSheets ? "bg-amber-500" : "bg-emerald-500"}`}></span>
               </span>
-              <span className="font-mono font-bold uppercase tracking-wider text-[10px]">Sinkronisasi Aktif</span>
+              <span className="font-mono font-bold uppercase tracking-wider text-[10px]">
+                {syncingSheets ? "Menyimpan ke Sheet..." : "Otomatis Sinkron Sheet"}
+              </span>
             </div>
-
-            {/* Kirim / Simpan ke Google Sheet Button */}
-            {onSync && (
-              <button
-                onClick={onSync}
-                disabled={syncingSheets}
-                className="flex items-center space-x-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-3xs hover:shadow-sm"
-                title="Kirim & Simpan seluruh data input terbaru ke Google Sheet Resmi"
-              >
-                <UploadCloud className={`h-3.5 w-3.5 ${syncingSheets ? "animate-bounce" : ""}`} />
-                <span>{syncingSheets ? "Menyimpan ke Sheet..." : "Kirim ke Sheet"}</span>
-              </button>
-            )}
 
             {/* Admin Management Button */}
             {onOpenAdminManagement && (
