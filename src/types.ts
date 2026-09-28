@@ -209,3 +209,47 @@ export interface OrbitGiziData {
   beneficiaries?: MBGBeneficiary[];
 }
 
+export function sanitizeBeneficiary(b: any): MBGBeneficiary {
+  if (!b || typeof b !== "object") {
+    return {
+      id: `ben_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
+      name: "Tanpa Nama",
+      category: "Balita",
+      location: { propinsi: "Nusa Tenggara Timur", kabupaten: "Kabupaten Nagekeo", puskesmas: "", kelurahan: "", dusun: "", posyandu: "" },
+      attendanceStatus: "Mengunjungi Posyandu",
+      isReceivedMBG: true,
+      isReceivedPMT: true,
+      weightRecords: []
+    };
+  }
+
+  const loc = b.location || {};
+  return {
+    ...b,
+    id: b.id ? String(b.id) : `ben_${Date.now()}_${Math.random().toString(36).substring(2,6)}`,
+    name: (b.name || b.nama || "Tanpa Nama").toString(),
+    parentName: (b.parentName || b.parent || "").toString(),
+    nik: (b.nik || "").toString(),
+    gender: b.gender || "Laki-laki",
+    age: (b.age || "").toString(),
+    birthDate: (b.birthDate || "").toString(),
+    category: b.category || "Balita",
+    location: {
+      propinsi: (loc.propinsi || b.propinsi || "Nusa Tenggara Timur").toString(),
+      kabupaten: (loc.kabupaten || b.kabupaten || "Kabupaten Nagekeo").toString(),
+      puskesmas: (loc.puskesmas || b.puskesmas || "").toString(),
+      kelurahan: (loc.kelurahan || b.kelurahan || "").toString(),
+      dusun: (loc.dusun || b.dusun || "").toString(),
+      posyandu: (loc.posyandu || b.posyandu || "").toString(),
+    },
+    attendanceStatus: b.attendanceStatus || "Mengunjungi Posyandu",
+    isReceivedMBG: b.isReceivedMBG !== false,
+    isReceivedPMT: b.isReceivedPMT !== false,
+    isPetugasDesaHadir: b.isPetugasDesaHadir !== false,
+    isPetugasPosyanduHadir: b.isPetugasPosyanduHadir !== false,
+    stakeholdersHadir: Array.isArray(b.stakeholdersHadir) ? b.stakeholdersHadir : [],
+    notes: (b.notes || "").toString(),
+    weightRecords: Array.isArray(b.weightRecords) ? b.weightRecords.filter((r: any) => r && typeof r === "object") : []
+  };
+}
+

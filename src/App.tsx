@@ -55,7 +55,8 @@ import {
 } from "lucide-react";
 
 // Types
-import { OrbitGiziData, Village, Pillar, Indicator, MBGBeneficiary, WeightRecord, UnitType } from "./types";
+import { OrbitGiziData, Village, Pillar, Indicator, MBGBeneficiary, WeightRecord, UnitType, sanitizeBeneficiary } from "./types";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import {
   getAppData,
   updateWeightsApi,
@@ -517,7 +518,7 @@ export default function App() {
       setData(json);
 
       if (bensList && Array.isArray(bensList)) {
-        setBeneficiaries(bensList);
+        setBeneficiaries(bensList.map(sanitizeBeneficiary));
       }
 
       if (sheetConfig && sheetConfig.adminSheetUrl) {
@@ -724,16 +725,16 @@ export default function App() {
         if (Array.isArray(sheetData.beneficiaries) && sheetData.beneficiaries.length > 0) {
           // SMART MERGE: Jangan pernah menghapus data sasaran yang baru diinput lokal
           setBeneficiaries(prev => {
-            const merged = [...sheetData.beneficiaries];
+            const merged = sheetData.beneficiaries.map(sanitizeBeneficiary);
 
             // Baca data cache lokal agar data baru yang belum masuk sheet tetap dipertahankan
             let localCache: MBGBeneficiary[] = [];
             try {
               const raw = localStorage.getItem("orbit_gizi_local_beneficiaries");
-              if (raw) localCache = JSON.parse(raw);
+              if (raw) localCache = JSON.parse(raw).map(sanitizeBeneficiary);
             } catch (e) {}
 
-            const sourceList = [...prev];
+            const sourceList = [...prev.map(sanitizeBeneficiary)];
             localCache.forEach(c => {
               if (!sourceList.some(s => s.id === c.id || (c.nik && s.nik === c.nik))) {
                 sourceList.push(c);
@@ -752,20 +753,25 @@ export default function App() {
                 const recordMap = new Map();
                 existingRecords.forEach((r: any) => recordMap.set(r.period, r));
                 localRecords.forEach((r: any) => recordMap.set(r.period, r));
-                merged[sheetIdx] = {
+                merged[sheetIdx] = sanitizeBeneficiary({
                   ...merged[sheetIdx],
                   ...localBen,
+                  location: {
+                    ...merged[sheetIdx].location,
+                    ...localBen.location
+                  },
                   weightRecords: Array.from(recordMap.values())
-                };
+                });
               }
             });
-            localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(merged));
+            const cleanedMerged = merged.map(sanitizeBeneficiary);
+            localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(cleanedMerged));
             fetch("/api/beneficiaries/batch", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ beneficiaries: merged, replace: true })
+              body: JSON.stringify({ beneficiaries: cleanedMerged, replace: true })
             }).catch(e => console.warn("Failed to sync merged beneficiaries to server:", e));
-            return merged;
+            return cleanedMerged;
           });
         }
       }
@@ -1046,7 +1052,8 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
+    <ErrorBoundary fallbackMessage="Terjadi Kendala Memuat Dashboard Admin">
+      <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
       {/* 1. Header & Brand Logo */}
       <LogoOrbitGizi 
         currentUser={currentUser} 
@@ -2109,5 +2116,6 @@ export default function App() {
       />
 
     </div>
+    </ErrorBoundary>
   );
 }

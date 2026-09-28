@@ -20,15 +20,11 @@ export const initAuth = (
 ) => {
   return onAuthStateChanged(auth, async (user: User | null) => {
     if (user) {
-      const savedToken = cachedAccessToken || localStorage.getItem("orbit_gizi_google_access_token");
+      const savedToken = cachedAccessToken || localStorage.getItem("orbit_gizi_google_access_token") || "";
       if (savedToken) {
         cachedAccessToken = savedToken;
-        if (onAuthSuccess) onAuthSuccess(user, savedToken);
-      } else if (!isSigningIn) {
-        // If we don't have token cached but user is logged in, we need to prompt them or re-auth to get token
-        cachedAccessToken = null;
-        if (onAuthFailure) onAuthFailure();
       }
+      if (onAuthSuccess) onAuthSuccess(user, savedToken);
     } else {
       cachedAccessToken = null;
       localStorage.removeItem("orbit_gizi_google_access_token");

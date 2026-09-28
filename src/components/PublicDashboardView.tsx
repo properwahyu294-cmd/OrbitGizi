@@ -24,7 +24,7 @@ import { NutritionBannerGallery, BannerImage, DEFAULT_NUTRITION_IMAGES } from ".
 import { BeneficiaryDetailModal } from "./BeneficiaryDetailModal";
 import { AdminNutritionCharts } from "./AdminNutritionCharts";
 import { VisitorEmailModal } from "./VisitorEmailModal";
-import { MBGBeneficiary } from "../types";
+import { MBGBeneficiary, sanitizeBeneficiary } from "../types";
 
 interface PublicDashboardViewProps {
   onBackToLauncher: () => void;
@@ -107,13 +107,19 @@ export const PublicDashboardView: React.FC<PublicDashboardViewProps> = ({
   // Calculate live beneficiaries list
   const beneficiaries: MBGBeneficiary[] = React.useMemo(() => {
     if (propBeneficiaries !== undefined && propBeneficiaries !== null && Array.isArray(propBeneficiaries)) {
-      return propBeneficiaries.filter(b => b && b.id && b.name && String(b.name).trim().length > 0);
+      return propBeneficiaries
+        .filter(b => b && b.id && b.name && String(b.name).trim().length > 0)
+        .map(sanitizeBeneficiary);
     }
     const stored = localStorage.getItem("orbit_gizi_local_beneficiaries");
     if (stored !== null) {
       try {
         const parsed: MBGBeneficiary[] = JSON.parse(stored);
-        if (Array.isArray(parsed)) return parsed.filter(b => b && b.id && b.name && String(b.name).trim().length > 0);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .filter(b => b && b.id && b.name && String(b.name).trim().length > 0)
+            .map(sanitizeBeneficiary);
+        }
       } catch {
         // ignore
       }
