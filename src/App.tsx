@@ -61,7 +61,9 @@ import {
   getRegisteredAdminsApi,
   registerAdminEmailApi,
   deleteAdminEmailApi,
-  isUsingLocalFallback
+  isUsingLocalFallback,
+  MASTER_SHEET_URL,
+  MASTER_SPREADSHEET_ID
 } from "./lib/dataService";
 
 // Components
@@ -199,7 +201,7 @@ export default function App() {
   );
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [syncingSheets, setSyncingSheets] = useState<boolean>(false);
-  const [sheetsSyncUrl, setSheetsSyncUrl] = useState<string | null>(null);
+  const [sheetsSyncUrl, setSheetsSyncUrl] = useState<string | null>(MASTER_SHEET_URL);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [syncSuccess, setSyncSuccess] = useState<boolean>(false);
 
@@ -496,10 +498,10 @@ export default function App() {
         if (config?.adminSheetUrl) {
            setSheetsSyncUrl(config.adminSheetUrl);
         } else {
-           setSheetsSyncUrl("https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316");
+           setSheetsSyncUrl(MASTER_SHEET_URL);
         }
       } catch (e) {
-        setSheetsSyncUrl("https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316");
+        setSheetsSyncUrl(MASTER_SHEET_URL);
       }
     };
     fetchGlobalConfig();
@@ -534,9 +536,9 @@ export default function App() {
           setShowPublicDashboard(true);
           setShowLauncher(false);
         } else {
-          // After successful login by registered admin, sync to sheets
+          // Setelah login sukses oleh Admin terdaftar, simpan & dorong data ke Google Sheet agar tidak hilang
           setTimeout(() => {
-            handleSyncSheetsDirect(res.accessToken, res.user);
+            handlePushToSheetsBackground(true);
           }, 800);
         }
       }
@@ -550,7 +552,7 @@ export default function App() {
       await logout();
       setCurrentUser(null);
       setGoogleToken(null);
-      setSheetsSyncUrl(null);
+      setSheetsSyncUrl(MASTER_SHEET_URL);
       localStorage.removeItem("orbit_gizi_spreadsheet_id");
       localStorage.removeItem("orbit_gizi_spreadsheet_url");
     } catch (err: any) {
@@ -599,8 +601,8 @@ export default function App() {
         ibuMenyusui: (latestMenyusui && Array.isArray(latestMenyusui) && latestMenyusui.length > 0) ? latestMenyusui : JSON.parse(localStorage.getItem("orbit_gizi_ibu_menyusui") || "[]"),
         visitorLogs: (latestVisitors && Array.isArray(latestVisitors)) ? latestVisitors : [],
         auditLogs: (latestAudits && Array.isArray(latestAudits)) ? latestAudits : [],
-        adminSheetUrl: sheetConfig?.adminSheetUrl || data.adminSheetUrl,
-        adminSheetId: sheetConfig?.adminSheetId || data.adminSheetId
+        adminSheetUrl: MASTER_SHEET_URL,
+        adminSheetId: MASTER_SPREADSHEET_ID
       };
       
       const result = await syncToGoogleSheets(token, data.kabupatenName, fullData, activeUser?.email || undefined);
@@ -628,13 +630,42 @@ export default function App() {
     setSyncError(null);
     setSyncSuccess(false);
     try {
-      let activeSheetId = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE"; // Always use master sheet ID
+      let activeSheetId = MASTER_SPREADSHEET_ID; // Always use master planted sheet ID
       
       const sheetData = await pullFromGoogleSheets(token || "", activeSheetId);
       
       if (sheetData && sheetData.success) {
-        if (Array.isArray(sheetData.beneficiaries)) {
-          setBeneficiaries(sheetData.beneficiaries);
+        if (Array.isArray(sheetData.beneficiaries) && sheetData.beneficiaries.length > 0) {
+          // SMART MERGE: Jangan pernah menghapus data sasaran yang baru diinput lokal
+          setBeneficiaries(prev => {
+            const merged = [...sheetData.beneficiaries];
+            prev.forEach(localBen => {
+              const sheetIdx = merged.findIndex(sb => sb.id === localBen.id || (localBen.nik && sb.nik === localBen.nik));
+              if (sheetIdx === -1) {
+                // Pertahankan data lokal yang belum masuk ke sheet!
+                merged.unshift(localBen);
+              } else {
+                // Gabungkan catatan timbang lokal dan sheet tanpa hilang
+                const existingRecords = merged[sheetIdx].weightRecords || [];
+                const localRecords = localBen.weightRecords || [];
+                const recordMap = new Map();
+                existingRecords.forEach((r: any) => recordMap.set(r.period, r));
+                localRecords.forEach((r: any) => recordMap.set(r.period, r));
+                merged[sheetIdx] = {
+                  ...merged[sheetIdx],
+                  ...localBen,
+                  weightRecords: Array.from(recordMap.values())
+                };
+              }
+            });
+            localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(merged));
+            fetch("/api/beneficiaries/batch", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ beneficiaries: merged, replace: true })
+            }).catch(e => console.warn("Failed to sync merged beneficiaries to server:", e));
+            return merged;
+          });
         }
       }
       
@@ -651,7 +682,6 @@ export default function App() {
 
   const handleSyncSheets = async () => {
     if (!googleToken) {
-      // Try direct sync first (which pulls public CSV or triggers auth if needed)
       try {
         await handleSyncSheetsDirect("");
       } catch {
@@ -662,12 +692,12 @@ export default function App() {
     }
   };
 
-  // Auto-sync public sheet data when public dashboard is active or for non-admin visitors
+  // Auto-sync public sheet data only once when public dashboard is first opened if no data exists
   useEffect(() => {
-    if (showPublicDashboard || !isAdmin) {
+    if (showPublicDashboard && (!beneficiaries || beneficiaries.length === 0)) {
       handleSyncSheetsDirect("");
     }
-  }, [showPublicDashboard, isAdmin]);
+  }, [showPublicDashboard]);
 
   const handleRefreshPublicSheet = async () => {
     await handleSyncSheetsDirect("");
@@ -923,9 +953,9 @@ export default function App() {
         onSetVisitorEmail={handleSetVisitorEmail}
         onLogout={handleGoogleLogout} 
         onLogin={handleGoogleLogin}
-        onSync={handleSyncSheets}
+        onSync={() => handlePushToSheetsBackground(true)}
         syncingSheets={syncingSheets}
-        sheetsSyncUrl={sheetsSyncUrl}
+        sheetsSyncUrl={sheetsSyncUrl || MASTER_SHEET_URL}
         onOpenLauncher={() => setShowLauncher(true)}
         onOpenAnalytics={() => setShowAnalyticsModal(true)}
         onOpenAdminManagement={() => setShowAdminManagementModal(true)}
@@ -1021,10 +1051,10 @@ export default function App() {
               onClick={() => handlePushToSheetsBackground(true)}
               disabled={syncingSheets}
               className="flex items-center justify-center space-x-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 border border-blue-500 px-3.5 py-2 rounded-xl transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
-              title="Dorong & Simpan Seluruh Data Aplikasi ke Google Sheets"
+              title="Kirim & Simpan Seluruh Data Aplikasi ke Google Sheet Terpusat"
             >
               <UploadCloud className="h-4 w-4 text-white" />
-              <span>{syncingSheets ? "Menyimpan..." : "⬆️ Dorong Data ke Sheet"}</span>
+              <span>{syncingSheets ? "Menyimpan ke Sheet..." : "⬆️ Kirim Data ke Sheet"}</span>
             </button>
 
             <button

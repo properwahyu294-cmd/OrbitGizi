@@ -96,8 +96,8 @@ function loadStoreFromDisk() {
     if (fs.existsSync(DATA_FILE)) {
       const fileData = fs.readFileSync(DATA_FILE, "utf-8");
       const parsed = JSON.parse(fileData);
-      adminSheetUrl = parsed.adminSheetUrl || DEFAULT_ADMIN_SHEET_URL;
-      adminSheetId = parsed.adminSheetId || DEFAULT_ADMIN_SHEET_ID;
+      adminSheetUrl = DEFAULT_ADMIN_SHEET_URL;
+      adminSheetId = DEFAULT_ADMIN_SHEET_ID;
       kabupatenName = parsed.kabupatenName || "Kabupaten Nagekeo";
       weights = parsed.weights || weights;
       villages = Array.isArray(parsed.villages) && parsed.villages.length > 0 ? parsed.villages : [...SEED_VILLAGES];
@@ -257,9 +257,10 @@ async function autoImportFromGoogleSheet() {
         sheetBens.forEach(sb => {
           const idx = beneficiaries.findIndex(b => b.id === sb.id || (sb.nik && b.nik === sb.nik));
           if (idx !== -1) {
+            // Keep local/server changes prioritary so newly input admin data is not overwritten by stale sheet data
             beneficiaries[idx] = {
-              ...beneficiaries[idx],
               ...sb,
+              ...beneficiaries[idx],
               weightRecords: (beneficiaries[idx].weightRecords && beneficiaries[idx].weightRecords.length > 0)
                 ? beneficiaries[idx].weightRecords
                 : sb.weightRecords
@@ -268,6 +269,7 @@ async function autoImportFromGoogleSheet() {
             beneficiaries.push(sb);
           }
         });
+        saveStoreToDisk();
       }
     }
 
@@ -293,11 +295,12 @@ async function autoImportFromGoogleSheet() {
         sheetHamil.forEach(sh => {
           const idx = ibuHamil.findIndex(i => i.id === sh.id || (sh.nik && i.nik === sh.nik));
           if (idx !== -1) {
-            ibuHamil[idx] = { ...ibuHamil[idx], ...sh };
+            ibuHamil[idx] = { ...sh, ...ibuHamil[idx] };
           } else {
             ibuHamil.push(sh);
           }
         });
+        saveStoreToDisk();
       }
     }
 
@@ -323,11 +326,12 @@ async function autoImportFromGoogleSheet() {
         sheetMenyusui.forEach(sm => {
           const idx = ibuMenyusui.findIndex(i => i.id === sm.id || (sm.nik && i.nik === sm.nik));
           if (idx !== -1) {
-            ibuMenyusui[idx] = { ...ibuMenyusui[idx], ...sm };
+            ibuMenyusui[idx] = { ...sm, ...ibuMenyusui[idx] };
           } else {
             ibuMenyusui.push(sm);
           }
         });
+        saveStoreToDisk();
       }
     }
 
@@ -713,14 +717,26 @@ function buildAppData() {
 
 // API: Get App State
 app.get("/api/data", async (req, res) => {
-  await autoImportFromGoogleSheet();
+  if (beneficiaries.length === 0) {
+    try {
+      await autoImportFromGoogleSheet();
+    } catch (e) {
+      console.warn("Initial empty auto-import failed:", e);
+    }
+  }
   const aggregatedData = buildAppData();
   res.json({ ...aggregatedData, debug_rows_length: (global as any).lastMbgRowsLength });
 });
 
 // API: Get Beneficiaries List
 app.get("/api/beneficiaries", async (req, res) => {
-  await autoImportFromGoogleSheet();
+  if (beneficiaries.length === 0) {
+    try {
+      await autoImportFromGoogleSheet();
+    } catch (e) {
+      console.warn("Initial empty auto-import failed:", e);
+    }
+  }
   res.json({
     success: true,
     beneficiaries,
@@ -773,20 +789,24 @@ app.post("/api/beneficiaries/delete", (req, res) => {
 
 // API: Batch update beneficiaries
 app.post("/api/beneficiaries/batch", (req, res) => {
-  const { beneficiaries: newList } = req.body;
+  const { beneficiaries: newList, replace } = req.body;
   if (Array.isArray(newList)) {
-    newList.forEach(item => {
-      const idx = beneficiaries.findIndex(b => b.id === item.id || (item.nik && b.nik === item.nik));
-      if (idx !== -1) {
-        beneficiaries[idx] = {
-          ...beneficiaries[idx],
-          ...item,
-          weightRecords: (item.weightRecords && item.weightRecords.length > 0) ? item.weightRecords : beneficiaries[idx].weightRecords
-        };
-      } else {
-        beneficiaries.push(item);
-      }
-    });
+    if (replace || newList.length === 0) {
+      beneficiaries = newList;
+    } else {
+      newList.forEach(item => {
+        const idx = beneficiaries.findIndex(b => b.id === item.id || (item.nik && b.nik === item.nik));
+        if (idx !== -1) {
+          beneficiaries[idx] = {
+            ...beneficiaries[idx],
+            ...item,
+            weightRecords: (item.weightRecords && item.weightRecords.length > 0) ? item.weightRecords : beneficiaries[idx].weightRecords
+          };
+        } else {
+          beneficiaries.push(item);
+        }
+      });
+    }
     saveStoreToDisk();
   }
   res.json({

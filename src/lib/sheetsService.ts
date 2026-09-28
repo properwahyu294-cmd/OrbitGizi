@@ -887,13 +887,27 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
 
         parseAndMergeCatatanTimbang(sheetCatatanTimbang, parsedMbg, parsedIbuHamil, parsedIbuMenyusui);
 
-        // Persist to local storage for static host environment (e.g. Cloudflare Workers / Pages)
+        // Persist to local storage for static host environment without discarding local-only records
         try {
-          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(parsedMbg));
-          localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(parsedIbuHamil));
-          localStorage.setItem("orbit_gizi_local_ibu_hamil", JSON.stringify(parsedIbuHamil));
-          localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
-          localStorage.setItem("orbit_gizi_local_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
+          if (parsedMbg.length > 0) {
+            const storedBens = localStorage.getItem("orbit_gizi_local_beneficiaries");
+            const localBens: any[] = storedBens ? JSON.parse(storedBens) : [];
+            const mergedBens = [...parsedMbg];
+            localBens.forEach(lb => {
+              if (!mergedBens.some(mb => mb.id === lb.id || (lb.nik && mb.nik === lb.nik))) {
+                mergedBens.unshift(lb);
+              }
+            });
+            localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(mergedBens));
+          }
+          if (parsedIbuHamil.length > 0) {
+            localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(parsedIbuHamil));
+            localStorage.setItem("orbit_gizi_local_ibu_hamil", JSON.stringify(parsedIbuHamil));
+          }
+          if (parsedIbuMenyusui.length > 0) {
+            localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
+            localStorage.setItem("orbit_gizi_local_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
+          }
         } catch (e) {
           console.warn("Error saving to localStorage cache:", e);
         }
@@ -976,11 +990,25 @@ export async function pullFromGoogleSheets(accessToken: string, spreadsheetId: s
 
       if (parsedMbg.length > 0 || parsedIbuHamil.length > 0) {
         try {
-          localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(parsedMbg));
-          localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(parsedIbuHamil));
-          localStorage.setItem("orbit_gizi_local_ibu_hamil", JSON.stringify(parsedIbuHamil));
-          localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
-          localStorage.setItem("orbit_gizi_local_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
+          if (parsedMbg.length > 0) {
+            const storedBens = localStorage.getItem("orbit_gizi_local_beneficiaries");
+            const localBens: any[] = storedBens ? JSON.parse(storedBens) : [];
+            const mergedBens = [...parsedMbg];
+            localBens.forEach(lb => {
+              if (!mergedBens.some(mb => mb.id === lb.id || (lb.nik && mb.nik === lb.nik))) {
+                mergedBens.unshift(lb);
+              }
+            });
+            localStorage.setItem("orbit_gizi_local_beneficiaries", JSON.stringify(mergedBens));
+          }
+          if (parsedIbuHamil.length > 0) {
+            localStorage.setItem("orbit_gizi_ibu_hamil", JSON.stringify(parsedIbuHamil));
+            localStorage.setItem("orbit_gizi_local_ibu_hamil", JSON.stringify(parsedIbuHamil));
+          }
+          if (parsedIbuMenyusui.length > 0) {
+            localStorage.setItem("orbit_gizi_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
+            localStorage.setItem("orbit_gizi_local_ibu_menyusui", JSON.stringify(parsedIbuMenyusui));
+          }
         } catch (e) {}
 
         return {

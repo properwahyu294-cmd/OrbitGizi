@@ -964,12 +964,15 @@ export async function deleteBeneficiaryApi(id: string): Promise<any[]> {
 }
 
 /**
+ * MASTER GOOGLE SHEET CONSTANTS (DITANAM PERMANEN DALAM KODING)
+ */
+export const MASTER_SHEET_URL = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
+export const MASTER_SPREADSHEET_ID = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
+
+/**
  * ADMIN GOOGLE SHEET CONFIG HELPERS
  */
 export async function getAdminSheetConfigApi(): Promise<{ adminSheetUrl: string; adminSheetId: string }> {
-  const defaultUrl = "https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316";
-  const defaultId = "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
-
   try {
     const res = await fetch("/api/sheets/config");
     const json = await parseResponseSafely(res);
@@ -981,18 +984,19 @@ export async function getAdminSheetConfigApi(): Promise<{ adminSheetUrl: string;
     console.warn("Failed to fetch sheet config from API, using cached or default:", err);
   }
 
-  const savedUrl = localStorage.getItem("orbit_gizi_admin_sheet_url") || defaultUrl;
+  const savedUrl = localStorage.getItem("orbit_gizi_admin_sheet_url") || MASTER_SHEET_URL;
   const match = savedUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-  const savedId = match ? match[1] : defaultId;
+  const savedId = match ? match[1] : MASTER_SPREADSHEET_ID;
   return { adminSheetUrl: savedUrl, adminSheetId: savedId };
 }
 
 export async function updateAdminSheetConfigApi(url: string): Promise<{ adminSheetUrl: string; adminSheetId: string }> {
+  const targetUrl = url || MASTER_SHEET_URL;
   try {
     const res = await fetch("/api/sheets/config", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url: targetUrl })
     });
     const json = await parseResponseSafely(res);
     if (json.success && json.adminSheetUrl) {
@@ -1003,10 +1007,10 @@ export async function updateAdminSheetConfigApi(url: string): Promise<{ adminShe
     console.warn("Failed to update sheet config via API, updating local:", err);
   }
 
-  localStorage.setItem("orbit_gizi_admin_sheet_url", url);
-  const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-  const id = match ? match[1] : "1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE";
-  return { adminSheetUrl: url, adminSheetId: id };
+  localStorage.setItem("orbit_gizi_admin_sheet_url", targetUrl);
+  const match = targetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  const id = match ? match[1] : MASTER_SPREADSHEET_ID;
+  return { adminSheetUrl: targetUrl, adminSheetId: id };
 }
 
 /**

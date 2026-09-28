@@ -186,6 +186,18 @@ export const LauncherLanding: React.FC<LauncherLandingProps> = ({
             <span>Panduan Pengguna</span>
           </button>
 
+          {/* GOOGLE SHEET DIRECT LINK */}
+          <a
+            href="https://docs.google.com/spreadsheets/d/1dGTF6wZ2DoPF2qVcjxrjaxDDQzHQjuHgwvKi1DwTkRE/edit?gid=1042318316#gid=1042318316"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs font-bold text-emerald-200 transition-colors cursor-pointer"
+            title="Buka Google Sheet Resmi Orbit Gizi Terpusat"
+          >
+            <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
+            <span>Buka Google Sheet ↗</span>
+          </a>
+
           <div className="hidden lg:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-emerald-500/30 text-xs text-emerald-300 ml-2">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
             <span className="font-bold">Firebase & Cyber Guard Protected</span>

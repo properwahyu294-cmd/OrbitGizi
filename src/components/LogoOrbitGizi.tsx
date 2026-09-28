@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Heart, LogOut, User as UserIcon, FileSpreadsheet, RefreshCw, Building, Upload, RotateCcw, Info, Camera, Edit3, Mail, ShieldCheck } from "lucide-react";
+import { Heart, LogOut, User as UserIcon, FileSpreadsheet, RefreshCw, Building, Upload, RotateCcw, Info, Camera, Edit3, Mail, ShieldCheck, UploadCloud } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import logoPemdaFile from "../assets/images/LOGOPEMDA (1).png";
 import { PemdaNagekeoLogo } from "./PemdaNagekeoLogo";
 import { VisitorEmailModal } from "./VisitorEmailModal";
+import { MASTER_SHEET_URL } from "../lib/dataService";
 
 interface LogoOrbitGiziProps {
   currentUser?: FirebaseUser | null;
@@ -176,6 +177,20 @@ export default function LogoOrbitGizi({
           </button>
         )}
 
+        {/* Buka Spreadsheet Link (Selalu aktif & tertanam langsung) */}
+        <a
+          href={sheetsSyncUrl || MASTER_SHEET_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          referrerPolicy="no-referrer"
+          className="flex items-center space-x-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-3 py-2 rounded-xl transition-colors cursor-pointer shadow-3xs"
+          title="Buka Google Spreadsheet Resmi Terpusat Orbit Gizi (Tertanam Langsung)"
+        >
+          <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
+          <span className="hidden sm:inline">Buka Spreadsheet ↗</span>
+          <span className="sm:hidden">Sheet ↗</span>
+        </a>
+
         {currentUser ? (
           <>
             {/* Sync Status Badge */}
@@ -187,28 +202,16 @@ export default function LogoOrbitGizi({
               <span className="font-mono font-bold uppercase tracking-wider text-[10px]">Sinkronisasi Aktif</span>
             </div>
 
-            {/* Buka Spreadsheet Link */}
-            {sheetsSyncUrl && (
-              <a
-                href={sheetsSyncUrl}
-                target="_blank"
-                referrerPolicy="no-referrer"
-                className="flex items-center space-x-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-2 rounded-xl transition-colors cursor-pointer"
-              >
-                <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" />
-                <span>Buka Spreadsheet ↗</span>
-              </a>
-            )}
-
-            {/* Sync Now Button */}
+            {/* Kirim / Simpan ke Google Sheet Button */}
             {onSync && (
               <button
                 onClick={onSync}
                 disabled={syncingSheets}
-                className="flex items-center space-x-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 px-3 py-2 rounded-xl transition-colors cursor-pointer shadow-3xs"
+                className="flex items-center space-x-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-400 px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-3xs hover:shadow-sm"
+                title="Kirim & Simpan seluruh data input terbaru ke Google Sheet Resmi"
               >
-                <RefreshCw className={`h-3.5 w-3.5 ${syncingSheets ? "animate-spin" : ""}`} />
-                <span>{syncingSheets ? "Memuat..." : "Muat Data Sheet"}</span>
+                <UploadCloud className={`h-3.5 w-3.5 ${syncingSheets ? "animate-bounce" : ""}`} />
+                <span>{syncingSheets ? "Menyimpan ke Sheet..." : "Kirim ke Sheet"}</span>
               </button>
             )}
 
