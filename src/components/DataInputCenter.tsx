@@ -44,7 +44,10 @@ import {
   HeartHandshake,
   TrendingUp,
   BadgeCheck,
-  AlertCircle
+  AlertCircle,
+  RefreshCw,
+  FileSpreadsheet,
+  CheckCircle
 } from "lucide-react";
 import { Village, MBGBeneficiary, WeightRecord } from "../types";
 import { LocationSelectorField } from "./LocationSelectorField";
@@ -62,6 +65,13 @@ interface DataInputCenterProps {
   onUpdateVillageMetrics: (updatedVillage: Partial<Village>) => Promise<void>;
   isModal?: boolean;
   onCloseModal?: () => void;
+  isGoogleConnected?: boolean;
+  googleUserEmail?: string;
+  onConnectGoogle?: () => void;
+  isSyncingSheets?: boolean;
+  onManualSyncSheets?: () => Promise<void>;
+  syncError?: string | null;
+  syncSuccess?: boolean;
 }
 
 const PERIOD_OPTIONS = [
@@ -143,7 +153,14 @@ export default function DataInputCenter({
   onDeleteWeightRecord,
   onUpdateVillageMetrics,
   isModal = false,
-  onCloseModal
+  onCloseModal,
+  isGoogleConnected = false,
+  googleUserEmail,
+  onConnectGoogle,
+  isSyncingSheets = false,
+  onManualSyncSheets,
+  syncError,
+  syncSuccess
 }: DataInputCenterProps) {
   // Navigation Sub-Tabs
   const [activeSubTab, setActiveSubTab] = useState<"location_sync" | "beneficiaries" | "weight_records" | "collaboration">("beneficiaries");
@@ -865,6 +882,20 @@ export default function DataInputCenter({
 
     onAddWeightRecord(targetBen.id, updatedRecord);
 
+    // Update local modal state immediately so the records table inside the modal refreshes in real-time
+    setEditingWeightBen(prev => {
+      if (!prev) return null;
+      if (prev.id !== targetBen.id && (!targetBen.nik || prev.nik !== targetBen.nik)) return prev;
+      const filtered = (prev.weightRecords || []).filter(r => r.period !== origWeightPeriod && r.period !== newPeriod);
+      return {
+        ...prev,
+        weightRecords: [...filtered, updatedRecord],
+        initialWeightKg: updatedRecord.weightKg > 0 ? updatedRecord.weightKg : prev.initialWeightKg,
+        initialHeightCm: updatedRecord.heightCm ? updatedRecord.heightCm : prev.initialHeightCm,
+        initialStatusGizi: updatedRecord.statusGizi || prev.initialStatusGizi
+      };
+    });
+
     setEditWeightSuccess(true);
     setOrigWeightPeriod("");
     setEditWeightPeriod("");
@@ -888,8 +919,35 @@ export default function DataInputCenter({
     // Delete only that specific period's weight record
     onDeleteWeightRecord(ben.id, record.period);
     
+    // Update local modal state immediately so the table updates in real-time
+    setEditingWeightBen(prev => {
+      if (!prev) return null;
+      if (prev.id !== ben.id && (!ben.nik || prev.nik !== ben.nik)) return prev;
+      const filtered = (prev.weightRecords || []).filter(r => r.period !== record.period);
+      return {
+        ...prev,
+        weightRecords: filtered,
+        initialWeightKg: filtered.length > 0 ? filtered[filtered.length - 1].weightKg : 0,
+        initialHeightCm: filtered.length > 0 ? filtered[filtered.length - 1].heightCm : undefined,
+        initialStatusGizi: filtered.length > 0 ? (filtered[filtered.length - 1].statusGizi || "Normal") : "Normal"
+      };
+    });
+
+    setSelectedDetailBen(prev => {
+      if (!prev) return null;
+      if (prev.id !== ben.id && (!ben.nik || prev.nik !== ben.nik)) return prev;
+      const filtered = (prev.weightRecords || []).filter(r => r.period !== record.period);
+      return {
+        ...prev,
+        weightRecords: filtered,
+        initialWeightKg: filtered.length > 0 ? filtered[filtered.length - 1].weightKg : 0,
+        initialHeightCm: filtered.length > 0 ? filtered[filtered.length - 1].heightCm : undefined,
+        initialStatusGizi: filtered.length > 0 ? (filtered[filtered.length - 1].statusGizi || "Normal") : "Normal"
+      };
+    });
+
     // If we are currently editing this same period, reset the form
-    if (editingWeightBen?.id === ben.id && origWeightPeriod === record.period) {
+    if (origWeightPeriod === record.period) {
       handlePrepareAddNewPeriod();
     }
     
@@ -1935,7 +1993,91 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
 
       {/* SUB-TAB 3: CATAT BERAT BADAN BULANAN (UPDATE PERKEMBANGAN) */}
       {activeSubTab === "weight_records" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="space-y-4">
+          {/* GOOGLE SHEETS LIVE SYNC STATUS BANNER */}
+          {isGoogleConnected ? (
+            <div className="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center space-x-3">
+                <span className="relative flex h-3 w-3 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+                <div>
+                  <h4 className="text-xs font-black text-emerald-950 flex items-center space-x-2">
+                    <span>Google Sheets Terhubung Aktif: <strong>{googleUserEmail}</strong></span>
+                    <span className="px-2 py-0.5 bg-emerald-200 text-emerald-900 rounded-md text-[9px] font-black uppercase tracking-wider">Tab Catatan Timbang</span>
+                  </h4>
+                  <p className="text-[11px] text-emerald-800 font-medium">
+                    Setiap entri hasil timbang baru atau tindakan hapus akan <strong>langsung otomatis tersinkronisasi</strong> ke Google Sheet resmi (Tab 'Catatan Timbang' & 'Penerima MBG').
+                  </p>
+                </div>
+              </div>
+              {onManualSyncSheets && (
+                <button
+                  type="button"
+                  onClick={onManualSyncSheets}
+                  disabled={isSyncingSheets}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-xs disabled:opacity-50 shrink-0 flex items-center space-x-1.5"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${isSyncingSheets ? "animate-spin" : ""}`} />
+                  <span>{isSyncingSheets ? "Menyinkronkan..." : "Sinkronkan ke Sheet Sekarang"}</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-start space-x-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-xs font-black text-amber-950 uppercase tracking-wide">
+                    Google Sheets Belum Terhubung (Penyimpanan Lokal Aktif)
+                  </h4>
+                  <p className="text-[11px] text-amber-800 font-medium leading-relaxed">
+                    Data penimbangan yang Anda masukkan tetap tersimpan aman di sistem lokal database Orbit Gizi. <strong>Agar data langsung masuk otomatis ke tab "Catatan Timbang" di Google Spreadsheet resmi</strong>, silakan klik tombol di samping untuk mengaktifkan akses Google.
+                  </p>
+                </div>
+              </div>
+              {onConnectGoogle && (
+                <button
+                  type="button"
+                  onClick={onConnectGoogle}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-sm shrink-0 flex items-center justify-center space-x-2"
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  <span>Hubungkan Google Sheets</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Sync Error in context */}
+          {syncError && (
+            <div className="bg-rose-50 border border-rose-300 text-rose-900 rounded-2xl p-3.5 text-xs font-semibold flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+                <span>{syncError}</span>
+              </div>
+              {onConnectGoogle && (
+                <button
+                  type="button"
+                  onClick={onConnectGoogle}
+                  className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black rounded-lg shrink-0 cursor-pointer"
+                >
+                  Login Ulang
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Sync Success in context */}
+          {syncSuccess && (
+            <div className="bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-2xl p-3.5 text-xs font-semibold flex items-center space-x-2">
+              <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0" />
+              <span>Data hasil timbang berhasil diperbarui dan langsung tersinkronkan ke tab 'Catatan Timbang' di Google Sheet resmi!</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Left: Form */}
           <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4 lg:col-span-1">
@@ -2272,12 +2414,17 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                 {measSuccess ? (
                   <>
                     <Check className="h-4 w-4" />
-                    <span>Hasil Timbang Berhasil Dicatat!</span>
+                    <span>{isGoogleConnected ? "Hasil Timbang Berhasil Disimpan & Masuk ke Sheet!" : "Hasil Timbang Berhasil Disimpan!"}</span>
                   </>
                 ) : (
                   <span>Simpan Hasil Penimbangan</span>
                 )}
               </button>
+              {!isGoogleConnected && (
+                <p className="text-[10px] text-amber-700 font-bold text-center bg-amber-50 p-2 rounded-xl border border-amber-200">
+                  ℹ️ Simpan berhasil ke database. Agar data langsung masuk ke Google Sheet resmi, klik <strong>Hubungkan Google Sheets</strong> di atas.
+                </p>
+              )}
             </form>
           </div>
 
@@ -2402,8 +2549,17 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                             </button>
                             <button
                               onClick={() => handleOpenDeleteWeightModal(ben, rec)}
-                              className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
-                              title="Hapus Data Hasil Timbang (Modal Sendiri)"
+                              disabled={rec.period === "Belum Timbang" && (!rec.weightKg || rec.weightKg === 0)}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                rec.period === "Belum Timbang" && (!rec.weightKg || rec.weightKg === 0)
+                                  ? "text-slate-200 cursor-not-allowed opacity-30"
+                                  : "hover:bg-rose-50 text-slate-400 hover:text-rose-600 cursor-pointer"
+                              }`}
+                              title={
+                                rec.period === "Belum Timbang" && (!rec.weightKg || rec.weightKg === 0)
+                                  ? "Belum ada catatan timbang untuk dihapus"
+                                  : "Hapus Data Hasil Timbang Periode Ini"
+                              }
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -2426,6 +2582,7 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
           </div>
 
         </div>
+      </div>
       )}
 
       {/* SUB-TAB 4: SINKRONISASI DESA */}
@@ -4227,7 +4384,11 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               </div>
 
               <p className="text-[11px] text-slate-600 leading-relaxed font-bold bg-white p-3 rounded-xl border border-slate-200">
-                Apakah Anda yakin ingin menghapus 1 data timbang <strong>periode {deletingWeightItem.record.period}</strong> ini?
+                {deletingWeightItem.record.period === "Belum Timbang" ? (
+                  <span>Apakah Anda yakin ingin menghapus data berat awal (<strong>{deletingWeightItem.record.weightKg} kg</strong>) untuk sasaran <strong>{deletingWeightItem.ben.name}</strong>?</span>
+                ) : (
+                  <span>Apakah Anda yakin ingin menghapus 1 data timbang <strong>periode {deletingWeightItem.record.period}</strong> ({deletingWeightItem.record.weightKg} kg) ini?</span>
+                )}
               </p>
 
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 text-[10px] text-emerald-900 font-bold flex items-center space-x-1.5">

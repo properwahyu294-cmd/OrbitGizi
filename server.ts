@@ -752,7 +752,7 @@ app.post("/api/beneficiaries/save", (req, res) => {
     return res.status(400).json({ error: "Data sasaran tidak valid (ID diperlukan)." });
   }
 
-  const existingIdx = beneficiaries.findIndex(b => b.id === ben.id);
+  const existingIdx = beneficiaries.findIndex(b => b.id === ben.id || (ben.nik && b.nik === ben.nik));
   if (existingIdx !== -1) {
     beneficiaries[existingIdx] = ben;
   } else {
@@ -776,7 +776,7 @@ app.post("/api/beneficiaries/delete", (req, res) => {
     return res.status(400).json({ error: "ID sasaran diperlukan." });
   }
 
-  beneficiaries = beneficiaries.filter(b => b.id !== id);
+  beneficiaries = beneficiaries.filter(b => b.id !== id && b.nik !== id);
   saveStoreToDisk();
 
   res.json({
@@ -800,7 +800,7 @@ app.post("/api/beneficiaries/batch", (req, res) => {
           beneficiaries[idx] = {
             ...beneficiaries[idx],
             ...item,
-            weightRecords: (item.weightRecords && item.weightRecords.length > 0) ? item.weightRecords : beneficiaries[idx].weightRecords
+            weightRecords: Array.isArray(item.weightRecords) ? item.weightRecords : beneficiaries[idx].weightRecords
           };
         } else {
           beneficiaries.push(item);

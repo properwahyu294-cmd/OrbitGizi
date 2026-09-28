@@ -380,7 +380,7 @@ export default function App() {
   const handleAddWeightRecord = async (beneficiaryId: string, record: WeightRecord) => {
     let updatedTarget: MBGBeneficiary | undefined;
     const updatedList = beneficiaries.map(b => {
-      if (b.id === beneficiaryId) {
+      if (b.id === beneficiaryId || (b.nik && b.nik === beneficiaryId)) {
         const filtered = (b.weightRecords || []).filter(r => r.period !== record.period);
         const target: MBGBeneficiary = {
           ...b,
@@ -413,11 +413,25 @@ export default function App() {
   const handleDeleteWeightRecord = async (beneficiaryId: string, period: string) => {
     let updatedTarget: MBGBeneficiary | undefined;
     const updatedList = beneficiaries.map(b => {
-      if (b.id === beneficiaryId) {
+      if (b.id === beneficiaryId || (b.nik && b.nik === beneficiaryId)) {
         const filtered = (b.weightRecords || []).filter(r => r.period !== period);
+        let newWeight: number | undefined = 0;
+        let newHeight: number | undefined = undefined;
+        let newStatus: string | undefined = "Normal";
+
+        if (period !== "Belum Timbang" && filtered.length > 0) {
+          const lastRec = filtered[filtered.length - 1];
+          newWeight = lastRec.weightKg;
+          newHeight = lastRec.heightCm;
+          newStatus = lastRec.statusGizi || "Normal";
+        }
+
         const target: MBGBeneficiary = {
           ...b,
-          weightRecords: filtered
+          weightRecords: filtered,
+          initialWeightKg: newWeight,
+          initialHeightCm: newHeight,
+          initialStatusGizi: newStatus as any
         };
         updatedTarget = target;
         return target;
@@ -1453,6 +1467,13 @@ export default function App() {
                   onAddWeightRecord={handleAddWeightRecord}
                   onDeleteWeightRecord={handleDeleteWeightRecord}
                   onUpdateVillageMetrics={handleVillageUpdate}
+                  isGoogleConnected={!!googleToken}
+                  googleUserEmail={currentUser?.email || undefined}
+                  onConnectGoogle={handleGoogleLogin}
+                  isSyncingSheets={syncingSheets}
+                  onManualSyncSheets={() => handlePushToSheetsBackground(true)}
+                  syncError={syncError}
+                  syncSuccess={syncSuccess}
                 />
               </div>
             )}
@@ -1807,6 +1828,13 @@ export default function App() {
           onUpdateVillageMetrics={handleVillageUpdate}
           isModal={true}
           onCloseModal={() => setShowDataInputModal(false)}
+          isGoogleConnected={!!googleToken}
+          googleUserEmail={currentUser?.email || undefined}
+          onConnectGoogle={handleGoogleLogin}
+          isSyncingSheets={syncingSheets}
+          onManualSyncSheets={() => handlePushToSheetsBackground(true)}
+          syncError={syncError}
+          syncSuccess={syncSuccess}
         />
       )}
 
