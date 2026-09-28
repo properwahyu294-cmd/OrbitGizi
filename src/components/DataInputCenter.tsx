@@ -1344,49 +1344,48 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
     <div className="space-y-6">
       
       {/* HEADER BAR & REGIONAL LOCATION SELECTOR */}
-      <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-xl space-y-5 border border-slate-800">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-sm space-y-4 border border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-3.5">
           <div className="flex items-center space-x-3">
-            <div className="p-3 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/30">
-              <Building2 className="h-6 w-6 text-white" />
+            <div className="p-2.5 bg-indigo-600 rounded-xl shadow-sm">
+              <Building2 className="h-5 w-5 text-white" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                   PUSAT SINKRONISASI DATA GIZI
                 </span>
-                <span className="text-xs font-bold text-slate-400">• Orbit Gizi System</span>
+                <span className="text-xs text-slate-400">• Orbit Gizi System</span>
               </div>
-              <h2 className="text-xl font-black text-white mt-1">
+              <h2 className="text-lg font-bold text-white mt-0.5">
                 Sinkronisasi & Input Data Penerima MBG
               </h2>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {/* AI Report Button */}
             <button
               onClick={handleGenerateAIReport}
-              className="bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center space-x-2 cursor-pointer shadow-md transition-all border border-amber-400/30"
+              className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer transition-all border border-indigo-400/30"
             >
-              <Sparkles className="h-4 w-4 text-amber-200 animate-pulse" />
+              <Sparkles className="h-3.5 w-3.5 text-amber-300" />
               <span>Analytic Data</span>
             </button>
 
             <button
               onClick={handleOpenAddBenModal}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer shadow-md transition-all"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer transition-all"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               <span>Tambah Penerima</span>
             </button>
 
             {isModal && onCloseModal && (
               <button
                 onClick={onCloseModal}
-                className="bg-slate-800 hover:bg-rose-600/20 hover:text-rose-300 text-slate-300 font-bold px-3.5 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer shadow-md transition-all border border-slate-700"
+                className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer transition-all border border-slate-700"
               >
-                <X className="h-4 w-4 text-rose-400" />
+                <X className="h-3.5 w-3.5 text-rose-400" />
                 <span>Tutup Modal</span>
               </button>
             )}
@@ -1395,13 +1394,11 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
 
         {/* Region Cascade Dropdowns */}
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-indigo-300 uppercase tracking-wider flex items-center space-x-1">
+          <label className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider flex items-center space-x-1">
             <MapPin className="h-3 w-3 text-indigo-400" />
             <span>PILIH WILAYAH KERJA TERFOKUS (SINKRONISASI HIUS WILAYAH)</span>
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-            
-            {/* Propinsi */}
             <LocationSelectorField
               label="1. PROPINSI"
               value={selectedPropinsi}
@@ -1409,8 +1406,6 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               options={["Nusa Tenggara Timur"]}
               isDark={true}
             />
-
-            {/* Kabupaten */}
             <LocationSelectorField
               label="2. KABUPATEN"
               value={selectedKabupaten}
@@ -1418,8 +1413,6 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               options={["Kabupaten Nagekeo"]}
               isDark={true}
             />
-
-            {/* Puskesmas */}
             <LocationSelectorField
               label="3. PUSKESMAS"
               value={selectedPuskesmas}
@@ -1430,8 +1423,6 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               onSaveOption={handleSaveCustomPuskesmas}
               onDeleteOption={handleDeleteCustomPuskesmas}
             />
-
-            {/* Kelurahan */}
             <LocationSelectorField
               label="4. DESA / KELURAHAN"
               value={selectedKelurahan}
@@ -1442,8 +1433,6 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               onSaveOption={handleSaveCustomKelurahan}
               onDeleteOption={handleDeleteCustomKelurahan}
             />
-
-            {/* Dusun */}
             <LocationSelectorField
               label="5. DUSUN"
               value={selectedDusun}
@@ -1454,8 +1443,6 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
               onSaveOption={handleSaveCustomDusun}
               onDeleteOption={handleDeleteCustomDusun}
             />
-
-            {/* Posyandu */}
             <LocationSelectorField
               label="6. POSYANDU"
               value={selectedPosyandu}
@@ -1471,52 +1458,52 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
       </div>
 
       {/* SUB-TABS SELECTOR BAR */}
-      <div className="flex border-b border-slate-200 bg-white rounded-2xl p-1.5 shadow-xs">
+      <div className="flex border border-slate-200 bg-white rounded-xl p-1 shadow-2xs gap-1">
         <button
           onClick={() => setActiveSubTab("beneficiaries")}
-          className={`flex-1 py-3 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-2 cursor-pointer ${
+          className={`flex-1 py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
             activeSubTab === "beneficiaries"
-              ? "bg-indigo-600 text-white shadow-md"
-              : "text-slate-600 hover:bg-slate-100"
+              ? "bg-indigo-600 text-white shadow-2xs"
+              : "text-slate-600 hover:bg-slate-50"
           }`}
         >
-          <Users className="h-4 w-4" />
+          <Users className="h-3.5 w-3.5" />
           <span>1. Daftar Penerima MBG ({beneficiaries.length})</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab("collaboration")}
-          className={`flex-1 py-3 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-2 cursor-pointer ${
+          className={`flex-1 py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
             activeSubTab === "collaboration"
-              ? "bg-indigo-600 text-white shadow-md"
-              : "text-slate-600 hover:bg-slate-100"
+              ? "bg-indigo-600 text-white shadow-2xs"
+              : "text-slate-600 hover:bg-slate-50"
           }`}
         >
-          <UserCheck className="h-4 w-4 text-amber-300" />
+          <UserCheck className="h-3.5 w-3.5" />
           <span>2. Kolaborasi & Titik Lemah ({collaborationMetrics.collabRateScore}%)</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab("weight_records")}
-          className={`flex-1 py-3 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-2 cursor-pointer ${
+          className={`flex-1 py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
             activeSubTab === "weight_records"
-              ? "bg-indigo-600 text-white shadow-md"
-              : "text-slate-600 hover:bg-slate-100"
+              ? "bg-indigo-600 text-white shadow-2xs"
+              : "text-slate-600 hover:bg-slate-50"
           }`}
         >
-          <Scale className="h-4 w-4" />
+          <Scale className="h-3.5 w-3.5" />
           <span>3. Catat BB Bulanan</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab("location_sync")}
-          className={`flex-1 py-3 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-2 cursor-pointer ${
+          className={`flex-1 py-2.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
             activeSubTab === "location_sync"
-              ? "bg-indigo-600 text-white shadow-md"
-              : "text-slate-600 hover:bg-slate-100"
+              ? "bg-indigo-600 text-white shadow-2xs"
+              : "text-slate-600 hover:bg-slate-50"
           }`}
         >
-          <Building2 className="h-4 w-4" />
+          <Building2 className="h-3.5 w-3.5" />
           <span>4. Sinkronisasi Desa</span>
         </button>
       </div>
@@ -1996,19 +1983,18 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
         <div className="space-y-4">
           {/* GOOGLE SHEETS LIVE SYNC STATUS BANNER */}
           {isGoogleConnected ? (
-            <div className="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
               <div className="flex items-center space-x-3">
-                <span className="relative flex h-3 w-3 shrink-0">
+                <span className="relative flex h-2.5 w-2.5 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
                 <div>
-                  <h4 className="text-xs font-black text-emerald-950 flex items-center space-x-2">
-                    <span>Google Sheets Terhubung Aktif: <strong>{googleUserEmail}</strong></span>
-                    <span className="px-2 py-0.5 bg-emerald-200 text-emerald-900 rounded-md text-[9px] font-black uppercase tracking-wider">Tab Catatan Timbang</span>
+                  <h4 className="text-xs font-bold text-emerald-950 flex items-center space-x-2">
+                    <span>Google Sheets Terhubung: <strong>{googleUserEmail}</strong></span>
                   </h4>
-                  <p className="text-[11px] text-emerald-800 font-medium">
-                    Setiap entri hasil timbang baru atau tindakan hapus akan <strong>langsung otomatis tersinkronisasi</strong> ke Google Sheet resmi (Tab 'Catatan Timbang' & 'Penerima MBG').
+                  <p className="text-[11px] text-emerald-800 font-normal">
+                    Otomatis tersinkronisasi ke Google Sheet resmi (Tab 'Catatan Timbang' & 'Penerima MBG').
                   </p>
                 </div>
               </div>
@@ -2017,23 +2003,23 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                   type="button"
                   onClick={onManualSyncSheets}
                   disabled={isSyncingSheets}
-                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-xs disabled:opacity-50 shrink-0 flex items-center space-x-1.5"
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs disabled:opacity-50 shrink-0 flex items-center space-x-1.5"
                 >
                   <RefreshCw className={`h-3.5 w-3.5 ${isSyncingSheets ? "animate-spin" : ""}`} />
-                  <span>{isSyncingSheets ? "Menyinkronkan..." : "Sinkronkan ke Sheet Sekarang"}</span>
+                  <span>{isSyncingSheets ? "Menyinkronkan..." : "Sinkronkan Sekarang"}</span>
                 </button>
               )}
             </div>
           ) : (
-            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-              <div className="flex items-start space-x-3">
-                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="bg-slate-100 border border-slate-200 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center space-x-3">
+                <FileSpreadsheet className="h-5 w-5 text-emerald-600 shrink-0" />
                 <div>
-                  <h4 className="text-xs font-black text-amber-950 uppercase tracking-wide">
-                    Google Sheets Belum Terhubung (Penyimpanan Lokal Aktif)
+                  <h4 className="text-xs font-bold text-slate-900">
+                    Penyimpanan Lokal Aktif (Google Sheets Belum Terhubung)
                   </h4>
-                  <p className="text-[11px] text-amber-800 font-medium leading-relaxed">
-                    Data penimbangan yang Anda masukkan tetap tersimpan aman di sistem lokal database Orbit Gizi. <strong>Agar data langsung masuk otomatis ke tab "Catatan Timbang" di Google Spreadsheet resmi</strong>, silakan klik tombol di samping untuk mengaktifkan akses Google.
+                  <p className="text-[11px] text-slate-600">
+                    Data penimbangan tersimpan aman di database lokal.
                   </p>
                 </div>
               </div>
@@ -2041,9 +2027,9 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                 <button
                   type="button"
                   onClick={onConnectGoogle}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-sm shrink-0 flex items-center justify-center space-x-2"
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs shrink-0 flex items-center space-x-1.5"
                 >
-                  <FileSpreadsheet className="h-4 w-4" />
+                  <FileSpreadsheet className="h-3.5 w-3.5" />
                   <span>Hubungkan Google Sheets</span>
                 </button>
               )}
@@ -2080,27 +2066,17 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Left: Form */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4 lg:col-span-1">
-            <div className="flex items-center space-x-2 text-indigo-700">
-              <Scale className="h-5 w-5" />
-              <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">Entri Hasil Timbang BB (Update Rutin)</h3>
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4 lg:col-span-1">
+            <div className="flex items-center space-x-2 text-indigo-700 pb-1 border-b border-slate-100">
+              <Scale className="h-4 w-4" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">Entri Hasil Timbang BB (Update Rutin)</h3>
             </div>
 
-            <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-3 text-xs text-indigo-950 font-medium space-y-1">
-              <div className="flex items-center space-x-1.5 font-black text-indigo-900">
-                <Sparkles className="h-4 w-4 text-indigo-600 shrink-0" />
-                <span>KEGIATAN RUTIN BULANAN</span>
-              </div>
-              <p className="text-[11px] text-indigo-800 leading-relaxed">
-                Pilih penerima dan masukkan hasil penimbangan bulanan. Data ini akan ditambahkan ke <strong>Grafik Pertumbuhan Anak</strong> tanpa menimpa data master profil awal.
-              </p>
-            </div>
-
-            <form onSubmit={handleAddWeightMeasurement} className="space-y-4">
+            <form onSubmit={handleAddWeightMeasurement} className="space-y-3.5">
               {/* PILIH PENERIMA / ANAK (MULTI-MODE SEARCH & SELECTION) */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black text-slate-500 uppercase block">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block">
                     PILIH PENERIMA / ANAK *
                   </label>
                   {/* Mode Selector Buttons */}
@@ -2108,32 +2084,20 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                     <button
                       type="button"
                       onClick={() => setBenSelectMode("autocomplete")}
-                      className={`px-2 py-0.5 rounded text-[10px] font-extrabold cursor-pointer transition-colors ${
-                        benSelectMode === "autocomplete" ? "bg-indigo-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                      className={`px-2 py-0.5 rounded text-[10px] font-semibold cursor-pointer transition-colors ${
+                        benSelectMode === "autocomplete" ? "bg-indigo-600 text-white shadow-2xs" : "text-slate-600 hover:text-slate-900"
                       }`}
-                      title="Mode Autocomplete & Pencarian Live"
                     >
-                      🔍 Autocomplete
+                      Cari Live
                     </button>
                     <button
                       type="button"
                       onClick={() => setBenSelectMode("dropdown")}
-                      className={`px-2 py-0.5 rounded text-[10px] font-extrabold cursor-pointer transition-colors ${
-                        benSelectMode === "dropdown" ? "bg-indigo-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                      className={`px-2 py-0.5 rounded text-[10px] font-semibold cursor-pointer transition-colors ${
+                        benSelectMode === "dropdown" ? "bg-indigo-600 text-white shadow-2xs" : "text-slate-600 hover:text-slate-900"
                       }`}
-                      title="Mode Dropdown List Biasa"
                     >
-                      📋 Dropdown
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setBenSelectMode("manual")}
-                      className={`px-2 py-0.5 rounded text-[10px] font-extrabold cursor-pointer transition-colors ${
-                        benSelectMode === "manual" ? "bg-indigo-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
-                      }`}
-                      title="Mode Ketik Filter Manual"
-                    >
-                      ⌨️ Filter List
+                      Dropdown List
                     </button>
                   </div>
                 </div>
