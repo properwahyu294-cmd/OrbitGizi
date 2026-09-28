@@ -232,7 +232,9 @@ function buildLocalAppData(): OrbitGiziData {
 
   // 1. Automatically ensure villages from newly added beneficiaries exist in localVillages
   localBeneficiaries.forEach(ben => {
-    const villageName = ben.location?.kelurahan?.trim();
+    if (!ben) return;
+    const loc = ben.location || {};
+    const villageName = (loc.kelurahan || ben.kelurahan || "").trim();
     if (villageName) {
       const exists = localVillages.some(v => v.name.toLowerCase().trim() === villageName.toLowerCase());
       if (!exists) {
@@ -246,12 +248,12 @@ function buildLocalAppData(): OrbitGiziData {
             y: parseFloat((-8.85 + Math.random() * 0.30).toFixed(4))
           },
           locationHierarchy: {
-            propinsi: ben.location.propinsi || "Nusa Tenggara Timur",
-            kabupaten: ben.location.kabupaten || "Kabupaten Nagekeo",
-            puskesmas: ben.location.puskesmas || "Puskesmas Boawae",
+            propinsi: loc.propinsi || ben.propinsi || "Nusa Tenggara Timur",
+            kabupaten: loc.kabupaten || ben.kabupaten || "Kabupaten Nagekeo",
+            puskesmas: loc.puskesmas || ben.puskesmas || "Puskesmas Boawae",
             kelurahan: villageName,
-            dusun: ben.location.dusun || "Dusun 1",
-            posyandu: ben.location.posyandu || "Posyandu Mekar"
+            dusun: loc.dusun || ben.dusun || "Dusun 1",
+            posyandu: loc.posyandu || ben.posyandu || "Posyandu Mekar"
           },
           pilar1_mbg_sync: 0,
           pilar1_mbg_total: 10,
@@ -290,9 +292,11 @@ function buildLocalAppData(): OrbitGiziData {
 
   // 2. Synchronize metrics for each village based on registered beneficiaries and new measurement data
   localVillages.forEach(v => {
-    const vBens = localBeneficiaries.filter(b => 
-      b.location?.kelurahan && b.location.kelurahan.toLowerCase().trim() === v.name.toLowerCase().trim()
-    );
+    const vBens = localBeneficiaries.filter(b => {
+      if (!b) return false;
+      const kel = b.location?.kelurahan || b.kelurahan || "";
+      return kel.toLowerCase().trim() === v.name.toLowerCase().trim();
+    });
 
     if (vBens.length > 0) {
       const mbgReceivedCount = vBens.filter(b => b.isReceivedMBG).length;
