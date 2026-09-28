@@ -1169,10 +1169,21 @@ export default function DataInputCenter({
     e.preventDefault();
     if (!benName.trim()) return;
 
-    const initialWeightVal = parseDecimal(benInitialWeight, 14);
-    const initialHeightVal = parseDecimal(benInitialHeight, 95);
+    const initialWeightVal = parseOptionalDecimal(benInitialWeight);
+    const initialHeightVal = parseOptionalDecimal(benInitialHeight);
 
     const existingBen = editingBenId ? beneficiaries.find(b => b.id === editingBenId) : null;
+
+    let records: WeightRecord[] = existingBen ? (existingBen.weightRecords || []) : [];
+    if (!existingBen && initialWeightVal !== undefined && initialWeightVal > 0) {
+      records = [{
+        period: "Maret 2026",
+        weightKg: initialWeightVal,
+        heightCm: initialHeightVal,
+        statusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal),
+        measuredAt: new Date().toISOString().split("T")[0]
+      }];
+    }
 
     const updatedBen: MBGBeneficiary = {
       id: existingBen ? existingBen.id : `ben_${Date.now()}`,
@@ -1210,18 +1221,8 @@ export default function DataInputCenter({
       stakeholdersHadir: benStakeholdersHadir,
       initialWeightKg: initialWeightVal,
       initialHeightCm: initialHeightVal,
-      initialStatusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal),
-      weightRecords: existingBen 
-        ? (existingBen.weightRecords || []) 
-        : (!isNaN(initialWeightVal) && initialWeightVal > 0 
-            ? [{
-                period: "Maret 2026",
-                weightKg: initialWeightVal,
-                heightCm: !isNaN(initialHeightVal) && initialHeightVal > 0 ? initialHeightVal : undefined,
-                statusGizi: calculateStatusGizi(initialWeightVal, initialHeightVal),
-                measuredAt: new Date().toISOString().split("T")[0]
-              }] 
-            : []),
+      initialStatusGizi: (initialWeightVal !== undefined && initialWeightVal > 0) ? calculateStatusGizi(initialWeightVal, initialHeightVal) : undefined,
+      weightRecords: records,
       notes: benNotes.trim()
     };
 
@@ -3339,29 +3340,29 @@ ${criticalWeaknesses.length > 0 ? criticalWeaknesses.map(w => `- ${w}`).join("\n
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">BB AWAL REGISTRASI (KG)</label>
+                  <label className="font-bold text-slate-700 block mb-1">BB AWAL REGISTRASI (KG) - OPSIONAL</label>
                   <input
                     type="text"
                     inputMode="decimal"
-                    placeholder="Contoh: 14.3 (atau 14,3)"
+                    placeholder="Kosongkan jika belum timbang (cth: 12.5)"
                     value={benInitialWeight}
                     onChange={(e) => setBenInitialWeight(e.target.value)}
                     className="w-full border border-slate-200 rounded-xl p-2 font-bold focus:ring-2 focus:ring-indigo-500/20 focus:outline-none text-xs"
                   />
-                  <span className="text-[10px] text-slate-500 block mt-0.5 font-normal">Hanya acuan awal MBG (tidak masuk riwayat bulanan).</span>
+                  <span className="text-[10px] text-slate-500 block mt-0.5 font-normal">Opsional (dapat dikosongkan dan diisi nanti saat penimbangan rutin).</span>
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">TB AWAL REGISTRASI (CM)</label>
+                  <label className="font-bold text-slate-700 block mb-1">TB AWAL REGISTRASI (CM) - OPSIONAL</label>
                   <input
                     type="text"
                     inputMode="decimal"
-                    placeholder="Contoh: 95.2 (atau 95,2)"
+                    placeholder="Kosongkan jika belum ukur (cth: 85.0)"
                     value={benInitialHeight}
                     onChange={(e) => setBenInitialHeight(e.target.value)}
                     className="w-full border border-slate-200 rounded-xl p-2 font-bold focus:ring-2 focus:ring-indigo-500/20 focus:outline-none text-xs"
                   />
-                  <span className="text-[10px] text-slate-500 block mt-0.5 font-normal">Hanya acuan awal MBG (tidak masuk riwayat bulanan).</span>
+                  <span className="text-[10px] text-slate-500 block mt-0.5 font-normal">Opsional (dapat dikosongkan dan diisi nanti saat penimbangan rutin).</span>
                 </div>
               </div>
 
